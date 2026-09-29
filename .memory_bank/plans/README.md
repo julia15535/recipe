@@ -37,7 +37,7 @@ draft → in_progress → completed → перенос в completed_plans/
 
 | slug | Название | status | created | updated |
 |------|----------|--------|---------|---------|
-| _(нет активных планов)_ | | | | |
+| design-system-uui | Дизайн-система — Untitled UI React из исходного репозитория + своя «оливковая» палитра для еды | draft | 2026-09-29 | 2026-09-29 |
 <!-- GENERATED:plans-registry END -->
 
 > Шаблон нового плана — `_template.md`. Реестр регенерирует аудит — руками не правим.

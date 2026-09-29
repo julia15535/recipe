@@ -2,12 +2,11 @@ import type { Metadata } from "next";
 import { useLocale, useTranslations } from "next-intl";
 import { getLocale } from "next-intl/server";
 
-import { buttonVariants } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
+import { AppButton } from "@/components/app-button";
 import { localizedAlternates } from "@/lib/i18n/alternates";
 
-// Заглушка главной (каркас): проверяет локали, токены темы и shadcn-стили. Настоящая главная —
-// после схемы каталога и поиска.
+// Заглушка главной (каркас): проверяет локали, шрифты и бренд. Настоящая главная — после схемы
+// каталога и поиска.
 export async function generateMetadata(): Promise<Metadata> {
   return { alternates: localizedAlternates(await getLocale(), "/") };
 }
@@ -17,15 +16,11 @@ export default function HomePage() {
   const otherLocale = useLocale() === "ru" ? "en" : "ru";
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-screen-sm flex-col gap-6 px-4 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
-      <p className="text-base text-muted-foreground">{t("lead")}</p>
-      <Link
-        href="/"
-        locale={otherLocale}
-        className={buttonVariants({ variant: "outline", className: "h-11 self-start px-4 text-base" })}
-      >
+      <h1 className="font-display text-display-sm font-semibold text-primary">{t("title")}</h1>
+      <p className="text-lg text-tertiary">{t("lead")}</p>
+      <AppButton color="secondary" href={`/${otherLocale}`} className="self-start">
         {t("switchLanguage")}
-      </Link>
+      </AppButton>
     </main>
   );
 }

@@ -28,3 +28,6 @@ npm-debug.log*
 # env: коммитим только пример
 .env*
 !.env.example
+
+# личные локальные правила Claude Code (не публикуем)
+CLAUDE.local.md

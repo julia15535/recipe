@@ -45,6 +45,11 @@ const eslintConfig = defineConfig([
     },
   },
   {
+    // Код Untitled UI — копия upstream (ADR-0015), правим минимально: его <img> (аватары, флаги) не трогаем.
+    files: ["components/base/**", "components/application/**", "components/foundations/**"],
+    rules: { "@next/next/no-img-element": "off" },
+  },
+  {
     // CLI-скрипты и тестовая обвязка пишут в консоль осознанно.
     files: ["scripts/**/*.mjs", "e2e/**/*.ts", "*.config.*"],
     rules: { "no-console": "off" },

@@ -16,7 +16,7 @@ review_after: 2026-10-29
 
 ## Стек (утверждён, ADR-0011…0014)
 Node 24 · pnpm 12 · Next.js 16.3 App Router (`output: "standalone"`, `cacheComponents`) · React 19 ·
-TypeScript 6 strict · Tailwind 4 + shadcn/ui base-nova · Zod 4 · next-intl 4 · Drizzle + PostgreSQL 17 ·
+TypeScript 6 strict · Tailwind 4 + Untitled UI React (ADR-0015) · Zod 4 · next-intl 4 · Drizzle + PostgreSQL 17 ·
 Vitest 4 + Playwright.
 
 ## Маршруты

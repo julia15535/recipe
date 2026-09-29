@@ -42,7 +42,8 @@ test.describe("мобильный экран 375 px", () => {
   }
 
   test("Tab попадает на интерактивный элемент с видимым фокусом", async ({ page }) => {
-    await page.goto("/ru");
+    // Подсветку фокуса React Aria ставит после загрузки скриптов — ждём, как дождался бы человек.
+    await page.goto("/ru", { waitUntil: "networkidle" });
     await page.keyboard.press("Tab");
     const focus = await page.evaluate(() => {
       const el = document.activeElement as HTMLElement | null;

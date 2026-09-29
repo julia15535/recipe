@@ -58,7 +58,7 @@ source_of_truth: supporting
 **Детект в diff:** циклы на тысячи элементов, парс больших буферов, генерация Excel/PDF в server action/route.
 **Фикс:** вынести в фоновую задачу; в ответе — статус/прогресс.
 
-## 5. (base-ui / headless Menu) онклик и обязательные обёртки
+## 5. (base-ui / headless Menu) онклик и обязательные обёртки — в recipe не применимо (с ADR-0015 — React Aria)
 **Симптом:** пункт меню «молча не срабатывает» (особенно на тач); ИЛИ страница падает в error-boundary.
 **Причина:** `Menu.Item` активируется по `onClick`, не `onSelect` (typecheck не ловит — `onSelect` есть как
 DOM-событие). А `Menu.GroupLabel` требует родителя `Menu.Group` — иначе рантайм-ошибка (краш страницы).
@@ -104,6 +104,18 @@ DOM-событие). А `Menu.GroupLabel` требует родителя `Menu.
 ## 13. «denied» при pull публичного образа из ghcr.io
 **Симптом:** публичный образ не скачивается: в `~/.docker/config.json` устаревший логин ghcr.
 **Convention:** анонимный pull проверять с `DOCKER_CONFIG` на пустой `{}`; на сервере логина в ghcr нет.
+
+## 14. React Aria: группа-переключатель — это radio, Tooltip не работает на тач
+**Симптом:** e2e не находит `getByRole("button", …)` у ButtonGroup; подсказка не открывается по тапу.
+**Convention:** ButtonGroup (ToggleButtonGroup, single) — роли `radiogroup`/`radio`; подсказки на тач —
+Popover по тапу, не Tooltip.
+**Детект в diff:** `getByRole("button"` для сегментов; `Tooltip` в мобильных экранах.
+
+## 15. Остановка локального next-сервера
+**Симптом:** `pkill -f <путь>` убивает саму команду (путь есть в её тексте); после kill родителя
+дочерний `next-server` держит порт и отдаёт старый HTML со ссылками на удалённые стили — страница без CSS.
+**Convention:** искать по PID и рабочей папке (`readlink /proc/<pid>/cwd`), гасить и дочерний
+`next-server`; проверять, что порт свободен (`ss -ltn`), до нового старта.
 
 ---
 

@@ -1,0 +1,71 @@
+/* Бренд книги рецептов (ADR-0015) — ЕДИНСТВЕННОЕ место, где задаются цвета и шрифты.
+   Компоненты Untitled UI ссылаются на шкалы brand-* и neutral-*; меняем только их.
+   Палитра построена с нуля в OKLCH и проверена по контрасту WCAG AA (план design-system-uui):
+   белый на кнопке 5.4:1, текст бренда на белом 7.4:1, основной текст на фоне 17:1. */
+
+@theme {
+    /* Шрифты: заголовки — Jost, текст — Inter (styles/fonts.ts). */
+    --font-body: var(--font-inter), "Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --font-display: var(--font-jost), var(--font-inter), -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+    /* Вариант A: олива — оливковое масло и травы. 600 — кнопки. */
+    --color-brand-50: #f7f8eb;
+    --color-brand-100: #ecf0d7;
+    --color-brand-200: #dae0b4;
+    --color-brand-300: #bfca8a;
+    --color-brand-400: #9fae5f;
+    --color-brand-500: #7d8e39;
+    --color-brand-600: #617122;
+    --color-brand-700: #4d5b1a;
+    --color-brand-800: #3b4715;
+    --color-brand-900: #2e3711;
+    --color-brand-950: #181f07;
+
+    /* Тёплые нейтральные — лён и пергамент вместо холодных серых. */
+    --color-neutral-50: #fcfaf6;
+    --color-neutral-100: #f7f4ee;
+    --color-neutral-200: #eae5df;
+    --color-neutral-300: #d9d3cd;
+    --color-neutral-400: #a8a29b;
+    --color-neutral-500: #736d67; /* чуть темнее расчётного: вторичный текст ≥ 4.5:1 на всех фонах (axe) */
+    --color-neutral-600: #5c5752;
+    --color-neutral-700: #48433e;
+    --color-neutral-800: #2d2926;
+    --color-neutral-900: #1c1916;
+    --color-neutral-950: #0d0b09;
+
+    /* Пастельный акцент (вариант A — «румянец/персик»): подложки секций и меток. */
+    --color-accent-50: #fff4f1;
+    --color-accent-100: #fce8e2;
+    --color-accent-200: #f8d5cc;
+    --color-accent-300: #f0bfb2;
+    --color-accent-500: #c98472;
+    --color-accent-700: #884e40;
+
+    /* Фон страницы — светлый тёплый; карточки остаются bg-primary (белые). */
+    --color-page: #f7f4f1;
+    --background-color-page: var(--color-page);
+}
+
+/* Вариант B — «пыльная роза» главным цветом, олива — акцентом. Включается атрибутом на <html>
+   (только пробная страница /admin/ui): семантика UUI объявлена на :root и пересчитается там же. */
+html[data-palette="b"] {
+    --color-brand-50: #fff4f4;
+    --color-brand-100: #fee6e6;
+    --color-brand-200: #fbd0d0;
+    --color-brand-300: #f2b6b5;
+    --color-brand-400: #de9493;
+    --color-brand-500: #c17273;
+    --color-brand-600: #a15758;
+    --color-brand-700: #844445;
+    --color-brand-800: #693535;
+    --color-brand-900: #512727;
+    --color-brand-950: #301515;
+
+    --color-accent-50: #f7f8eb;
+    --color-accent-100: #ecf0d7;
+    --color-accent-200: #dae0b4;
+    --color-accent-300: #bfca8a;
+    --color-accent-500: #7d8e39;
+    --color-accent-700: #4d5b1a;
+}

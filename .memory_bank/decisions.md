@@ -121,7 +121,7 @@ gotovim-doma (глубина до 3+). Теги — отдельная сущн�
 ## ADR-0011 — 2026-09-29 — Стек: Next.js 16.3 + TypeScript 6 + Drizzle/Postgres, две ветки маршрутов
 **Решение:** Node 24 LTS, pnpm 12 (точная версия в `packageManager`), Next.js 16.3 App Router
 (`output: "standalone"`), React 19, TypeScript 6.0 (`strict`, `noUncheckedIndexedAccess`), ESLint 9
-flat на `eslint-config-next` (`eslint.config.mjs`), Tailwind 4 + shadcn/ui base-nova (`@base-ui/react`),
+flat на `eslint-config-next` (`eslint.config.mjs`), Tailwind 4 + shadcn/ui base-nova (заменено ADR-0015),
 Zod 4, next-intl 4, Vitest 4 + Playwright. Маршруты: `app/(public)/[locale]` (ru/en, `localePrefix:
 "always"`, `/` → язык браузера или `/ru`) и `app/(admin)/admin` (только RU, `noindex`) с отдельными root
 layout; один `proxy.ts`. Слои: `lib/domain` — чистые функции без IO (запрет импортов — ESLint),
@@ -175,6 +175,25 @@ slug, списки). **Проверено на каркасе (29.09):** сов�
 **Альтернативы:** сборка на сервере (sup2) — отнимает CPU у соседей; push-деплой по SSH из Actions —
 долгоживущий ключ к общему серверу в GitHub; `paths-ignore` — оставляет обязательную проверку висеть.
 **Влияет на:** `Dockerfile`, `deploy/`, `.github/`, `core/deployment.md`.
+
+## ADR-0015 — 2026-09-29 — Дизайн-система Untitled UI React и своя палитра «олива + пастель» (отменяет UI-часть ADR-0011)
+**Решение:** интерфейс — Untitled UI React (Tailwind 4 + React Aria), бесплатная MIT-часть, копия из
+upstream github.com/untitleduico/react @ `4702dc0ea8d1` в `components/base|application|foundations`,
+`styles/uui/*` (список и изменения — `THIRD_PARTY_NOTICES.md`). Бренд — только `styles/brand.css`:
+главный цвет — олива (600 `#617122`), тёплые нейтрали (лён/пергамент), пастельный акцент
+«румянец/персик» (`accent-*`), фон страницы `#f7f4f1`, карточки белые; шрифты — Jost (заголовки) и
+Inter (текст) через `next/font` (`styles/fonts.ts`). Кнопки — `AppButton` (`components/app-button.tsx`):
+44 px, форма «таблетка». Ссылки-кнопки — `components/providers/public-router-provider.tsx` (префикс
+локали next-intl) и `admin-router-provider.tsx`. Иконки — Lucide. Вариант B («пыльная роза») — только на
+пробной странице `/admin/ui` (атрибут `data-palette` на `<html>`) до выбора владельца.
+**Почему:** решение владельца (29.09): система как в соседнем remlab, но из исходника upstream, без
+цветов и доработок remlab; палитра с нуля, тёплая, для еды; ориентир стиля — sallysbakingaddiction.com
+(фото-карточки, таблетки, пастель, дружелюбные заголовки). Контраст — WCAG AA (axe в `e2e/design.spec.ts`).
+**Альтернативы:** остаться на shadcn base-nova — владелец выбрал UUI; копировать remlab — запрещено
+владельцем; иконки `@untitledui/icons` — их лицензия запрещает распространение (npm пишет MIT —
+противоречие), репо публичный; PRO — нельзя публиковать.
+**Влияет на:** `styles/**`, `components/**`, `app/**` (все страницы), `.claude/rules/ui-rules.md`,
+`THIRD_PARTY_NOTICES.md`, `e2e/design.spec.ts`.
 
 <!-- Рост журнала: когда файл перевалит ~40 КБ (аудит: DECISIONS-BLOAT), он становится ИНДЕКСОМ
      (строка на решение + «по темам»), а полные тексты уезжают в тома decisions/adr-NNNN-MMMM.md —

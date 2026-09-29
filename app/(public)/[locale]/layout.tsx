@@ -3,8 +3,10 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import "../../globals.css";
+import { PublicRouterProvider } from "@/components/providers/public-router-provider";
 import { routing } from "@/i18n/routing";
 import { getSiteConfig } from "@/lib/server/env";
+import { fontVariables } from "@/styles/fonts";
 
 // Корневой layout публичной части. Локаль — из root-params (i18n/request.ts), поэтому /ru и /en
 // собираются статически при cacheComponents (ADR-0013).
@@ -26,9 +28,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function LocaleLayout({ children }: LayoutProps<"/[locale]">) {
   const locale = await getLocale();
   return (
-    <html lang={locale}>
+    <html lang={locale} className={fontVariables}>
       <body>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <PublicRouterProvider>{children}</PublicRouterProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
