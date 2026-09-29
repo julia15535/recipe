@@ -36,7 +36,8 @@ ls -1t "$DEST"/recipe_*.dump 2>/dev/null | tail -n +$((KEEP + 1)) | xargs -r rm 
 rm -f "$DEST"/*.part
 
 # 2. Проверки прода: сайт готов, бэкап свежий (≤ 26 ч), таймер деплоя жив (≤ 15 мин), место есть.
-code=$(curl -s -o /dev/null -m 15 -w '%{http_code}' "$SITE/api/health/ready" || echo 000)
+code=$(curl -s -o /dev/null -m 15 -w '%{http_code}' "$SITE/api/health/ready" 2>/dev/null) || true
+code=${code:-000}
 [ "$code" = 200 ] || problems+=("ready ответил $code")
 now=$(date +%s)
 read -r backup_ts deploy_ts free_kb < <("${SSH[@]}" "$HOST" \
@@ -47,7 +48,8 @@ read -r backup_ts deploy_ts free_kb < <("${SSH[@]}" "$HOST" \
 
 count=$(ls -1 "$DEST"/recipe_*.dump 2>/dev/null | wc -l)
 if [ ${#problems[@]} -gt 0 ]; then
-  printf '[%s] ПРОБЛЕМЫ: %s (локальных дампов: %s)\n' "$(date -Is)" "$(IFS='; '; echo "${problems[*]}")" "$count" >&2
+  joined=$(printf '%s; ' "${problems[@]}")
+  printf '[%s] ПРОБЛЕМЫ: %s(локальных дампов: %s)\n' "$(date -Is)" "$joined" "$count" >&2
   exit 1
 fi
 echo "[$(date -Is)] OK: дамп ${name:-?}, локальных дампов: $count"
