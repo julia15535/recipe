@@ -5,7 +5,9 @@ name: ci
 
 on:
   push:
-    branches: [main]
+    # feature/** — чтобы ветка проходила полный CI до переноса в main (PR у агента открыть нельзя:
+    # fine-grained токен GitHub не работает с чужими репозиториями).
+    branches: [main, "feature/**"]
   pull_request:
   schedule:
     - cron: "17 4 * * 1" # раз в неделю: свежие зависимости и уязвимости, без публикации
