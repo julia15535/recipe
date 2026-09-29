@@ -1,0 +1,109 @@
+# Metadata Schema — frontmatter memory-доков
+
+> Что писать в `---`-шапке каждого memory-дока. Все значения — **плоские строки** (без YAML-массивов
+> и вложенности): так шапку одинаково читают и `tools/memory-audit.mjs` (zero-dep), и скиллы
+> `/memory-check`, `/memory-cleanup`. Массив/вложенность в шапке audit флагает как BAD-FM
+> (парсер их не видит — поле молча теряется). Неизвестные ПЛОСКИЕ поля audit игнорирует —
+> расширять безопасно.
+
+## Базовые поля (как было, остаются обязательными для content-доков)
+
+| Поле | Обяз. | Значение |
+|------|:----:|----------|
+| `tier` | да | `0` \| `1` \| `2` |
+| `topic` | да* | slug темы (без него док — orphan, невидим в навигации). *Кроме scaffold: `README.md`, `_template.md`, `plans/*`, `_intake/*`, `archive/*`. |
+| `scope` | да | одна строка — «когда читать этот док» (идёт в decision tree) |
+| `tier1` \| `tier2` | — | указатель на парный док (`tier2:` у сводки → на полный док; `tier1:` у полного → на сводку) |
+| `updated` | да | `YYYY-MM-DD` — дата последней правки содержимого |
+| `importance` | да | `high` \| `med` \| `low` |
+| `source` | да | `manual` \| `_intake/<...>` \| `external:<откуда>` (provenance, см. ниже) |
+
+## Поля жизненного цикла (РЕКОМЕНДУЮТСЯ для canonical и tier-1 доков)
+
+Их проверяет audit (`REVIEW` — `review_after` в прошлом; `UNVERIFIED` — canonical без
+`last_verified`) и использует `/memory-cleanup` для классификации. `/memory-init` проставляет
+`last_verified` (= дата init) и `review_after` (например +90 дней) canonical-докам; `/memory-check`
+обновляет `last_verified` при верификации. У прочих доков отсутствие поля — «неизвестно», не ошибка.
+
+| Поле | Значение | Зачем |
+|------|----------|-------|
+| `status` | `draft` \| `working` \| `stable` \| `stale` \| `deprecated` \| `archived` | стадия жизни дока |
+| `source_of_truth` | `canonical` \| `supporting` \| `derived` \| `historical` | насколько доку можно доверять при конфликте |
+| `last_verified` | `YYYY-MM-DD` | когда содержимое последний раз сверяли с реальностью (кодом/прод) |
+| `review_after` | `YYYY-MM-DD` | дата, после которой док стоит пересмотреть (триггер для cleanup) |
+
+**`last_verified` — якорь свежести, а не украшение.** С v1.5.0 audit сравнивает его с датами
+коммитов кода, на который док ссылается (`CODE-DRIFT`): код изменился позже — утверждения про
+него никто не пересверял. Якорь берётся именно отсюда, а `updated` — только запасной вариант:
+правка формулировки в доке не означает, что содержимое сверили с кодом. С v1.9 `last_verified` двигается только по
+отчёту `verify` (таблица «утверждение → `файл:строка`»), сверившему док ЦЕЛИКОМ. Отсюда правило:
+**`updated` двигаем при любой правке, `last_verified` — только когда реально сверили.**
+
+### Допустимые значения — пояснения
+
+**`source_of_truth`:**
+- `canonical` — первоисточник истины (например `source-of-truth.md`, `decisions.md`). При конфликте побеждает он. Очистка такие доки **не переписывает и не удаляет** без явного подтверждения.
+- `supporting` — поддерживающий контекст (большинство `core/`, `domain/`).
+- `derived` — выведено из кода/других доков (например repo-map); может устаревать, перегенерируемо.
+- `historical` — архив/история; не отменяет текущее состояние.
+
+**`source` (provenance):**
+- `manual` — написано владельцем/агентом по итогам собственной работы в проекте.
+- `_intake/<...>` — извлечено из собственного intake владельца.
+- `external:<откуда>` — факт пришёл из НЕДОВЕРЕННОГО внешнего источника: веб-страница, README
+  зависимости, вывод стороннего инструмента, чужие доки/чаты (`external:web`, `external:deps/<pkg>`,
+  `external:intake-history`, …). **Обязателен** для таких фактов: персистентная память превращает
+  разовую инъекцию в постоянную (OWASP ASI06 Memory Poisoning), поэтому external-доки audit
+  дополнительно сканирует на императивы (`MEM-INJECT`), а императивные инструкции из external
+  в банк не переносятся вовсе (`memory-discipline.md`).
+
+**`status` → действие очистки (ориентир):**
+- `stable`/`working` → KEEP.
+- `stale` → VERIFY или COMPRESS (сверить с реальностью).
+- `deprecated` → ARCHIVE (после подтверждения).
+- `archived` → должен лежать в `archive/` (если нет — переместить).
+
+## Минимальный пример (content-док Tier 1)
+
+```yaml
+---
+tier: 1
+topic: project-state
+scope: Снимок «где проект сейчас» — точка ресинхронизации при /clear и resume
+tier2: ""
+updated: 2026-06-14
+importance: high
+source: manual
+status: working
+source_of_truth: canonical
+last_verified: 2026-06-14
+review_after: 2026-06-21
+---
+```
+
+## Правила
+- Массивы не используем. Если нужно несколько значений — короткой строкой через запятую в тексте дока, не в шапке.
+- `canonical`-док без `last_verified` — audit флагает UNVERIFIED; cleanup классифицирует VERIFY.
+- `review_after` в прошлом — audit флагает REVIEW (триггер пересмотра).
+- **Always-on tier-1** (`source-of-truth`, `project-state`, `decisions`) легитимно живут с пустым
+  `tier2: ""` — они не входят в decision tree (своя секция в INDEX), пустой указатель не ошибка.
+- Архивные доки (`archive/`), лог (`changelog/`) и `_secrets/` из аудита исключены — там своя шапка (см. `archive/README.md`).
+- Обязательные поля и словари проверяет audit (v1.8, warnings): `DOC-FM` — нет/пусто обязательное поле;
+  `DOC-VOCAB` — `tier`/`importance`/`status`/`source_of_truth` вне словаря (незнакомое значение молча
+  уходит в хвост decision tree); `DOC-DATE` — дата не `YYYY-MM-DD` (кривая дата молча выключает
+  STALE/LAGGING/CODE-DRIFT). «Описано, но не реализовано» — это `status: draft`, а не своё слово.
+- **Бюджеты размеров (`TIER1-BLOAT` 3 КБ, `TIER0-BLOAT` 8 КБ, `BLOATED` 12 КБ, `DECISIONS-BLOAT` 40 КБ)
+  считаются в UTF-8-байтах** — грубый переносимый прокси стоимости контекста: кириллица весит вдвое,
+  и это не артефакт (токенов на символ у неё тоже больше). Бюджет проекта — `_kit/audit-flags.txt`.
+
+## Project-owned конфиги `_kit/*.txt` (кит их не перезаписывает)
+| Файл | Что делает |
+|------|-----------|
+| `gate-mode.txt` | ровно одно слово `warn`\|`block` — режим CI merge-gate (только CI; Stop-хук блокирует по `--block` в settings) |
+| `audit-flags.txt` | пороги аудита в CLI-синтаксисе — один источник для CLI, CI, Stop-хука и SessionStart |
+| `adr-prefix.txt` | префикс номера решения (`ADR-` по умолчанию; `D` — если журнал нумерует `D127`) |
+| `code-ref-ignore.txt` | allowlist путей, которые `CODE-REF` не считает утверждением о коде |
+| `no-anchor-ignore.txt` | (v1.9) сводки Tier 1 не о коде (путь от корня банка или topic) — `NO-ANCHOR` их не требует; они же вне ротации сверки |
+| `intake-ref-ignore.txt` | allowlist ссылок canonical-доков на `_intake/` (`CANON-INTAKE-REF`) |
+| `permission-mode.txt` | какой пресет прав применён (`default`\|`plan-first`\|`important`\|`autopilot`) |
+| `VERSION`, `manifest.txt` | версия кита и хэши kit-owned файлов + baseline эталонов project-owned (`owned …`) — пишет apply/upgrade |

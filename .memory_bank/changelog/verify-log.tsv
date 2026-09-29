@@ -1,0 +1,2 @@
+date	doc	reason	claims	mismatch	fixed	note
+2026-09-29	guides/memory-automation.md	drift	45	9	9	целиком; правка эталона кита (1.9.1): этап 1.6, пороги баннера, хуки пресетов, категории аудита
