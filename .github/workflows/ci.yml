@@ -1,0 +1,184 @@
+# CI книги рецептов (ADR-0014). Один образ собирается один раз, проходит миграции и e2e и только
+# потом публикуется в GHCR. Прод-сервер сам забирает :stable (deploy/recipe-deploy.sh).
+# Actions закреплены полным SHA; права — минимальные на каждый job; pull_request_target не используем.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 4 * * 1" # раз в неделю: свежие зависимости и уязвимости, без публикации
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SITE_URL: https://mycoruja.food
+  DATABASE_URL: postgres://recipe_app:recipe_app_dev@127.0.0.1:5434/recipe
+  MIGRATION_DATABASE_URL: postgres://recipe_migrator:recipe_migrator_dev@127.0.0.1:5434/recipe
+
+jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - id: diff
+        name: Код менялся? (docs-only коммиты образ не собирают)
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ "$EVENT" != "push" ] && [ "$EVENT" != "pull_request" ]; then echo "code=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then echo "code=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          changed=$(git diff --name-only "$BASE" "$GITHUB_SHA")
+          nondoc=$(printf '%s\n' "$changed" | grep -cvE '^(\.memory_bank/|docs/|README\.md$|$)' || true)
+          echo "changed files: $(printf '%s\n' "$changed" | wc -l), non-doc: $nondoc"
+          if [ "$nondoc" = "0" ]; then echo "code=false" >> "$GITHUB_OUTPUT"; else echo "code=true" >> "$GITHUB_OUTPUT"; fi
+
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Схема Drizzle совпадает с миграциями
+        run: |
+          pnpm exec drizzle-kit generate
+          git status --porcelain drizzle/
+          test -z "$(git status --porcelain drizzle/)"
+      - run: pnpm exec drizzle-kit check
+      - run: node scripts/check-migrations.mjs
+
+  image:
+    needs: [changes, check]
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - name: База для проверок (та же, что локально)
+        run: docker compose up -d --wait db
+      - name: Сборка образа — один раз
+        run: |
+          docker build \
+            --build-arg SITE_URL="$SITE_URL" \
+            --build-arg GIT_SHA="$GITHUB_SHA" \
+            -t recipe:ci .
+      - name: Миграции внутри образа (дважды) и параллельный запуск
+        env:
+          MIGRATE_COMMAND: docker run --rm --network host -e MIGRATION_DATABASE_URL recipe:ci node migrator/migrate.mjs
+        run: |
+          $MIGRATE_COMMAND
+          $MIGRATE_COMMAND
+          pnpm test:db
+      - name: Запуск образа как в проде (read-only, без прав)
+        run: |
+          docker run -d --name web --network host \
+            --read-only --tmpfs /tmp --tmpfs /app/.next/cache:uid=10001,gid=10001 \
+            --cap-drop=ALL --security-opt no-new-privileges \
+            -e DATABASE_URL -e SITE_URL -e GIT_SHA="$GITHUB_SHA" \
+            recipe:ci
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:3000/api/health/ready && exit 0
+            sleep 2
+          done
+          docker logs web; exit 1
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: e2e против собранного образа
+        env:
+          E2E_BASE_URL: http://127.0.0.1:3000
+          E2E_EXPECT_SHA: ${{ github.sha }}
+        run: pnpm e2e
+      - name: "Отказы: без БД live=200 и ready=503; без DATABASE_URL образ не стартует молча"
+        run: |
+          docker compose stop db
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/health/live)" = 200
+          test "$(curl -s -o /dev/null -m 10 -w '%{http_code}' http://127.0.0.1:3000/api/health/ready)" = 503
+          set +e
+          timeout 30 docker run --rm -e SITE_URL="$SITE_URL" recipe:ci
+          code=$?
+          set -e
+          echo "exit=$code (ожидаем ошибку старта, не зависание)"
+          test "$code" -ne 0 && test "$code" -ne 124
+      - name: Логи контейнера при падении
+        if: failure()
+        run: docker logs web || true
+      - name: Сохранить образ для публикации
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          docker save recipe:ci | gzip > image.tar.gz
+          sha256sum image.tar.gz > image.tar.gz.sha256
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          name: recipe-image
+          path: |
+            image.tar.gz
+            image.tar.gz.sha256
+          retention-days: 3
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  publish:
+    needs: [changes, image]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    concurrency:
+      group: publish-main
+      cancel-in-progress: true
+    steps:
+      - name: Публикуем только текущий HEAD main
+        id: head
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          head=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
+          if [ "$head" != "$GITHUB_SHA" ]; then
+            echo "main ушёл вперёд ($head) — $GITHUB_SHA не публикуем"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: steps.head.outputs.skip != 'true'
+        with:
+          name: recipe-image
+      - name: Push :<sha>, затем :stable
+        if: steps.head.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha256sum -c image.tar.gz.sha256
+          gunzip -c image.tar.gz | docker load
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker tag recipe:ci "$image:$GITHUB_SHA"
+          docker push "$image:$GITHUB_SHA"
+          docker tag recipe:ci "$image:stable"
+          docker push "$image:stable"
+          docker logout ghcr.io

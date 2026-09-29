@@ -1,0 +1,6 @@
+[Unit]
+Description=recipe: pull daily prod DB dump (keep 7) and check prod health
+
+[Service]
+Type=oneshot
+ExecStart=%h/igor/recipe/deploy/local/recipe-backup-pull.sh

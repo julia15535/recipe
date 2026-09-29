@@ -1,0 +1,14 @@
+[Unit]
+Description=recipe auto-deploy (pull ghcr :stable, migrate, swap, smoke, rollback)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/recipe-deploy.sh
+# 🔴 KillMode=process обязателен (грабля sup2 17.08): контейнер поднимается из этого юнита, и при
+# умолчании control-group systemd после скрипта убил бы всю группу вместе с новым сайтом.
+KillMode=process
+TimeoutStartSec=15min
+TimeoutStopSec=10
+Nice=10

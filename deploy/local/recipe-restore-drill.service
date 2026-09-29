@@ -1,0 +1,6 @@
+[Unit]
+Description=recipe: weekly restore drill of the latest local dump
+
+[Service]
+Type=oneshot
+ExecStart=%h/igor/recipe/deploy/local/recipe-restore-drill.sh

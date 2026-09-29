@@ -1,0 +1,9 @@
+# pnpm 12: build-скрипты зависимостей запрещены по умолчанию — решаем явно по каждому пакету.
+allowBuilds:
+  # esbuild (drizzle-kit, vitest): скрипт только проверяет и подкладывает нативный бинарник.
+  esbuild: true
+  # Эти берут готовые бинарники из optional-зависимостей — скрипты не нужны.
+  sharp: false
+  unrs-resolver: false
+  "@parcel/watcher": false
+  "@swc/core": false

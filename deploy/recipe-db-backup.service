@@ -1,0 +1,9 @@
+[Unit]
+Description=recipe daily database dump (keep 7 days)
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/recipe-db-backup.sh
+Nice=10
+IOSchedulingClass=idle

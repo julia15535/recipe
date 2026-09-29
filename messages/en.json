@@ -1,0 +1,19 @@
+{
+  "Meta": {
+    "siteName": "Recipe Book",
+    "description": "A personal recipe book: fast search, serving and nutrition recalculation."
+  },
+  "Home": {
+    "title": "Recipe Book",
+    "lead": "Recipes are coming soon: search by name and ingredients, serving and nutrition recalculation.",
+    "switchLanguage": "Русская версия"
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "back": "Back to home"
+  },
+  "Error": {
+    "title": "Something went wrong",
+    "retry": "Try again"
+  }
+}
