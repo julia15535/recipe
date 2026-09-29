@@ -13,9 +13,4 @@
 > только для этого диалога. Значения секретов — НИКОГДА (только в `_secrets/`, вне git).
 
 <!-- SCRATCH START — /memory-check переносит обработанное в банк и усекает до этой метки -->
-- 2026-09-27 — typescript-eslint 8.70 требует TS `<6.1` (TS 7.0.2 уже latest) → каркас на TS 6.0.x; ESLint 10 / Vitest 5 — не брать без проверки плагинов — в `core/lessons.md` при деплое плана stack-and-skeleton
-- 2026-09-27 — локальный Postgres для recipe — порт 5434 (5433 занят remlab-devdb) — в CLAUDE.md/команды при каркасе
-- 2026-09-29 — GitHub-репо проекта: `julia15535/recipe` (публичный, пустой на 29.09); у `igortsk123` только READ — нужен collaborator — в `core/access-and-integrations.md`
-- 2026-09-29 — домен `mycoruja.food` (+www) → A на сервер прода (NS GoDaddy); на 29.09 прокси отдаёт 503, TLS для домена нет — в `core/access-and-integrations.md` / `core/deployment.md`
-- 2026-09-29 — сервер прода: общий `nginx-proxy` + `acme-companion` (сеть `webproxy`), Docker 29 без `compose`, 1 CPU / 2.9 ГБ / swap 1 ГБ → сборка образа только в CI (GHCR), лимиты контейнерам — ADR-0014; детали хоста — только `_secrets/ACCESS.md` (репо публичный)
-- 2026-09-29 — авторежим Claude Code блокирует чтение SSH-конфига и конфигов контейнеров на проде (Credential Exploration / Production Reads) — нужна явная permission-rule владельца — в `core/lessons.md`
+- 2026-09-29 — свод выполнен (/memory-check), блокнот чист

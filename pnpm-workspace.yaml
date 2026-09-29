@@ -7,3 +7,6 @@ allowBuilds:
   unrs-resolver: false
   "@parcel/watcher": false
   "@swc/core": false
+
+# Конфликт peer-зависимостей — ошибка установки, а не предупреждение (критерий приёмки каркаса).
+strictPeerDependencies: true

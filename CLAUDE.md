@@ -23,11 +23,9 @@ Tier 0 (всегда): этот файл + INDEX + `.claude/rules/*.md`. Ост�
 - Общение с владельцем и интерфейс — по-русски (EN — вторая языковая версия сайта).
 
 ## Команды
-Node 24 через nvm (`.nvmrc`); первый раз: `cp .env.example .env.local`, `pnpm install`, `pnpm db:up`.
-- `pnpm dev` (порт 3010) · `pnpm lint` · `pnpm typecheck` · `pnpm test` · `pnpm test:db` (нужна БД)
-- `pnpm db:up` (Postgres 17 на 127.0.0.1:5434) · `pnpm db:generate` · `pnpm db:migrate` · `pnpm db:roles`
-- `pnpm build` · `pnpm e2e` (против образа: `E2E_BASE_URL=…`; локально — после `pnpm build`)
-- Next 16 отличается от старых версий: сверяйся с `node_modules/next/dist/docs/`.
+Node 24 (`.nvmrc`); старт: `cp .env.example .env.local && pnpm install && pnpm db:up` (Postgres :5434).
+`pnpm dev` (:3010) · `lint` · `typecheck` · `test` · `test:db` · `db:generate` · `db:migrate` · `build` ·
+`e2e` (`E2E_BASE_URL=…`). Next 16 — сверяйся с `node_modules/next/dist/docs/`.
 
 ## Компакция
 Сохранять: активный план (slug, статус), изменённые файлы, команды build/test, next steps,

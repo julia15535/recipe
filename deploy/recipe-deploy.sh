@@ -43,8 +43,14 @@ case "${1:-}" in
   *) echo "usage: $0 [--force | --candidate <image-ref>]" >&2; exit 2 ;;
 esac
 
-# Точка отката фиксируется ДО любого pull: ID образа работающего контейнера.
+# Точка отката фиксируется ДО любого pull: образ работающего контейнера — ID для сравнения и digest
+# из GHCR, чтобы при откате скачать его заново, если локальной копии уже нет.
 ROLLBACK_ID=$(docker inspect -f '{{.Image}}' "$WEB" 2>/dev/null || true)
+ROLLBACK_REF=""
+if [ -n "$ROLLBACK_ID" ]; then
+  ROLLBACK_REF=$(docker image inspect -f '{{if .RepoDigests}}{{index .RepoDigests 0}}{{end}}' "$ROLLBACK_ID" 2>/dev/null || true)
+  ROLLBACK_REF=${ROLLBACK_REF:-$ROLLBACK_ID}
+fi
 
 if [ "$MODE" != candidate ]; then
   if ! docker pull -q "$IMAGE:$CHANNEL" >/dev/null 2>&1; then
@@ -130,7 +136,10 @@ if ! swap_to "$TARGET" "$REVISION"; then
   log "SMOKE FAILED ($REVISION) — откат"
   docker logs --tail 200 "$WEB" > "$STATE/failed-$(date +%s).log" 2>&1 || true
   echo "$TARGET_ID" >> "$STATE/failed-images"
-  if [ -n "$ROLLBACK_ID" ] && swap_to "$ROLLBACK_ID" ""; then
+  if [ -n "$ROLLBACK_REF" ] && ! docker image inspect "$ROLLBACK_REF" >/dev/null 2>&1; then
+    docker pull -q "$ROLLBACK_REF" >/dev/null 2>&1 || true
+  fi
+  if [ -n "$ROLLBACK_REF" ] && swap_to "$ROLLBACK_REF" ""; then
     log "откат выполнен"
   else
     log "🔴 ОТКАТ НЕ УДАЛСЯ — сайт недоступен, нужен человек"
@@ -144,5 +153,11 @@ docker images "$IMAGE" --format '{{.ID}}' | sort -u | while read -r id; do
   docker image rm "$id" >/dev/null 2>&1 || true
 done
 echo "$TARGET_ID" > "$STATE/current-image"
+# Путь через общий прокси: контейнер здоров, но если прокси его не отдаёт — это видно в журнале.
+# Не откатываем: на первом деплое сертификат ещё выпускается (минуты), а сайт уже в порядке.
+first_host=${HOSTS%%,*}
+proxied=$(curl -sk -o /dev/null -m 10 -w '%{http_code}' --resolve "$first_host:443:127.0.0.1" \
+  "https://$first_host/api/health/ready" 2>/dev/null) || true
+[ "$proxied" = 200 ] || log "⚠ через прокси ready ответил ${proxied:-000} — проверь nginx-proxy / сертификат"
 log "выкачено OK: $REVISION"
 heartbeat

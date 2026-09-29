@@ -3,7 +3,7 @@ tier: 2
 topic: anti-patterns
 scope: Каталог повторяющихся ошибок — чеклист при code-review
 tier1: core/lessons.md
-updated: 2026-09-27
+updated: 2026-09-29
 importance: med
 source: manual
 status: working
@@ -66,6 +66,44 @@ DOM-событие). А `Menu.GroupLabel` требует родителя `Menu.
 **Детект в diff:** `onSelect=` на `*MenuItem`; `*MenuLabel` напрямую в `*MenuContent` без `*MenuGroup`.
 **Фикс:** `onSelect`→`onClick`; обернуть label в group. (Минифицированный код ошибки прод-сборки —
 расшифровывай из исходника пакета: `node_modules/<pkg>/**/*Context.js`, рядом dev-сообщение.)
+
+## 6. Мажор новее, чем поддерживают линтеры
+**Симптом:** после обновления TypeScript/ESLint падает `typescript-eslint` или плагины Next.
+**Convention:** мажор — только если его допускают peer-зависимости (`npm view typescript-eslint peerDependencies`); на 29.09 — TS 6.0, ESLint 9, Vitest 4.
+**Детект в diff:** bump `typescript`/`eslint`/`vitest` на новый мажор в `package.json`.
+
+## 7. pnpm 12: запрещённые build-скрипты
+**Симптом:** `ERR_PNPM_IGNORED_BUILDS`; pnpm дописывает `name: set this to true or false` в `pnpm-workspace.yaml` (дубль ключа).
+**Convention:** решать `allowBuilds` явно по пакету (`esbuild: true`, остальные с prebuilt-бинарями — `false`).
+**Детект в diff:** строка-заглушка или дубль ключа в `pnpm-workspace.yaml`.
+
+## 8. drizzle-kit в прод-образе
+**Симптом:** `pnpm db:migrate` в standalone-образе не работает — devDependencies нет.
+**Convention:** прод-миграции — `scripts/migrate.mjs` (drizzle-orm migrator + advisory lock), в образе — бандл esbuild `migrator/migrate.mjs`; CI гоняет именно его внутри образа.
+**Детект в diff:** `drizzle-kit`/`pnpm` в CMD/скриптах деплоя.
+
+## 9. Редирект по хосту в proxy.ts
+**Симптом:** `www…/robots.txt`, `/api`, статика не перенаправляются — matcher proxy их пропускает.
+**Convention:** host-редиректы — `redirects()` в `next.config.ts` (`statusCode: 301`).
+**Детект в diff:** `request.headers.get("host")`/`nextUrl.host` в `proxy.ts`.
+
+## 10. Next пишет в CLAUDE.md
+**Симптом:** после `next dev` в `CLAUDE.md` появляется блок `nextjs-agent-rules`.
+**Convention:** `agentRules: false` в `next.config.ts`.
+**Детект в diff:** маркер `BEGIN:nextjs-agent-rules` в `CLAUDE.md`/`AGENTS.md`.
+
+## 11. Проверка HTML-атрибутов с учётом регистра
+**Симптом:** e2e не находит `hreflang=` — React выводит `hrefLang`; x-default для `/` без слэша.
+**Convention:** атрибуты — регэксп с флагом `i`; URL — с учётом нормализации Next.
+**Детект в diff:** `toContain('hreflang=` в тестах.
+
+## 12. /tmp на dev-машине — маленький tmpfs
+**Симптом:** `playwright install` падает «Download failure».
+**Convention:** `TMPDIR=$HOME/.cache/tmp-playwright pnpm exec playwright install chromium`.
+
+## 13. «denied» при pull публичного образа из ghcr.io
+**Симптом:** публичный образ не скачивается: в `~/.docker/config.json` устаревший логин ghcr.
+**Convention:** анонимный pull проверять с `DOCKER_CONFIG` на пустой `{}`; на сервере логина в ghcr нет.
 
 ---
 

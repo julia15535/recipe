@@ -126,8 +126,8 @@ Zod 4, next-intl 4, Vitest 4 + Playwright. Маршруты: `app/(public)/[loca
 "always"`, `/` → язык браузера или `/ru`) и `app/(admin)/admin` (только RU, `noindex`) с отдельными root
 layout; один `proxy.ts`. Слои: `lib/domain` — чистые функции без IO (запрет импортов — ESLint),
 `lib/server` — `server-only` (БД, env, логгер). Env: публичная конфигурация запекается при сборке,
-секреты читаются лениво; в production без них — явная ошибка (`lib/server/env.ts`, тест
-`lib/server/env.test.ts`).
+секреты читаются лениво; в production без них — явная ошибка при старте (`instrumentation-node.ts`,
+разбор — `lib/server/env-schema.ts`, тест `lib/server/env.test.ts`).
 **Почему:** стек владельца из sup2/sib с поправками по их граблям; критика Codex 27.09 (33 замечания).
 **Альтернативы:** TS 7 — не поддерживается typescript-eslint 8.70 (peer `<6.1`); ESLint 10 / Vitest 5 —
 плагины не проверены; Node 22 — EOL 04.2027; `localePrefix: "as-needed"` — противоречит ADR-0009;
@@ -147,11 +147,14 @@ recipe_owner`; тест `scripts/db.test.ts`). `drizzle-kit push` в проде 
 одна роль на всё (sup2) — лишние права у веба.
 **Влияет на:** `lib/server/db/*`, `drizzle/`, `deploy/recipe-deploy.sh`, CI, план «схема БД».
 
-## ADR-0013 — 2026-09-29 — Кэш публичных страниц: Cache Components с тегами (проверяется в каркасе)
+## ADR-0013 — 2026-09-29 — Кэш публичных страниц: Cache Components с тегами
 **Решение:** `cacheComponents: true`, `"use cache"` + `cacheTag`; теги `recipe:{id}`, `recipes`,
 `category:{id}`, `tag:{id}`, `catalog`; правка владельцем → `updateTag` (обе локали, старый и новый
-slug, списки). Совместимость с next-intl проверяется на каркасе; если нет — откат на ISR с
-`revalidateTag`, запись будет исправлена до завершения плана stack-and-skeleton.
+slug, списки). **Проверено на каркасе (29.09):** совместимо с next-intl 4.14 через `next/root-params`
+(`i18n/request.ts`) — `/ru`, `/en` собираются статически (`next build`: ○), без `setRequestLocale`;
+`dynamicParams` при cacheComponents не экспортировать; `headers()`/`cookies()` в `i18n/request.ts` не
+читать (сделает страницы динамическими). Прокси ставит cookie `NEXT_LOCALE` и на статических ответах —
+при кэширующем CDN такие ответы не кэшировать.
 **Почему:** модель кэша Next 16 определяет, как пишутся все страницы — выбирать до доменного кода.
 **Альтернативы:** классический ISR — запасной путь; кэш без тегов — нет точечной инвалидации.
 **Влияет на:** страницы каталога и рецепта, админку (инвалидация).
@@ -160,8 +163,9 @@ slug, списки). Совместимость с next-intl проверяет�
 **Решение:** GitHub Actions (`.github/workflows/ci.yml`) собирает образ один раз, гоняет на нём миграции
 и e2e, публикует `ghcr.io/julia15535/recipe:<sha>` и `:stable` (только текущий HEAD `main`, только при
 изменении кода). Сервер: `recipe-deploy.timer` каждые 5 минут → `deploy/recipe-deploy.sh`: точка отката
-до pull → миграция одноразовым контейнером → кандидат во внутренней сети → swap → smoke по SHA → любой
-сбой — откат и карантин образа; `KillMode=process`, `9>&-` (грабли sup2). Контейнеры с лимитами CPU/RAM
+до pull → миграция одноразовым контейнером → кандидат во внутренней сети → swap → smoke по SHA; упала
+миграция — прод на прежней версии; кандидат не поднялся — карантин образа; smoke после swap — откат
+(при нужде pull из GHCR) и карантин (`deploy/README.md`); `KillMode=process`, `9>&-` (грабли sup2). Контейнеры с лимитами CPU/RAM
 и OOM-приоритетом, read-only, без capabilities. Бэкап: `pg_dump -Fc` раз в сутки на сервере ≤ 7 дней
 (`deploy/recipe-db-backup.sh`) + локальная копия владельца ≤ 7 дней и еженедельное восстановление
 (`deploy/local/`). Детали сервера — только `_secrets/ACCESS.md` (репо публичный).

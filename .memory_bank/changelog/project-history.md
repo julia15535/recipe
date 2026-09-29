@@ -24,6 +24,13 @@ source_of_truth: historical
 
 <!-- Реальные записи добавляются ниже (сверху — свежие). -->
 
+## 2026-09-29 — Каркас и CI/CD (план stack-and-skeleton)
+Утверждён стек и инфраструктура (ADR-0011…0014), две критики Codex (33 + 35 замечаний) внесены.
+Каркас Next.js 16.3 + next-intl + Drizzle/Postgres, CI (один образ от e2e до прода, GHCR), серверный
+pull-деплой по модели sup2 с откатом, бэкап ≤ 7 дней + локальная копия. Репо `julia15535/recipe`
+(публичный: локальная история склеена в один чистый коммит, детали серверов — только в `_secrets/`).
+Прод — mycoruja.food на общем сервере владельца.
+
 ## 2026-09-27 — Проект заведён: Memory Bank из ТЗ
 Отдельный проект `/home/pakar/igor/recipe` (git init, ветка `main`) развёрнут из кита
 memory-bank-template v1.8.0 (`apply.sh --permission-mode autopilot`, тип `dev`). Intake: ТЗ

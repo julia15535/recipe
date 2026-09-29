@@ -1,7 +1,7 @@
 ---
 tier: 1
 topic: deployment
-scope: CI/CD, прод-сервер, автодеплой, откат, бэкапы — как код попадает на mycoruja.food
+scope: CI/CD, прод, автодеплой, откат, бэкапы
 tier2: ""
 updated: 2026-09-29
 importance: high
@@ -18,17 +18,21 @@ review_after: 2026-10-29
 1. PR / push в `main` → GitHub Actions `.github/workflows/ci.yml`: `check` (lint, typecheck, test,
    миграции) → `image` (образ собирается **один раз**, на нём миграции, тесты БД, e2e, отказы) →
    `publish` (только текущий HEAD `main`, только если менялся код): `ghcr.io/julia15535/recipe:<sha>`,
-   затем `:stable`. Docs-only коммиты образ не собирают.
+   затем `:stable`. Docs-only коммиты образ не собирают; «менялся ли код» на main считается от
+   ревизии, опубликованной в `:stable` (`scripts/ci/published-revision.sh`).
 2. Сервер сам забирает `:stable` каждые 5 минут (`deploy/recipe-deploy.sh` + `.timer`): точка отката
    фиксируется до pull → миграция одноразовым контейнером → кандидат во внутренней сети → swap →
-   smoke по SHA → любой сбой — откат и карантин образа (`/opt/recipe/state/failed-images`).
+   smoke по SHA. Сбои: миграция — прод на прежней версии, повтор на следующем тике; кандидат не
+   поднялся — прод не трогаем, образ в карантин (`/opt/recipe/state/failed-images`); smoke после
+   swap — откат (при нужде pull из GHCR) и карантин. Таблица и разовая настройка — `deploy/README.md`.
 3. Модель — sup2 (грабли: `9>&-` у docker run, `KillMode=process`), но на сервере ничего не
    собирается: 1 vCPU общий с соседними сервисами.
 
 ## Прод
 - Домен `mycoruja.food` (+ `www` → 301). Сервер — общий хост владельца за общим `nginx-proxy` +
   `acme-companion` (сеть `webproxy`); детали хоста — только `_secrets/ACCESS.md` (репо публичный).
-- Контейнеры `recipe-web`, `recipe-db` (Postgres 17) с лимитами CPU/RAM, OOM-приоритетом, read-only.
+- `recipe-web` (read-only, без capabilities) и `recipe-db` (Postgres 17) — с лимитами CPU/RAM и
+  OOM-приоритетом; как создан `recipe-db` — `deploy/README.md`.
   Секреты: `/opt/recipe/web.env` (только `recipe_app`) и `/opt/recipe/migrate.env` (отдельно).
 - До запуска сайт закрыт: `SITE_INDEXABLE=false` → `robots.txt` Disallow + `noindex`.
 

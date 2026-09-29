@@ -34,6 +34,8 @@ const eslintConfig = defineConfig([
                 "drizzle-orm/*",
                 "postgres",
                 "server-only",
+                "**/server/**",
+                "node:*",
               ],
               message: "lib/domain — чистые функции без IO и фреймворка (ADR-0011).",
             },

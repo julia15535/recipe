@@ -17,12 +17,12 @@ review_after: 2026-10-29
 ## Стек (утверждён, ADR-0011…0014)
 Node 24 · pnpm 12 · Next.js 16.3 App Router (`output: "standalone"`, `cacheComponents`) · React 19 ·
 TypeScript 6 strict · Tailwind 4 + shadcn/ui base-nova · Zod 4 · next-intl 4 · Drizzle + PostgreSQL 17 ·
-Vitest 4 + Playwright. Конфиги: `package.json`, `next.config.ts`, `eslint.config.mjs`, `tsconfig.json`.
+Vitest 4 + Playwright.
 
 ## Маршруты
 - `app/(public)/[locale]/` — публичный сайт, `/ru` `/en` статические (`next/root-params` в
-  `i18n/request.ts`); неизвестный путь → локализованная 404 (`[...rest]/page.tsx`), вне локалей —
-  `app/not-found.tsx`.
+  `i18n/request.ts`); неизвестный путь → локализованная 404 (`app/(public)/[locale]/[...rest]/page.tsx`), вне
+  локалей — `app/not-found.tsx`.
 - `app/(admin)/admin/` — админка, свой root layout, только RU, `noindex`.
 - `proxy.ts` — один на приложение: next-intl для публичных путей, `/admin` мимо; `www` → apex —
   `redirects()` в `next.config.ts` (покрывает и файлы, и `/api`).
@@ -31,7 +31,7 @@ Vitest 4 + Playwright. Конфиги: `package.json`, `next.config.ts`, `eslint
 ## Слои кода
 - `lib/domain/` — чистые функции без IO (пересчёт, округление, КБЖУ); импорты фреймворка/БД
   запрещены ESLint (`eslint.config.mjs`).
-- `lib/server/` — `server-only`: env (`env.ts`, разбор — `env-schema.ts`), БД (`db/client.ts`),
+- `lib/server/` — `server-only`: env (`env.ts`, разбор — `env-schema.ts`), БД (`lib/server/db/client.ts`),
   логгер с маскированием (`log.ts`). UI в БД не ходит.
 - Env: публичное (`SITE_URL`, `SITE_INDEXABLE`) запекается при сборке; секреты (`DATABASE_URL`)
   лениво; прод без них не стартует (`instrumentation-node.ts`).
@@ -40,12 +40,11 @@ Vitest 4 + Playwright. Конфиги: `package.json`, `next.config.ts`, `eslint
 
 ## Направления для следующих планов
 - Кэш публичных страниц: `"use cache"` + `cacheTag` (`recipe:{id}`, `recipes`, `category:{id}`,
-  `tag:{id}`, `catalog`), правка владельцем → `updateTag` (ADR-0013). Динамические `params` — внутри
-  `<Suspense>`; `generateMetadata` с данными — через `"use cache"`.
+  `tag:{id}`, `catalog`), правка владельцем → `updateTag` (ADR-0013).
 - Фоновые задачи импорта: очередь-таблица в Postgres (`FOR UPDATE SKIP LOCKED`), воркер — отдельный
   контейнер из того же образа. Загрузки — потоковый Route Handler с лимитами, не Server Actions.
-- Вход: порт sup2 D10 (соседний проект). ИИ: fetch-клиент через Vercel AI Gateway, как sup2.
+- Вход — порт sup2 D10; ИИ — fetch-клиент через Vercel AI Gateway (как sup2).
 - Rate limit входа и импорта — прокси + лимит в Postgres. Slug по локалям — в плане схемы БД.
-- Критический CVE Next/React → обновление в тот же день (Dependabot — еженедельно).
+- Критический CVE Next/React — обновление в тот же день.
 
 **Деплой и прод:** `core/deployment.md`.

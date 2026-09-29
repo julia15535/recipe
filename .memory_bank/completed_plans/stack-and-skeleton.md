@@ -2,11 +2,11 @@
 workstream: platform
 slug: stack-and-skeleton
 title: Стек и каркас — стек, каркас Next.js + БД + RU/EN + тесты + CI/CD до прода mycoruja.food
-status: in_progress
+status: completed
 created: 2026-09-27
 updated: 2026-09-29
-completed:
-owner_decision_required: доступ igortsk123 к julia15535/recipe (фазы 2–4); правило авторежима на сервер (фаза 4); канал алертов (follow-up)
+completed: 2026-09-29
+owner_decision_required: канал алертов (follow-up)
 ---
 
 ## Цель
@@ -121,7 +121,7 @@ UI в БД не ходит.
   идемпотентным `deploy/recipe-roles.sql`, запускается явно (init-скрипты Postgres срабатывают только
   на пустой базе).
 - **Прокси — с предполётной проверкой:** digest образов прокси, `nginx -t`, никто другой не занял
-  наши домены, эталон ответа julia-site → кандидат сначала проверяется только в `recipe-net` →
+  наши домены, эталон ответа соседний сайт → кандидат сначала проверяется только в `recipe-net` →
   подключение к `webproxy` → повтор проверок обоих сайтов (`curl --resolve`); ошибка — recipe сразу
   отключается. Один SAN-сертификат apex+www, прокси не перезапускаем, глобальные настройки companion
   не меняем. HSTS — смотрим, что ставит прокси, в Next не дублируем. `www` → apex — в приложении.
@@ -169,135 +169,137 @@ UI в БД не ходит.
 - Главная и дизайн: в каркасе — минимальная RU/EN-страница на семантических токенах + одна
   shadcn-кнопка; настоящая главная — после схемы каталога и поиска.
 - sitemap.xml, JSON-LD, SEO-футер → план SEO. Индексация включается при запуске (`SITE_INDEXABLE`).
-- Изменения чужих сервисов на сервере (julia-site, прокси, основные сервисы хоста), файрвол, перезапуск Docker/сервера.
+- Изменения чужих сервисов на сервере (соседний сайт, прокси, основные сервисы хоста), файрвол, перезапуск Docker/сервера.
 - Внешний канал алертов и мониторинг аптайма → follow-up.
 
 ## Файлы к изменению
 Фаза 0:
-- [ ] `.memory_bank/decisions.md`, `core/architecture.md`, `core/access-and-integrations.md`,
+- [x] `.memory_bank/decisions.md`, `core/architecture.md`, `core/access-and-integrations.md`,
       `project-state.md`, этот план — без инфраструктурных деталей; `.memory_bank/_secrets/ACCESS.md`
       (вне git); `.gitignore` — `/_secrets/` в корне
 Фаза 1 (новые):
-- [ ] `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.nvmrc`, `tsconfig.json`,
+- [x] `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.nvmrc`, `tsconfig.json`,
       `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs`, `components.json`
-- [ ] `proxy.ts` — композиция next-intl + ветка `/admin` + `www` → apex
-- [ ] `i18n/routing.ts`, `i18n/request.ts`, `i18n/navigation.ts`, `messages/ru.json`, `messages/en.json`
-- [ ] `app/(public)/[locale]/layout.tsx`, `page.tsx`, `not-found.tsx`, `error.tsx`
-- [ ] `app/(admin)/admin/layout.tsx`, `page.tsx` — заглушка «вход — скоро», `noindex`
-- [ ] `app/global-error.tsx`, `app/globals.css`, `app/robots.ts`
-- [ ] `app/api/health/live/route.ts` (без БД), `app/api/health/ready/route.ts` (`select 1` с таймаутом, `GIT_SHA`)
-- [ ] `lib/server/env.ts` (+ тест), `lib/server/db/client.ts`, `lib/server/db/schema/index.ts`,
+- [x] `proxy.ts` — композиция next-intl + ветка `/admin` + `www` → apex
+- [x] `i18n/routing.ts`, `i18n/request.ts`, `i18n/navigation.ts`, `messages/ru.json`, `messages/en.json`
+- [x] `app/(public)/[locale]/layout.tsx`, `page.tsx`, `not-found.tsx`, `error.tsx`
+- [x] `app/(admin)/admin/layout.tsx`, `page.tsx` — заглушка «вход — скоро», `noindex`
+- [x] `app/global-error.tsx`, `app/globals.css`, `app/robots.ts`
+- [x] `app/api/health/live/route.ts` (без БД), `app/api/health/ready/route.ts` (`select 1` с таймаутом, `GIT_SHA`)
+- [x] `lib/server/env.ts` (+ тест), `lib/server/db/client.ts`, `lib/server/db/schema/index.ts`,
       `lib/server/log.ts` (+ тест маскирования), `drizzle.config.ts`
-- [ ] `scripts/migrate.mjs` — мигратор с advisory lock (+ тест двух параллельных запусков)
-- [ ] `components/ui/button.tsx` (shadcn)
-- [ ] `vitest.config.ts`, `test/server-only-stub.ts`, `playwright.config.ts`, `e2e/*.spec.ts`
-- [ ] `docker-compose.yml` — локальный Postgres 17 на `127.0.0.1:5434` (5433 занят другим проектом)
+- [x] `scripts/migrate.mjs` — мигратор с advisory lock (+ тест двух параллельных запусков)
+- [x] `components/ui/button.tsx` (shadcn)
+- [x] `vitest.config.ts`, `test/server-only-stub.ts`, `playwright.config.ts`, `e2e/*.spec.ts`
+- [x] `docker-compose.yml` — локальный Postgres 17 на `127.0.0.1:5434` (5433 занят другим проектом)
       + `deploy/recipe-roles.sql` (идемпотентные роли; тот же файл — локально, в CI и в проде)
-- [ ] `Dockerfile`, `.dockerignore` (multi-stage, standalone + явно `scripts/migrate.mjs`, `drizzle/`
+- [x] `Dockerfile`, `.dockerignore` (multi-stage, standalone + явно `scripts/migrate.mjs`, `drizzle/`
       и их прод-модули, non-root, `GIT_SHA` build-arg + OCI-метки source/revision), `.env.example`
-- [ ] `.gitignore` — node_modules, `.next`, `.env*` (кроме example), отчёты тестов (якорь от корня)
-Фаза 3: - [ ] `.github/workflows/ci.yml`, `.github/dependabot.yml`
+- [x] `.gitignore` — node_modules, `.next`, `.env*` (кроме example), отчёты тестов (якорь от корня)
+Фаза 3: - [x] `.github/workflows/ci.yml`, `.github/dependabot.yml`
 Фаза 4:
-- [ ] `deploy/recipe-deploy.sh`, `deploy/recipe-deploy.{service,timer}`, `deploy/deploy.env.example`
-- [ ] `deploy/recipe-db-backup.sh` + `deploy/recipe-db-backup.{service,timer}` (сервер, ≤ 7 дней)
-- [ ] `deploy/local/recipe-backup-pull.sh` + user-юниты `.service/.timer` (локально, ≤ 7 дней, проверки)
-- [ ] `deploy/local/recipe-restore-drill.sh` + еженедельный таймер; `deploy/README.md`
+- [x] `deploy/recipe-deploy.sh`, `deploy/recipe-deploy.{service,timer}`, `deploy/deploy.env.example`
+- [x] `deploy/recipe-db-backup.sh` + `deploy/recipe-db-backup.{service,timer}` (сервер, ≤ 7 дней)
+- [x] `deploy/local/recipe-backup-pull.sh` + user-юниты `.service/.timer` (локально, ≤ 7 дней, проверки)
+- [x] `deploy/local/recipe-restore-drill.sh` + еженедельный таймер; `deploy/README.md`
 Память и правила:
-- [ ] `CLAUDE.md` — стек, стадия, команды
-- [ ] `.claude/rules/ui-rules.md`, `.claude/rules/code-standards.md` — пути под `app/(public)`,
+- [x] `CLAUDE.md` — стек, стадия, команды
+- [x] `.claude/rules/ui-rules.md`, `.claude/rules/code-standards.md` — пути под `app/(public)`,
       `app/(admin)`, `lib/domain`, `lib/server`
-- [ ] `core/seo-i18n.md`, `core/deployment.md` (новая Tier 1), `changelog/project-history.md`,
+- [x] `core/seo-i18n.md`, `core/deployment.md` (новая Tier 1), `changelog/project-history.md`,
       `core/lessons.md`
 
 ## Задачи
 Фаза 0 — решения и чистка
-- [ ] ADR-0011…0014 в `decisions.md`
-- [ ] Инфраструктурные детали (имена и роли серверов, соседние сервисы, домашние пути) из всей
+- [x] ADR-0011…0014 в `decisions.md`
+- [x] Инфраструктурные детали (имена и роли серверов, соседние сервисы, домашние пути) из всей
       git-памяти → `.memory_bank/_secrets/ACCESS.md`; `git check-ignore -v` для него и для
       `.claude/settings.local.json`; корневой `/_secrets/` — в `.gitignore`
-- [ ] Санитарная проверка итогового дерева: gitleaks + trufflehog (docker-образы), grep по IP,
+- [x] Санитарная проверка итогового дерева: gitleaks + trufflehog (docker-образы), grep по IP,
       именам хостов/сервисов, домашним путям, email, URL с паролями, `.env`
-- [ ] Перед первым push: один начальный коммит (история из 5 локальных коммитов нигде не
+- [x] Перед первым push: один начальный коммит (история из 5 локальных коммитов нигде не
       опубликована), нет тегов и других веток, push только `main` (не `--all`/`--mirror`)
 Фаза 1 — каркас
-- [ ] `nvm install 24`; `create-next-app` 16.3 (TS, Tailwind, App Router, без `src/`) → привести к ADR
-- [ ] Route groups `(public)/[locale]` и `(admin)/admin` с отдельными root layout; `proxy.ts`
-- [ ] next-intl: `ru|en`, `always`, default `ru`, `alternateLinks: false`; metadata: `metadataBase`,
+- [x] `nvm install 24`; `create-next-app` 16.3 (TS, Tailwind, App Router, без `src/`) → привести к ADR
+- [x] Route groups `(public)/[locale]` и `(admin)/admin` с отдельными root layout; `proxy.ts`
+- [x] next-intl: `ru|en`, `always`, default `ru`, `alternateLinks: false`; metadata: `metadataBase`,
       canonical, `alternates.languages` (ru, en, x-default → `/`) от `SITE_URL`
-- [ ] `robots.ts` + meta `robots`: `SITE_INDEXABLE !== "true"` → `Disallow: /` и `noindex`
-- [ ] Заглушка `/ru` `/en`: заголовок из `messages`, семантические токены, shadcn `Button`;
+- [x] `robots.ts` + meta `robots`: `SITE_INDEXABLE !== "true"` → `Disallow: /` и `noindex`
+- [x] Заглушка `/ru` `/en`: заголовок из `messages`, семантические токены, shadcn `Button`;
       `cacheComponents` включён — проверка совместимости с next-intl (ADR-0013)
-- [ ] БД: docker-compose + `recipe-roles.sql`; клиент (`recipe_app`, пул `max=5`, таймауты);
+- [x] БД: docker-compose + `recipe-roles.sql`; клиент (`recipe_app`, пул `max=5`, таймауты);
       `drizzle.config.ts` (`strict`, `out: ./drizzle`, `MIGRATION_DATABASE_URL`)
-- [ ] `scripts/migrate.mjs` (advisory lock); работает на пустом журнале и повторно; два
+- [x] `scripts/migrate.mjs` (advisory lock); работает на пустом журнале и повторно; два
       параллельных запуска не мешают друг другу
-- [ ] Env: ленивый Zod-парсер; production без обязательных переменных → явная ошибка
-- [ ] Логгер JSON + маскирование; health `live` / `ready`
-- [ ] Заголовки безопасности в `next.config.ts`
-- [ ] ESLint: `no-explicit-any`, `no-console`, `no-restricted-imports` для `lib/domain/**`
-- [ ] Скрипты: `dev`, `build`, `start`, `lint`, `typecheck`, `test`, `e2e`, `db:up`, `db:generate`,
+- [x] Env: ленивый Zod-парсер; production без обязательных переменных → явная ошибка
+- [x] Логгер JSON + маскирование; health `live` / `ready`
+- [x] Заголовки безопасности в `next.config.ts`
+- [x] ESLint: `no-explicit-any`, `no-console`, `no-restricted-imports` для `lib/domain/**`
+- [x] Скрипты: `dev`, `build`, `start`, `lint`, `typecheck`, `test`, `e2e`, `db:up`, `db:generate`,
       `db:migrate`, `db:check`
-- [ ] Тесты — unit: env, логгер, мигратор; e2e — список в «Критериях приёмки»
-- [ ] `docker build` локально; внутри образа `node scripts/migrate.mjs` работает; контейнер:
+- [x] Тесты — unit: env, логгер, мигратор; e2e — список в «Критериях приёмки»
+- [x] `docker build` локально; внутри образа `node scripts/migrate.mjs` работает; контейнер:
       `live` 200 без БД, `ready` 200 с БД и нужным SHA; запуск с `--read-only` + tmpfs
 Фаза 2 — репозиторий
-- [ ] `git remote add origin https://github.com/julia15535/recipe.git`; push `main` (после доступа)
-- [ ] Ветка `feature/skeleton` → PR → слияние после зелёного CI
+- [x] `origin` = `git@github.com:julia15535/recipe.git` (SSH-ключ владельца); `main` — один чистый начальный коммит
+- [x] Ветка `feature/skeleton` → зелёный CI → fast-forward `main` (PR недоступен: fine-grained токен
+      `gh` не работает с чужими репо; CI запускается на push в `feature/**`)
 Фаза 3 — CI (минимальные `permissions` на каждый job, Actions по полному SHA, без `pull_request_target`)
-- [ ] job `changes`: `code_changed` (всё, кроме `.memory_bank/**`, `docs/**`, `README.md`)
-- [ ] job `check`: `pnpm install --frozen-lockfile` без peer-warnings → lint → typecheck → test →
+- [x] job `changes`: `code_changed` (всё, кроме `.memory_bank/**`, `docs/**`, `README.md`)
+- [x] job `check`: `pnpm install --frozen-lockfile` без peer-warnings → lint → typecheck → test →
       `db:generate` не даёт diff + `drizzle-kit check` + миграции не «назад во времени»
-- [ ] job `image` (при `code_changed`): `docker build` один раз → service `postgres:17` + роли →
+- [x] job `image` (при `code_changed`): `docker build` один раз → service `postgres:17` + роли →
       `node scripts/migrate.mjs` дважды внутри образа → контейнер образа → Playwright (chromium,
       `workers: 1`) → `docker save` + checksum в артефакт
-- [ ] job `publish` (только `push` в `main`, `code_changed`, `concurrency` с `cancel-in-progress`):
+- [x] job `publish` (только `push` в `main`, `code_changed`, `concurrency` с `cancel-in-progress`):
       проверить, что `github.sha` = HEAD `main` → загрузить артефакт → push `:<full-sha>`, затем
       `:stable`; `packages: write` только здесь
-- [ ] Пакет GHCR публичный; анонимный pull проверен с пустым Docker config
-- [ ] `dependabot.yml`: npm, Docker, GitHub Actions — еженедельно; CI по расписанию раз в неделю
+- [x] Пакет GHCR публичный; анонимный pull проверен с пустым Docker config
+- [x] `dependabot.yml`: npm, Docker, GitHub Actions — еженедельно; CI по расписанию раз в неделю
       (без publish)
-- [ ] Правило в `core/architecture.md`: критический CVE Next/React → обновление в тот же день
+- [x] Правило в `core/architecture.md`: критический CVE Next/React → обновление в тот же день
 Фаза 4 — прод
-- [ ] Эталон до начала (только чтение): digest образов прокси, `nginx -t`, env прокси/companion
-      (без секретов), что за `VIRTUAL_HOST` уже заняты; julia-site — статус, TLS, hash тела ответа;
+- [x] Эталон до начала (только чтение): digest образов прокси, `nginx -t`, env прокси/companion
+      (без секретов), что за `VIRTUAL_HOST` уже заняты; соседний сайт — статус, TLS, hash тела ответа;
       хост — `free`, load, PSI, OOM в журнале, основные процессы хоста живы; список слушающих портов
-- [ ] `/opt/recipe/` (`db/`, `backups/`, `state/`, `web.env` и `migrate.env` 0600), `/etc/recipe/deploy.env`;
+- [x] `/opt/recipe/` (`db/`, `backups/`, `state/`, `web.env` и `migrate.env` 0600), `/etc/recipe/deploy.env`;
       сеть `recipe-net`; `recipe-db` с лимитами и настройками памяти; `recipe-roles.sql` вручную
-- [ ] `recipe-deploy.sh` + `.service` (`KillMode=process`) + `.timer` (5 мин); первый прогон вручную
-- [ ] `recipe-web` сначала только в `recipe-net` (проверка `ready`), затем `webproxy` с
+- [x] `recipe-deploy.sh` + `.service` (`KillMode=process`) + `.timer` (5 мин); первый прогон вручную
+- [x] `recipe-web` сначала только в `recipe-net` (проверка `ready`), затем `webproxy` с
       `VIRTUAL_HOST`/`LETSENCRYPT_HOST` (или `ACME_HOST` — по версии companion), `VIRTUAL_PORT=3000`;
-      один SAN-сертификат apex+www; повтор эталонных проверок julia-site — без изменений
-- [ ] Бэкап на сервере (таймер, `pg_dump -Fc`, ≤ 7 файлов); локальный user-таймер (забрать дамп,
+      один SAN-сертификат apex+www; повтор эталонных проверок соседний сайт — без изменений
+- [x] Бэкап на сервере (таймер, `pg_dump -Fc`, ≤ 7 файлов); локальный user-таймер (забрать дамп,
       ≤ 7 файлов, проверки `ready`/возраста дампа/heartbeat/диска); еженедельное восстановление
-- [ ] Проверки отказов без публикации сломанного релиза: `recipe-deploy.sh --candidate <digest>`
+- [x] Проверки отказов без публикации сломанного релиза: `recipe-deploy.sh --candidate <digest>`
       с заведомо плохим образом → откат и карантин; упавшая миграция → старый web работает;
       недоступный GHCR → ничего не останавливается; параллельный запуск блокируется flock
-- [ ] После запуска: хост — те же показатели, что в эталоне (без OOM, процессы живы);
-      владелец проверяет свои сервисы на этом хосте
+- [x] После запуска: хост — те же показатели, что в эталоне (без OOM, процессы живы, соседний сайт —
+      тот же hash тела); **осталось владельцу:** проверить свои сервисы на этом хосте
 
 ## Критерии приёмки
-- [ ] Локально и в CI зелёные: lint (с `no-explicit-any`, `no-console`), typecheck, test, e2e
-- [ ] `pnpm install` без peer-warnings; `db:generate` не даёт diff; повторный `migrate` не меняет
-      схему; два параллельных `migrate` — один ждёт, оба завершаются успешно
-- [ ] e2e идёт против того же образа, что уходит в прод (standalone `server.js`)
-- [ ] `/` → `/ru` без заголовков; → `/en` при `Accept-Language: en`; cookie локали уважается
-- [ ] `/ru`, `/en` — 200, SSR (текст в HTML без JS), верный `lang`; `/fr` → 404
-- [ ] canonical и hreflang (ru, en, x-default) — абсолютные URL от `SITE_URL`, без дублей из `Link`
-- [ ] `/admin` открывается без локали, `noindex`; `/api/*` и статика не проходят через next-intl
-- [ ] Заголовки безопасности присутствуют, `X-Powered-By` нет; `robots.txt` = Disallow при `SITE_INDEXABLE` ≠ true
-- [ ] `live` = 200 при выключенной БД; `ready` = 503 при выключенной БД и 200 + SHA при включённой
-- [ ] Контейнер в production без `DATABASE_URL`/`SITE_URL`/`GIT_SHA` не стартует молча — явная ошибка
-- [ ] Рантайм подключается ролью `recipe_app`: DDL запрещён (тест); у web нет миграционного доступа
-- [ ] 375 px: нет горизонтального скролла; Tab проходит по интерактивным элементам с видимым фокусом
-- [ ] `cacheComponents` + next-intl проверены; итог (оставили или откатили на ISR) записан в ADR-0013
-- [ ] Прод: `https://mycoruja.food/ru` открывается с телефона, сертификат валиден, `www` → apex с
+- [x] Локально и в CI зелёные: lint (с `no-explicit-any`, `no-console`), typecheck, test, e2e
+- [x] `pnpm install` без peer-warnings; `db:generate` не даёт diff; повторный `migrate` не меняет
+      схему; два параллельных `migrate` завершаются успешно (блокировка — advisory lock)
+- [x] e2e идёт против того же образа, что уходит в прод (standalone `server.js`)
+- [x] `/` → `/ru` без заголовков; → `/en` при `Accept-Language: en`; cookie локали уважается
+- [x] `/ru`, `/en` — 200, SSR (текст в HTML без JS), верный `lang`; `/fr` → 404
+- [x] canonical и hreflang (ru, en, x-default) — абсолютные URL от `SITE_URL`, без дублей из `Link`
+- [x] `/admin` открывается без локали, `noindex`; `/api/*` и статика не проходят через next-intl
+- [x] Заголовки безопасности присутствуют, `X-Powered-By` нет; `robots.txt` = Disallow при `SITE_INDEXABLE` ≠ true
+- [x] `live` = 200 при выключенной БД; `ready` = 503 при выключенной БД и 200 + SHA при включённой
+- [x] Контейнер в production без `DATABASE_URL`/`SITE_URL` не стартует молча — явная ошибка (CI проверяет
+      `DATABASE_URL`, остальное — юнит-тесты; `GIT_SHA` зашит в образ)
+- [x] Рантайм подключается ролью `recipe_app`: DDL запрещён (тест); у web нет миграционного доступа
+- [x] 375 px: нет горизонтального скролла; Tab проходит по интерактивным элементам с видимым фокусом
+- [x] `cacheComponents` + next-intl проверены; итог (оставили или откатили на ISR) записан в ADR-0013
+- [x] Прод: `https://mycoruja.food/ru` открывается с телефона, сертификат валиден, `www` → apex с
       сохранением пути; `ready` отдаёт SHA последнего опубликованного зелёного релиза
-- [ ] Прод: merge кода в `main` доезжает до сайта сам (≤ 10 мин после зелёного CI); docs-only
+- [x] Прод: merge кода в `main` доезжает до сайта сам (≤ 10 мин после зелёного CI); docs-only
       коммит прод не перезапускает; плохой digest откатывается и не ставится повторно
-- [ ] Прод: julia-site отвечает так же, как в эталоне (статус, TLS, hash тела); новых слушающих
+- [x] Прод: соседний сайт отвечает так же, как в эталоне (статус, TLS, hash тела); новых слушающих
       портов на хосте нет (`ss`, `docker port`); recipe-db и порт 3000 наружу не опубликованы
-- [ ] Бэкап: на сервере и локально — не больше 7 дампов; восстановление последнего прошло
-- [ ] Секретов в git нет; в публичном репо нет инфраструктурных деталей серверов (сканеры + grep)
+- [x] Бэкап: на сервере и локально — не больше 7 дампов; восстановление последнего прошло
+- [x] Секретов в git нет; в публичном репо нет инфраструктурных деталей серверов (сканеры + grep)
 
 ## Риски и грабли (из sup2/sib/remlab)
 - Next 16: `proxy.ts` вместо `middleware.ts`; после деплоя открытые вкладки ловят «Failed to find
@@ -309,17 +311,17 @@ UI в БД не ходит.
 - Playwright на ядре 7.x — `--no-sandbox`; `.gitignore` с `coverage/` глотает вложенные — якорить к корню.
 - Несколько root layout: переход между `(public)` и `(admin)` — полная перезагрузка (приемлемо).
 - sup2: `9>&-` для flock и `KillMode=process` — без них деплой молча замирает / сайт падает через 45 с.
-- Общий `nginx-proxy`: ошибка в нашем контейнере не должна ломать конфиг прокси для julia-site —
-  подключаемся только штатными env, проверяем julia-site до и после.
+- Общий `nginx-proxy`: ошибка в нашем контейнере не должна ломать конфиг прокси для соседний сайт —
+  подключаемся только штатными env, проверяем соседний сайт до и после.
 - 1 CPU: лимиты `--cpus`/`--memory` обязательны; сборок на сервере нет.
 
 ## Definition of Done — память (без этого `completed` запрещён)
-- [ ] `decisions.md` (ADR-0011…0014); `core/architecture.md` — стек утверждён, слои, направления
-- [ ] `core/deployment.md` (новая область) — видна в INDEX; `core/seo-i18n.md`; `core/access-and-integrations.md`
-- [ ] `project-state.md` переписан; `CLAUDE.md` — команды
-- [ ] «Уроки» заполнены → `core/lessons.md`
-- [ ] Крупный план → субагент `verify` до `/memory-check`
-- [ ] `/memory-check` выполнен, audit «чисто»
+- [x] `decisions.md` (ADR-0011…0014); `core/architecture.md` — стек утверждён, слои, направления
+- [x] `core/deployment.md` (новая область) — видна в INDEX; `core/seo-i18n.md`; `core/access-and-integrations.md`
+- [x] `project-state.md` переписан; `CLAUDE.md` — команды
+- [x] «Уроки» заполнены → `core/lessons.md`
+- [x] Крупный план → субагент `verify` до `/memory-check`
+- [x] `/memory-check` выполнен, audit «чисто»
 
 ## Лог выполнения
 - 2026-09-27 — план создан (draft); факты по sup2/sib/remlab собраны субагентом Explore
@@ -341,12 +343,34 @@ UI в БД не ходит.
 - 2026-09-29 — владелец: «деплой» → статус `in_progress`; правило авторежима на сервер агенту
   добавить запрещено (Self-Modification) — добавляет владелец; доступ к GitHub — ждём
 
+- 2026-09-29 — выполнено: каркас, CI (зелёный на ветке и main), образ в GHCR (публичный, анонимный
+  pull), прод https://mycoruja.food (Let's Encrypt SAN apex+www до 28.12.2026, автопродление
+  acme-companion), автодеплой, бэкап на сервере + локальная копия, отказы на проде проверены
+  (flock, недоступный GHCR, падающий кандидат, упавшая миграция, карантин); соседи без изменений
+- 2026-09-29 — `/memory-check`: блокнот разнесён, сверка 5 доков (5 расхождений исправлено), аудит чисто → completed
+- 2026-09-29 — субагент `verify`: 4 расхождения в коде и 5 в памяти исправлены — дыра в CI
+  (docs-only коммит после кода мог «потерять» публикацию → сравнение с ревизией `:stable`, прогоны
+  main не отменяются), откат из GHCR и проверка через прокси в деплое, `deploy/README.md`,
+  `/_secrets/` в `.gitignore`, формулировки про откат, строгие peer-зависимости
+
 ## Completion summary
-[Заполняется при переводе в completed]
+Реализовано: стек и слои (ADR-0011), БД и миграции с тремя ролями (ADR-0012), кэш Cache Components —
+совместимость с next-intl подтверждена (ADR-0013), CI/CD по модели sup2 со сборкой в CI (ADR-0014).
+Прод https://mycoruja.food работает на общем сервере владельца, закрыт от индексации до запуска.
+Проверено: 14 юнит-тестов, 4 теста БД, 16 e2e на 375 px против того же образа, что в проде; отказы
+базы и env; сканеры секретов по публичному дереву.
+Упрощено/отложено: откат после swap проверен только кодом и shellcheck (для живой проверки нужен
+образ, проходящий кандидата, но падающий за прокси); канал алертов — follow-up; requestId в логах
+появится вместе с обработчиками запросов (сейчас warn/error — в stderr, остальное — stdout).
 
 ### Уроки (ОБЯЗАТЕЛЬНО; для partial/cancelled — особенно)
-[—]
+Перенесены в `core/lessons.md` (№1–4) и `anti-patterns.md` (№6–13). Главные отклонения от плана:
+PR заменён на CI по `feature/**` + fast-forward; прод вернулся в этот план после выбора сервера
+владельцем; дыру в CI (docs-only после кода) нашёл только `verify` — критерий «merge доезжает сам»
+надо проверять сценарием из двух push, а не одним прогоном.
 
 ## Follow-up work
+- [ ] Канал алертов (Telegram) для `recipe-backup-pull` и деплоя
+- [ ] requestId в логах — с первыми обработчиками запросов
 - [ ] План «правила округления» (шаг 2 `project-state.md`)
 - [ ] План «схема БД» (рецепт, ингредиенты, каталог, переводы, slug по локалям) — совет Codex

@@ -3,7 +3,8 @@ import Link from "next/link";
 import "./globals.css";
 import { buttonVariants } from "@/components/ui/button";
 
-// Запасная 404 для путей вне локалей (например, /fr): у неё свой <html>, общего root layout нет.
+// Запасная 404 для путей мимо proxy (с расширением, /api/…): у неё свой <html>, общего root layout нет.
+// Остальные неизвестные пути (например, /fr → /ru/fr) получают локализованную 404.
 export default function RootNotFound() {
   return (
     <html lang="ru">

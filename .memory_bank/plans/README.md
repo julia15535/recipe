@@ -37,7 +37,7 @@ draft → in_progress → completed → перенос в completed_plans/
 
 | slug | Название | status | created | updated |
 |------|----------|--------|---------|---------|
-| stack-and-skeleton | Стек и каркас — стек, каркас Next.js + БД + RU/EN + тесты + CI/CD до прода mycoruja.food | in_progress | 2026-09-27 | 2026-09-29 |
+| _(нет активных планов)_ | | | | |
 <!-- GENERATED:plans-registry END -->
 
 > Шаблон нового плана — `_template.md`. Реестр регенерирует аудит — руками не правим.
