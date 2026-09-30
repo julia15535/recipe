@@ -43,7 +43,7 @@ export function PreviewRecipe() {
           </Badge>
           <QuickBadge size="md" />
         </div>
-        <h2 className="font-display text-display-xs font-semibold text-primary">Сырники со сметаной</h2>
+        <h2 className="font-display text-display-xs text-primary">Сырники со сметаной</h2>
         <p className="text-md text-tertiary">Нежные внутри, с хрустящей корочкой — к чаю или на завтрак.</p>
       </div>
 

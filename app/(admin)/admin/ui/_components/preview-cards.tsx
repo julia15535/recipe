@@ -14,14 +14,14 @@ const CARDS = [
 export function PreviewCards() {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="font-display text-display-xs font-semibold text-primary">Популярное</h2>
+      <h2 className="font-display text-display-xs text-primary">Популярное</h2>
       <ul className="grid grid-cols-2 gap-3">
         {CARDS.map((card) => (
           <li key={card.title} className="overflow-hidden rounded-2xl bg-primary shadow-xs ring-1 ring-secondary">
             <div className={`aspect-[4/5] bg-linear-to-br ${card.tone}`} aria-hidden />
             <div className="flex flex-col gap-1.5 p-3">
               <span className="text-xs font-semibold tracking-wide text-brand-secondary uppercase">{card.category}</span>
-              <h3 className="font-display text-lg leading-snug font-semibold text-primary">{card.title}</h3>
+              <h3 className="font-display text-lg leading-snug text-primary">{card.title}</h3>
               <span className="flex items-center gap-1 text-sm text-tertiary">
                 <Clock className="size-4" aria-hidden />
                 {card.time}
