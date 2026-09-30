@@ -26,13 +26,13 @@ test.describe("дизайн-система", () => {
     expect(overflow).toBeLessThanOrEqual(0);
   });
 
-  test("/admin/ui: переключатель палитры меняет цвет кнопки", async ({ page }) => {
-    await page.goto("/admin/ui");
-    const cta = page.getByRole("button", { name: "Готовлю по этому рецепту" });
-    const colorA = await cta.evaluate((el) => getComputedStyle(el).backgroundColor);
-    // Группа «один из двух» в React Aria — это радио-кнопки.
-    await page.getByRole("radio", { name: "B · роза" }).click();
-    await expect.poll(() => cta.evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe(colorA);
+  test("/admin/ui: переключатель шрифта меняет шрифт заголовков", async ({ page }) => {
+    await page.goto("/admin/ui", { waitUntil: "networkidle" });
+    const heading = page.getByRole("heading", { level: 1 });
+    await expect.poll(() => heading.evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/Lora/);
+    // Группа «один из вариантов» в React Aria — это радио-кнопки.
+    await page.getByRole("radio", { name: "Literata" }).click();
+    await expect.poll(() => heading.evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/Literata/);
   });
 
   test("ссылка-кнопка сама добавляет префикс локали (/en/… → «на главную» = /en)", async ({ page }) => {
@@ -43,7 +43,7 @@ test.describe("дизайн-система", () => {
     await expect(page).toHaveURL(/\/en$/);
   });
 
-  test("шрифты: заголовки Jost, текст Inter, без запросов к Google", async ({ page }) => {
+  test("шрифты: заголовки Lora, текст Inter, без запросов к Google", async ({ page }) => {
     const external: string[] = [];
     page.on("request", (req) => {
       if (/fonts\.(googleapis|gstatic)\.com/.test(req.url())) external.push(req.url());
@@ -54,7 +54,7 @@ test.describe("дизайн-система", () => {
       heading: getComputedStyle(document.querySelector("h1") as Element).fontFamily,
       body: getComputedStyle(document.body).fontFamily,
     }));
-    expect(fonts.heading).toMatch(/Jost/);
+    expect(fonts.heading).toMatch(/Lora/);
     expect(fonts.body).toMatch(/Inter/);
     expect(external).toEqual([]);
   });

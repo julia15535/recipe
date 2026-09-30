@@ -176,16 +176,20 @@ slug, списки). **Проверено на каркасе (29.09):** сов�
 долгоживущий ключ к общему серверу в GitHub; `paths-ignore` — оставляет обязательную проверку висеть.
 **Влияет на:** `Dockerfile`, `deploy/`, `.github/`, `core/deployment.md`.
 
-## ADR-0015 — 2026-09-29 — Дизайн-система Untitled UI React и своя палитра «олива + пастель» (отменяет UI-часть ADR-0011)
+## ADR-0015 — 2026-09-29 — Дизайн-система Untitled UI React и своя палитра «олива + персик» (отменяет UI-часть ADR-0011)
 **Решение:** интерфейс — Untitled UI React (Tailwind 4 + React Aria), бесплатная MIT-часть, копия из
 upstream github.com/untitleduico/react @ `4702dc0ea8d1` в `components/base|application|foundations`,
 `styles/uui/*` (список и изменения — `THIRD_PARTY_NOTICES.md`). Бренд — только `styles/brand.css`:
-главный цвет — олива (600 `#617122`), тёплые нейтрали (лён/пергамент), пастельный акцент
-«румянец/персик» (`accent-*`), фон страницы `#f7f4f1`, карточки белые; шрифты — Jost (заголовки) и
-Inter (текст) через `next/font` (`styles/fonts.ts`). Кнопки — `AppButton` (`components/app-button.tsx`):
+главный цвет — олива (600 `#617122`), акцент — персик/абрикос (`accent-*`, 100 `#ffeadb`, 700
+`#8b5426`), тёплые нейтрали, фон — кремовая «бумага» `#f8f2e6`, карточки — светлый крем `#fefcf6`,
+основной текст — тёплый графит `#36322d`; шрифты — заголовки с засечками Lora, текст Inter через
+`next/font` (`styles/fonts.ts`); кандидаты Literata и Alegreya — только на `/admin/ui`. Кнопки — `AppButton` (`components/app-button.tsx`):
 44 px, форма «таблетка». Ссылки-кнопки — `components/providers/public-router-provider.tsx` (префикс
-локали next-intl) и `admin-router-provider.tsx`. Иконки — Lucide. Вариант B («пыльная роза») — только на
-пробной странице `/admin/ui` (атрибут `data-palette` на `<html>`) до выбора владельца.
+локали next-intl) и `admin-router-provider.tsx`. Иконки — Lucide.
+**Решение владельца 30.09:** оставить оливу, добавить персик, кремовый фон вместо белого, графитовый
+текст вместо чёрного, заголовки с засечками. Просили Fraunces — в нём нет кириллицы (русские заголовки
+показались бы случайным запасным шрифтом) → Lora по умолчанию, выбор из Lora/Literata/Alegreya на
+пробной странице.
 **Почему:** решение владельца (29.09): система как в соседнем remlab, но из исходника upstream, без
 цветов и доработок remlab; палитра с нуля, тёплая, для еды; ориентир стиля — sallysbakingaddiction.com
 (фото-карточки, таблетки, пастель, дружелюбные заголовки). Контраст — WCAG AA (axe в `e2e/design.spec.ts`).

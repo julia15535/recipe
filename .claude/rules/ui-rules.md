@@ -29,9 +29,10 @@ paths:
 ## Дизайн-токены
 - Только **семантические** токены UUI: `bg-primary` (карточки), `bg-page` (фон страницы),
   `bg-secondary`, `text-primary|secondary|tertiary`, `text-brand-secondary`, `border-secondary`,
-  `bg-brand-solid`; пастельный акцент — `bg-accent-50…300`, `text-accent-700`.
+  `bg-brand-solid`; акцент-персик — `bg-accent-50…400`, `text-accent-700`.
 - Запрещены сырые цвета (`bg-white`, `text-gray-*`, hex в классах) — ломают бренд и будущую тёмную тему.
-- Заголовки — `font-display` (Jost), текст — Inter по умолчанию.
+- Заголовки — `font-display` (Lora, с засечками), текст — Inter по умолчанию. Шрифт — только с кириллицей
+  (проверять subsets в next/font: у Fraunces, Young Serif, Newsreader её нет).
 
 ## Компоненты
 - Компоненты upstream (`components/base|application|foundations`) не правим: стиль меняем через

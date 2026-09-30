@@ -7,6 +7,8 @@ import { AppButton } from "@/components/app-button";
 import { Tab, TabList, TabPanel, Tabs } from "@/components/application/tabs/tabs";
 import { Badge } from "@/components/base/badges/badges";
 
+import { QuickBadge } from "./quick-badge";
+
 // Макет страницы рецепта: табы «Рецепт / Приготовление» и порции. Пересчёт здесь — только для вида:
 // настоящие правила округления — отдельный этап (ADR-0004).
 const BASE_SERVINGS = 4;
@@ -39,9 +41,7 @@ export function PreviewRecipe() {
           <Badge color="brand" size="md">
             Завтраки
           </Badge>
-          <Badge color="warning" size="md">
-            На скорую руку
-          </Badge>
+          <QuickBadge size="md" />
         </div>
         <h2 className="font-display text-display-xs font-semibold text-primary">Сырники со сметаной</h2>
         <p className="text-md text-tertiary">Нежные внутри, с хрустящей корочкой — к чаю или на завтрак.</p>

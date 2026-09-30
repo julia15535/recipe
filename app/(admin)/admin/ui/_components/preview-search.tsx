@@ -8,7 +8,7 @@ import { ButtonGroup, ButtonGroupItem } from "@/components/base/button-group/but
 import { Input } from "@/components/base/input/input";
 import { Tag, TagGroup, TagList } from "@/components/base/tags/tags";
 
-import { SEGMENT } from "./palette-switch";
+import { SEGMENT } from "./segment";
 
 const INGREDIENTS = ["Творог", "Яйцо", "Мука", "Сметана", "Курица", "Грибы", "Сыр", "Томаты"];
 
