@@ -8,3 +8,9 @@
         @apply bg-page text-primary;
     }
 }
+
+/* У Prata одно начертание (400): не даём браузеру «рисовать» жирный сам — буквы расплываются.
+   Заголовки с font-semibold/bold показываются в родной толщине шрифта. */
+.font-display {
+    font-synthesis: none;
+}

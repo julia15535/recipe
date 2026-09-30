@@ -26,15 +26,6 @@ test.describe("дизайн-система", () => {
     expect(overflow).toBeLessThanOrEqual(0);
   });
 
-  test("/admin/ui: переключатель шрифта меняет шрифт заголовков", async ({ page }) => {
-    await page.goto("/admin/ui", { waitUntil: "networkidle" });
-    const heading = page.getByRole("heading", { level: 1 });
-    await expect.poll(() => heading.evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/Lora/);
-    // Группа «один из вариантов» в React Aria — это радио-кнопки.
-    await page.getByRole("radio", { name: "Literata" }).click();
-    await expect.poll(() => heading.evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/Literata/);
-  });
-
   test("ссылка-кнопка сама добавляет префикс локали (/en/… → «на главную» = /en)", async ({ page }) => {
     await page.goto("/en/no-such-page", { waitUntil: "networkidle" });
     const back = page.getByRole("link", { name: "Back to home" });
@@ -43,19 +34,20 @@ test.describe("дизайн-система", () => {
     await expect(page).toHaveURL(/\/en$/);
   });
 
-  test("шрифты: заголовки Lora, текст Inter, без запросов к Google", async ({ page }) => {
+  test("шрифты: заголовки Prata без «нарисованного» жирного, текст Manrope, без запросов к Google", async ({ page }) => {
     const external: string[] = [];
     page.on("request", (req) => {
       if (/fonts\.(googleapis|gstatic)\.com/.test(req.url())) external.push(req.url());
     });
     await page.goto("/ru");
     await page.evaluate(() => document.fonts.ready);
-    const fonts = await page.evaluate(() => ({
-      heading: getComputedStyle(document.querySelector("h1") as Element).fontFamily,
-      body: getComputedStyle(document.body).fontFamily,
-    }));
-    expect(fonts.heading).toMatch(/Lora/);
-    expect(fonts.body).toMatch(/Inter/);
+    const fonts = await page.evaluate(() => {
+      const h1 = getComputedStyle(document.querySelector("h1") as Element);
+      return { heading: h1.fontFamily, synthesis: h1.fontSynthesis, body: getComputedStyle(document.body).fontFamily };
+    });
+    expect(fonts.heading).toMatch(/Prata/);
+    expect(fonts.synthesis).toBe("none");
+    expect(fonts.body).toMatch(/Manrope/);
     expect(external).toEqual([]);
   });
 });

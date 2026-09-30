@@ -5,10 +5,10 @@
    самый бледный текст (неактивные вкладки, подсказки) ≥ 4.58:1. */
 
 @theme {
-    /* Шрифты: заголовки — Lora (с засечками, есть кириллица), текст — Inter (styles/fonts.ts).
+    /* Шрифты (решение владельца 30.09): заголовки — Prata (с засечками), текст — Manrope (styles/fonts.ts).
        Fraunces не подошёл: в нём нет русских букв. */
-    --font-body: var(--font-inter), "Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-    --font-display: var(--font-lora), Georgia, "Times New Roman", serif;
+    --font-body: var(--font-manrope), "Manrope", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --font-display: var(--font-prata), Georgia, "Times New Roman", serif;
 
     /* Главный цвет — олива (оливковое масло, травы). 600 — кнопки. */
     --color-brand-50: #f7f8eb;

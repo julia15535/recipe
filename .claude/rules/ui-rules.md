@@ -31,8 +31,9 @@ paths:
   `bg-secondary`, `text-primary|secondary|tertiary`, `text-brand-secondary`, `border-secondary`,
   `bg-brand-solid`; акцент-персик — `bg-accent-50…400`, `text-accent-700`.
 - Запрещены сырые цвета (`bg-white`, `text-gray-*`, hex в классах) — ломают бренд и будущую тёмную тему.
-- Заголовки — `font-display` (Lora, с засечками), текст — Inter по умолчанию. Шрифт — только с кириллицей
-  (проверять subsets в next/font: у Fraunces, Young Serif, Newsreader её нет).
+- Заголовки — `font-display` (Prata, с засечками), текст — Manrope по умолчанию. У Prata одно начертание:
+  жирность заголовкам не задавать (браузер «нарисует» жирный — запрещено `font-synthesis: none`).
+  Шрифт — только с кириллицей (проверять subsets в next/font: у Fraunces, Young Serif, Newsreader её нет).
 
 ## Компоненты
 - Компоненты upstream (`components/base|application|foundations`) не правим: стиль меняем через

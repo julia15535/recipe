@@ -6,7 +6,7 @@ status: in_progress
 created: 2026-09-29
 updated: 2026-09-29
 completed:
-owner_decision_required: шрифт заголовков (Lora / Literata / Alegreya) — выбор на /admin/ui
+owner_decision_required: —
 ---
 
 ## Цель
@@ -118,6 +118,9 @@ owner_decision_required: шрифт заголовков (Lora / Literata / Aleg
   графитовый текст, заголовки с засечками Fraunces. Fraunces без кириллицы → Lora по умолчанию +
   выбор Lora/Literata/Alegreya на `/admin/ui` (вместо переключателя палитры). Контраст: графит на креме
   11.4:1, персик-700 на персик-100 5.3:1, бледный текст ≥ 4.58:1. Локально 24 e2e зелёные
+
+- 2026-09-30 — владелец выбрала шрифты: заголовки Prata (одно начертание 400 → `font-synthesis: none`,
+  без «нарисованного» жирного), текст Manrope; переключатель шрифтов с `/admin/ui` убран
 
 ## Completion summary
 [—]
