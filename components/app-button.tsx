@@ -4,7 +4,7 @@ import { Button, type Props } from "@/components/base/buttons/button";
 import { cx } from "@/utils/cx";
 
 // Кнопка проекта поверх Button из Untitled UI (сам компонент upstream не правим):
-// по умолчанию размер xl — 44 px, удобно пальцем (ТЗ §21); форма «таблетка» (ADR-0015).
+// по умолчанию размер xl — 48 px (не меньше 44, ТЗ §21), удобно пальцем; форма «таблетка» (ADR-0015).
 // У Button два варианта — кнопка и ссылка (с href), поэтому пробрасываем оба.
 type LinkButtonProps = Extract<Props, { href: unknown }>;
 type PlainButtonProps = Exclude<Props, LinkButtonProps>;

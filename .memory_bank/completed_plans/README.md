@@ -14,5 +14,6 @@
 
 | slug | Название | Завершён |
 |------|----------|----------|
+| design-system-uui | Дизайн-система — Untitled UI React из исходного репозитория + своя «оливковая» палитра для еды | 2026-09-30 |
 | stack-and-skeleton | Стек и каркас — стек, каркас Next.js + БД + RU/EN + тесты + CI/CD до прода mycoruja.food | 2026-09-29 |
 <!-- GENERATED:completed-plans-registry END -->

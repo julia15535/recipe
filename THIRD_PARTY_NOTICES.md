@@ -48,8 +48,8 @@ SOFTWARE.
 ## Зависимости (не скопированы, ставятся из npm)
 - `react-aria-components`, `tailwindcss-react-aria-components` — Apache-2.0 (Adobe)
 - `lucide-react` — ISC (иконки)
-- `@tailwindcss/typography`, `tailwindcss-animate` — MIT
+- `@tailwindcss/typography`, `tailwindcss-animate`, `tailwind-merge` (его использует `utils/cx.ts`) — MIT
 
 ## Шрифты
-- Inter и Jost — SIL Open Font License 1.1; подключаются через `next/font/google`, файлы шрифтов
-  отдаются с сайта проекта (`styles/fonts.ts`).
+- Prata (заголовки) и Manrope (текст) — SIL Open Font License 1.1; подключаются через `next/font/google`,
+  файлы шрифтов отдаются с сайта проекта (`styles/fonts.ts`).

@@ -184,7 +184,7 @@ upstream github.com/untitleduico/react @ `4702dc0ea8d1` в `components/base|appl
 `#8b5426`), тёплые нейтрали, фон — кремовая «бумага» `#f8f2e6`, карточки — светлый крем `#fefcf6`,
 основной текст — тёплый графит `#36322d`; шрифты — заголовки Prata (с засечками, одно начертание 400,
 «нарисованный» жирный запрещён `font-synthesis: none`), текст Manrope через `next/font` (`styles/fonts.ts`). Кнопки — `AppButton` (`components/app-button.tsx`):
-44 px, форма «таблетка». Ссылки-кнопки — `components/providers/public-router-provider.tsx` (префикс
+размер `xl` = 48 px (не меньше 44 по ТЗ), форма «таблетка». Ссылки-кнопки — `components/providers/public-router-provider.tsx` (префикс
 локали next-intl) и `admin-router-provider.tsx`. Иконки — Lucide.
 **Решение владельца 30.09:** оставить оливу, добавить персик, кремовый фон вместо белого, графитовый
 текст вместо чёрного, заголовки с засечками. Просили Fraunces — в нём нет кириллицы (русские заголовки
