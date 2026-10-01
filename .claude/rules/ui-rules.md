@@ -31,7 +31,11 @@ paths:
 - Только **семантические** токены UUI: `bg-primary` (карточки), `bg-page` (фон страницы),
   `bg-secondary`, `text-primary|secondary|tertiary`, `text-brand-secondary`, `border-secondary`,
   `bg-brand-solid`; акцент-персик — `bg-accent-50…400`, `text-accent-700`.
+- Шкалы `brand-*` / `accent-*` — только для декоративных заливок (номера шагов, заглушки фото,
+  подборки); текст и фон интерфейса — семантическими токенами.
 - Запрещены сырые цвета (`bg-white`, `text-gray-*`, hex в классах) — ломают бренд и будущую тёмную тему.
+- Теги состава — свои токены `bg-tag-<id>-bg` / `text-tag-<id>-fg` / `ring-tag-<id>-border` (имя = id тега), только через
+  `components/recipe/composition-tags.tsx` (ADR-0021).
 - Поясняющий текст — не меньше `text-sm`: в `text-xs` у Manrope пропадают пробелы между словами
   (`text-xs` — только подписи в 1–2 слова, как раздел в карточке рецепта).
 - Заголовки — `font-display` (Prata, с засечками), текст — Manrope по умолчанию. У Prata одно начертание:

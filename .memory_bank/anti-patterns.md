@@ -143,6 +143,12 @@ Popover по тапу, не Tooltip.
 «закрыть» для экранного диктора (`DismissButton`), не цели касания.
 **Convention:** в проверке пропускать элементы ≤ 2 px (`e2e/prototypes.spec.ts`, `smallTargets`).
 
+## 20. axe во время появления окна
+**Симптом:** `color-contrast` падает на тексте в только что открытом Modal: идёт плавное появление
+(`data-entering`), цвета полупрозрачные (3,6 : 1 вместо 5).
+**Convention:** перед axe ждать конца анимации — `page.waitForFunction(() => !document.querySelector("[data-entering]"))`
+(`e2e/prototypes.spec.ts`).
+
 ---
 
 # Анти-паттерны ПАМЯТИ (уроки эксплуатации — актуальны любому проекту с Memory Bank)
