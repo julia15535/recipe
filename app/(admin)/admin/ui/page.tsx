@@ -7,7 +7,7 @@ import { PROTOTYPE } from "./_demo/demo-catalog";
 export const metadata: Metadata = { title: "Пробные экраны · Книга рецептов" };
 
 const SCREENS = [
-  { href: PROTOTYPE.home, title: "Главная", text: "Лупа-поиск в шапке, каталог первым: лента на компьютере, список снизу на телефоне." },
+  { href: PROTOTYPE.home, title: "Главная", text: "Шапка с поиском и каталогом закреплена: лента на компьютере, значок «меню» на телефоне." },
   { href: PROTOTYPE.search, title: "Поиск", text: "«По рецепту / По ингредиенту», уточнение разделом и особенностями состава." },
   { href: PROTOTYPE.recipe("syrniki"), title: "Рецепт", text: "Впишите своё количество основного ингредиента — остальное пересчитается." },
 ];

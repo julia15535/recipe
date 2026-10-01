@@ -1,3 +1,7 @@
+import type { ComponentProps } from "react";
+
+import type { SiteHeader } from "@/components/site-header";
+
 import { HEADER, type SectionId, catalogFor } from "./demo-catalog";
 import { RECIPES } from "./demo-recipes";
 import type { DemoRecipe } from "./demo-types";
@@ -18,7 +22,7 @@ export function recipesInSection(section: SectionId, from: DemoRecipe[] = RECIPE
 }
 
 // Пропсы шапки прототипа: строка + каталог (11 мест, пустые бледные, текущий раздел выделен).
-export function headerProps(current?: SectionId) {
+export function headerProps(current?: SectionId): ComponentProps<typeof SiteHeader> {
   return { ...HEADER, catalog: { sections: catalogFor(activeSections(), current), label: "Каталог", closeLabel: "Закрыть" } };
 }
 

@@ -75,8 +75,10 @@ test.describe("пробные экраны — телефон", () => {
     await trigger.click();
     await expect(sheet).toBeVisible();
     await page.waitForFunction(() => !document.querySelector("[data-entering]"));
-    const sheetTop = (await sheet.boundingBox())?.y ?? 100;
-    await page.mouse.click(187, Math.max(5, sheetTop - 20));
+    // Касание фона над листом (фон — подложка окна, у неё нет своей роли).
+    const sheetBox = await sheet.boundingBox();
+    if (!sheetBox) throw new Error("нет листа каталога");
+    await page.mouse.click(187, Math.max(5, sheetBox.y - 20));
     await expect(sheet).toBeHidden();
     await expect(trigger).toBeFocused();
 
@@ -261,11 +263,24 @@ test.describe("шапка с каталогом (владелец: «шапка 
     await expect(page.getByRole("dialog", { name: "Каталог" }).getByRole("link")).toHaveCount(10);
   });
 
+  test("высота шапки совпадает с --site-header-height (от неё отступ при прокрутке к фокусу)", async ({ page }) => {
+    for (const width of [375, 1280]) {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto("/admin/ui/recipe/bowl", { waitUntil: "networkidle" });
+      const [height, variable] = await page.getByRole("banner").evaluate((el) => [
+        el.getBoundingClientRect().height,
+        parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--site-header-height")) * 16,
+      ]);
+      expect(Math.abs(height - variable)).toBeLessThanOrEqual(1);
+    }
+  });
+
   test("телефон 320 px: строка шапки помещается, без горизонтальной прокрутки", async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 640 });
-    for (const path of ["/admin/ui/home", "/admin/ui/recipe/bowl", "/admin/ui/section/soups"]) {
+    for (const path of ["/admin/ui/home", "/admin/ui/recipe/bowl", "/admin/ui/section/soups", "/admin/ui/search"]) {
       await page.goto(path, { waitUntil: "networkidle" });
       expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+      expect(await smallTargets(page)).toEqual([]);
       const banner = page.getByRole("banner");
       const title = await banner.getByRole("link", { name: "Книга рецептов" }).boundingBox();
       const search = await banner.getByRole("link", { name: "Поиск" }).boundingBox();

@@ -53,7 +53,6 @@ export function catalogFor(active: ReadonlySet<SectionId>, current?: SectionId):
   }));
 }
 
-
 export const HEADER = {
   siteName: "Книга рецептов",
   homeHref: PROTOTYPE.home,
