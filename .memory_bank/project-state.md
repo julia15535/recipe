@@ -41,7 +41,7 @@ review_after: 2026-10-13
 - Дизайн-система (план `design-system-uui`, ADR-0015): Untitled UI React из upstream, палитра владельца —
   олива + персик, кремовый фон, графитовый текст; заголовки Prata, текст Manrope; живой образец — пробные экраны `/admin/ui`.
 - Экраны по решениям владельца 01.10 (планы `home-and-recipe-screens`, `screens-owner-feedback`, `section-page-sticky-header`,
-  ADR-0016…0021) — прототипы на демо-данных в `/admin/ui/{home,search,recipe/[slug]}`: каталог из 11
+  ADR-0016…0021) — прототипы на демо-данных в `/admin/ui/{home,section/[id],search,recipe/[slug]}`: каталог из 11
   мест (пустые бледные), раздел — страница сразу с рецептами, шапка закреплена, поиск — страница (на
   компьютере карточкой по центру), на рецепте — время и цветные теги состава, «~ N порций»
   (экраны подробно — `domain/screens.md`); общие компоненты `components/site-header.tsx`,
