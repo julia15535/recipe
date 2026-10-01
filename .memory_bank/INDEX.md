@@ -30,7 +30,7 @@
 | Добавление рецепта — ИИ-импорт (текст, голос, фото, PDF/Word), предпросмотр | `core/recipe-import.md` | `domain/ai-import.md` |
 | Пересчёт от основного ингредиента, производные порции, неизменяемый якорь, правила округления | `core/rescaling.md` | `domain/rounding-rules.md` |
 | Поиск — «По рецепту / По ингредиенту», иерархия, уточнение категорией и тегом | `core/search.md` | `domain/search-spec.md` |
-| Экраны и mobile-first — главная, страница рецепта, работа одной рукой | `core/ux.md` | — |
+| Экраны и mobile-first — главная, страница рецепта, работа одной рукой | `core/ux.md` | `domain/screens.md` |
 | Сквозные сценарии посетителя и владельца, статусы рецепта | `core/flows.md` | — |
 | SEO публичных страниц, RU + EN, URL-схема, SEO-футер | `core/seo-i18n.md` | — |
 <!-- GENERATED:decision-tree END -->

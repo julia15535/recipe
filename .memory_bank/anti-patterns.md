@@ -149,6 +149,17 @@ Popover по тапу, не Tooltip.
 **Convention:** перед axe ждать конца анимации — `page.waitForFunction(() => !document.querySelector("[data-entering]"))`
 (`e2e/prototypes.spec.ts`).
 
+## 21. Скрытая прошлая страница в e2e (Next 16)
+**Симптом:** после перехода по ссылке CSS-выборка `page.locator("main …")` находит лишние элементы — Next
+16 (Cache Components) держит прошлую страницу смонтированной, но скрытой, чтобы «назад» был мгновенным.
+**Convention:** в e2e — запросы по ролям (`getByRole` скрытое не видит) или `:visible` в CSS-выборке
+(`e2e/prototypes.spec.ts`, `recipeCards`).
+
+## 22. Иконка как переменная-компонент
+**Симптом:** `const Icon = pick(id); <Icon />` внутри компонента — ESLint `react-hooks/static-components`
+(«Cannot create components during render»).
+**Convention:** отдельный компонент с `createElement(MAP[id] ?? Fallback, props)` (`components/catalog/section-icon.tsx`).
+
 ---
 
 # Анти-паттерны ПАМЯТИ (уроки эксплуатации — актуальны любому проекту с Memory Bank)
