@@ -16,10 +16,17 @@ export default defineConfig({
     // Chromium на ядре 7.x падает с песочницей (грабля sib/remlab).
     launchOptions: { args: ["--no-sandbox"] },
   },
+  // Основная проверка — телефон (mobile-first); компьютер — только тесты с меткой @desktop.
   projects: [
     {
       name: "mobile-375",
+      grepInvert: /@desktop/,
       use: { ...devices["Desktop Chrome"], viewport: { width: 375, height: 812 }, hasTouch: true },
+    },
+    {
+      name: "desktop-1280",
+      grep: /@desktop/,
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } },
     },
   ],
   webServer: process.env.E2E_BASE_URL

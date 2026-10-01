@@ -16,6 +16,7 @@
 - `components/base/tooltip/tooltip.tsx`
 - `components/foundations/dot-icon.tsx`
 - `components/application/tabs/tabs.tsx`
+- `components/application/modals/modal.tsx` (без изменений; основа нижнего листа каталога)
 
 Изменения: в `input.tsx`, `label.tsx`, `badges.tsx`, `tags.tsx`, `tag-close-x.tsx` иконки
 `@untitledui/icons` заменены на `lucide-react` (лицензия иконок Untitled UI запрещает их

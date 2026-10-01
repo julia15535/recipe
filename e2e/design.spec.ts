@@ -2,29 +2,33 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 // Дизайн-система (ADR-0015): доступность, размер касания, шрифты без внешних запросов.
-const PAGES = ["/ru", "/en", "/admin", "/admin/ui"];
+const PROTOTYPES = ["/admin/ui", "/admin/ui/home", "/admin/ui/search", "/admin/ui/recipe/syrniki"];
+const PAGES = ["/ru", "/en", "/admin", ...PROTOTYPES];
 
 test.describe("дизайн-система", () => {
   for (const path of PAGES) {
     test(`${path}: нет нарушений доступности уровня AA`, async ({ page }) => {
-      await page.goto(path);
+      // networkidle: поиск-прототип дорисовывается в браузере (раздел читается из адреса).
+      await page.goto(path, { waitUntil: "networkidle" });
       const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
       expect(result.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);
     });
   }
 
-  test("/admin/ui: все цели касания не меньше 44 px, без горизонтального скролла", async ({ page }) => {
-    await page.goto("/admin/ui");
-    const small = await page.evaluate(() =>
-      Array.from(document.querySelectorAll('button, a[href], [role="tab"], [role="row"], input'))
-        .map((el) => ({ el, rect: el.getBoundingClientRect() }))
-        .filter(({ rect }) => rect.width > 0 && rect.height > 0 && rect.height < 43.5)
-        .map(({ el, rect }) => `${el.tagName} «${(el.textContent ?? "").trim().slice(0, 30)}» ${Math.round(rect.height)}px`),
-    );
-    expect(small).toEqual([]);
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-    expect(overflow).toBeLessThanOrEqual(0);
-  });
+  for (const path of PROTOTYPES) {
+    test(`${path}: все цели касания не меньше 44 px, без горизонтального скролла`, async ({ page }) => {
+      await page.goto(path, { waitUntil: "networkidle" });
+      const small = await page.evaluate(() =>
+        Array.from(document.querySelectorAll('button, a[href], [role="tab"], [role="row"], input'))
+          .map((el) => ({ el, rect: el.getBoundingClientRect() }))
+          .filter(({ rect }) => rect.width > 0 && rect.height > 0 && rect.height < 43.5)
+          .map(({ el, rect }) => `${el.tagName} «${(el.textContent ?? "").trim().slice(0, 30)}» ${Math.round(rect.height)}px`),
+      );
+      expect(small).toEqual([]);
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+  }
 
   test("ссылка-кнопка сама добавляет префикс локали (/en/… → «на главную» = /en)", async ({ page }) => {
     await page.goto("/en/no-such-page", { waitUntil: "networkidle" });
