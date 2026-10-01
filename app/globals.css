@@ -4,6 +4,13 @@
 @import "../styles/brand.css";
 
 @layer base {
+    /* Высота закреплённой шапки (components/site-header.tsx): переходы к заголовкам и фокус по Tab
+       не уходят под неё. */
+    :root {
+        --site-header-height: 4.5rem;
+        scroll-padding-top: calc(var(--site-header-height) + env(safe-area-inset-top) + 0.5rem);
+    }
+
     body {
         @apply bg-page text-primary;
     }

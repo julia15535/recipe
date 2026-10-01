@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Главная — пробный э
 export default function HomePrototypePage() {
   return (
     <>
-      <PrototypeBar demoSwitch />
+      <PrototypeBar />
       <SiteHeader {...HEADER} />
       <HomeContent />
     </>

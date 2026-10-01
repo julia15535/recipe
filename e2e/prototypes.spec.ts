@@ -24,9 +24,8 @@ const smallTargets = (page: Page) =>
 const ingredientRow = (page: Page, name: string) => page.getByRole("listitem").filter({ hasText: name });
 const servingsCard = (page: Page) => page.locator('[data-testid="servings"]:visible');
 
-// Режим демо в полоске «Пробный экран»: все / первые 3 / ни одного рецепта.
-const setDemoMode = (page: Page, name: "Все рецепты" | "Первые 3 рецепта" | "Ни одного рецепта") =>
-  page.getByRole("radio", { name }).click();
+// :visible — Next 16 держит прошлую страницу скрытой после перехода (для «назад»), CSS-выборка видит и её.
+const recipeCards = (page: Page) => page.locator("main ul li a[href^='/admin/ui/recipe/']:visible");
 
 // Контраст текста пустого раздела к фону ленты/листа (axe такие места не проверит за нас).
 const textContrast = (page: Page, selector: string) =>
@@ -81,11 +80,15 @@ test.describe("пробные экраны — телефон", () => {
 
     await trigger.click();
     await sheet.getByRole("link", { name: "Салаты" }).click();
-    await expect(page).toHaveURL(/\/admin\/ui\/search\?section=salads$/);
-    await expect(page.getByRole("row", { name: "Салаты" })).toHaveAttribute("aria-selected", "true");
-    await expect(page.getByText("Нашлось: 2")).toBeVisible();
-    await page.getByRole("row", { name: "Белок", exact: true }).click();
-    await expect(page.getByRole("link", { name: /Салат с тыквой и нутом/ })).toBeVisible();
+    await expect(page).toHaveURL(/\/admin\/ui\/section\/salads$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Салаты");
+    await expect(page.getByRole("navigation", { name: "Хлебные крошки" })).toHaveText(/Главная\s*\/\s*Салаты/);
+    await expect(page.getByRole("textbox")).toHaveCount(0);
+    await expect(recipeCards(page)).toHaveCount(2);
+
+    await page.getByRole("button", { name: "Каталог" }).click();
+    await expect(sheet.locator('[aria-current="page"]')).toHaveText("Салаты");
+    await expect(sheet.getByRole("link", { name: "Салаты" })).toHaveCount(0);
   });
 
   test("поиск: по ингредиенту, уточнение, два пустых состояния, «назад»", async ({ page }) => {
@@ -108,11 +111,6 @@ test.describe("пробные экраны — телефон", () => {
     await page.getByRole("button", { name: "Сбросить поиск" }).click();
     await expect(page.getByText("Начните вводить название")).toBeVisible();
 
-    await setDemoMode(page, "Ни одного рецепта");
-    await expect(page.getByText("Рецепты скоро появятся")).toBeVisible();
-    await expect(page.getByRole("grid", { name: "Раздел" })).toHaveCount(0);
-    await expect(page.getByText("Раздел", { exact: true })).toHaveCount(0);
-    await expect(page.getByRole("row", { name: "Белок", exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Назад" }).click();
     await expect(page).toHaveURL(/\/admin\/ui\/home$/);
   });
@@ -166,34 +164,65 @@ test.describe("пробные экраны — телефон", () => {
   });
 });
 
-test.describe("пробные экраны — сколько рецептов (ADR-0020)", () => {
-  test("лист каталога: «оживают» только разделы с рецептами; пустые — не ссылки", async ({ page }) => {
-    await page.goto("/admin/ui/home", { waitUntil: "networkidle" });
-    await setDemoMode(page, "Первые 3 рецепта");
-    await page.getByRole("button", { name: "Каталог" }).click();
-    const sheet = page.getByRole("dialog", { name: "Каталог" });
-    await expect(sheet.getByRole("link")).toHaveText(["Завтраки", "Супы", "Горячее"]);
-    await expect(sheet.locator("[data-empty]")).toHaveCount(8);
-    await expect(sheet.getByText("Пока нет рецептов")).toHaveCount(8);
-    expect(await textContrast(page, "[role=dialog] [data-empty] .text-lg")).toBeGreaterThanOrEqual(4.5);
-    await page.keyboard.press("Escape");
+test.describe("пробные экраны — страница раздела и закреплённая шапка", () => {
+  test("раздел над названием рецепта открывает страницу раздела сразу с рецептами", async ({ page }) => {
+    await page.goto("/admin/ui/recipe/bowl", { waitUntil: "networkidle" });
+    await page.getByRole("navigation", { name: "Разделы каталога" }).getByRole("link", { name: "Горячее" }).click();
+    await expect(page).toHaveURL(/\/admin\/ui\/section\/hot$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Горячее");
+    await expect(recipeCards(page)).toHaveCount(4);
+    await expect(page.getByRole("textbox")).toHaveCount(0);
+  });
 
-    await setDemoMode(page, "Ни одного рецепта");
-    await expect(page.getByText("Скоро здесь появятся рецепты")).toBeVisible();
-    await expect(page.getByText("Подборка недели")).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "Популярное" })).toHaveCount(0);
-    await page.getByRole("button", { name: "Каталог" }).click();
-    await expect(sheet.getByRole("link")).toHaveCount(0);
-    await expect(sheet.locator("[data-empty]")).toHaveCount(11);
+  test("пустой раздел по адресу — «Пока нет рецептов», неизвестный — 404", async ({ page, request }) => {
+    await page.goto("/admin/ui/section/preserves", { waitUntil: "networkidle" });
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Заготовки");
+    await expect(page.getByText("Пока нет рецептов — скоро появятся.")).toBeVisible();
+    await expect(recipeCards(page)).toHaveCount(0);
+    expect((await request.get("/admin/ui/section/no-such-section")).status()).toBe(404);
+  });
+
+  test("старый выбор «Рецептов: 0» в браузере больше не прячет рецепты; переключателя нет", async ({ page }) => {
+    await page.addInitScript(() => window.localStorage.setItem("recipe-demo-mode", "none"));
+    await page.goto("/admin/ui/home", { waitUntil: "networkidle" });
+    await expect(page.getByText("Подборка недели")).toBeVisible();
+    await expect(page.getByRole("radio", { name: /рецепт/i })).toHaveCount(0);
+    await expect(page.getByText("Рецептов:")).toHaveCount(0);
+  });
+
+  test("шапка остаётся вверху при прокрутке; лист каталога — поверх неё; фокус не под шапкой", async ({ page }) => {
+    for (const path of ["/admin/ui/search", "/admin/ui/section/soups", "/admin/ui/recipe/syrniki"]) {
+      await page.goto(path, { waitUntil: "networkidle" });
+      await expect(page.getByRole("banner")).toBeVisible();
+    }
+    await page.goto("/admin/ui/home", { waitUntil: "networkidle" });
+    const header = page.getByRole("banner");
+    await page.mouse.wheel(0, 1500);
+    await expect.poll(async () => (await header.boundingBox())?.y).toBe(0);
+
+    const firstCard = recipeCards(page).first();
+    await firstCard.focus();
+    const [headerBox, cardBox] = [await header.boundingBox(), await firstCard.boundingBox()];
+    if (!headerBox || !cardBox) throw new Error("нет шапки или карточки");
+    expect(cardBox.y).toBeGreaterThanOrEqual(headerBox.y + headerBox.height - 1);
+
+    await page.evaluate(() => window.scrollTo(0, 40));
+    const trigger = page.getByRole("button", { name: "Каталог" });
+    await trigger.click();
+    await expect(page.getByRole("dialog", { name: "Каталог" })).toBeVisible();
+    expect(await page.evaluate(() => document.elementFromPoint(20, 20)?.closest("header") ?? null)).toBeNull();
+    await page.keyboard.press("Escape");
+    await expect(trigger).toBeFocused();
   });
 
   test("поиск: уточнение — только разделы с рецептами; пустой раздел из адреса не применяется", async ({ page }) => {
     await page.goto("/admin/ui/search?section=preserves", { waitUntil: "networkidle" });
     await expect(page.getByText("Раздел «Заготовки» пока пуст — выберите другой или начните поиск.")).toBeVisible();
     await expect(page.getByText("Начните вводить название")).toBeVisible();
-    await setDemoMode(page, "Первые 3 рецепта");
     await page.getByRole("button", { name: "Уточнить" }).click();
-    await expect(page.getByRole("grid", { name: "Раздел" }).getByRole("row")).toHaveText(["Завтраки", "Супы", "Горячее"]);
+    const rows = page.getByRole("grid", { name: "Раздел" }).getByRole("row");
+    await expect(rows).toHaveCount(10);
+    await expect(rows.filter({ hasText: "Заготовки" })).toHaveCount(0);
   });
 });
 
@@ -210,17 +239,23 @@ test.describe("пробные экраны — компьютер", () => {
     await expect(page.getByRole("button", { name: "Каталог" })).toBeHidden();
     await expect(ribbon.locator("[data-empty]")).toHaveText(["Заготовки, пока нет рецептов"]);
     expect(await textContrast(page, "nav [data-empty]")).toBeGreaterThanOrEqual(4.5);
-    await expectNoAxeViolations(page);
-
-    await setDemoMode(page, "Первые 3 рецепта");
-    await expect(ribbon.getByRole("link")).toHaveText(["Завтраки", "Супы", "Горячее"]);
-    await expect(ribbon.locator("[data-empty]")).toHaveCount(8);
-
-    await setDemoMode(page, "Ни одного рецепта");
-    await expect(ribbon.getByRole("link")).toHaveCount(0);
-    await expect(ribbon.locator("[data-empty]")).toHaveCount(11);
     // Пустые места — не ссылки и не в порядке Tab.
     expect(await ribbon.locator("[data-empty]").evaluateAll((els) => els.filter((el) => (el as HTMLElement).tabIndex >= 0).length)).toBe(0);
+    await expectNoAxeViolations(page);
+
+    await page.mouse.wheel(0, 1200);
+    await expect.poll(async () => (await page.getByRole("banner").boundingBox())?.y).toBe(0);
+  });
+
+  test("раздел: лента отмечает текущий раздел, рецепты сразу @desktop", async ({ page }) => {
+    await page.goto("/admin/ui/home", { waitUntil: "networkidle" });
+    const ribbon = page.getByRole("navigation", { name: "Каталог" });
+    await ribbon.getByRole("link", { name: "Супы" }).click();
+    await expect(page).toHaveURL(/\/admin\/ui\/section\/soups$/);
+    await expect(ribbon.locator('[aria-current="page"]')).toHaveText("Супы");
+    await expect(ribbon.getByRole("link")).toHaveCount(9);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Супы");
+    await expect(recipeCards(page)).toHaveCount(1);
     await expectNoAxeViolations(page);
   });
 

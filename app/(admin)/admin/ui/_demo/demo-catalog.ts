@@ -38,13 +38,19 @@ export const PROTOTYPE = {
   home: "/admin/ui/home",
   search: "/admin/ui/search",
   recipe: (slug: string) => `/admin/ui/recipe/${slug}`,
-  // Страниц разделов в прототипе нет (ADR-0017: появятся со схемой БД) — раздел открывает поиск с уточнением.
-  section: (id: SectionId) => `/admin/ui/search?section=${id}`,
+  // Страница раздела — сразу рецепты (владелец 01.10); на сайте — `/{locale}/catalog/{slug}` (ADR-0017).
+  section: (id: SectionId) => `/admin/ui/section/${id}`,
 };
 
-// Все 11 мест каталога; раздел без рецептов — пустой (ADR-0020).
-export function catalogFor(active: ReadonlySet<SectionId>): CatalogSection[] {
-  return SECTIONS.map(({ id, label }) => ({ id, label, href: PROTOTYPE.section(id), empty: !active.has(id) }));
+// Все 11 мест каталога; раздел без рецептов — пустой (ADR-0020), текущий — отмечен.
+export function catalogFor(active: ReadonlySet<SectionId>, current?: SectionId): CatalogSection[] {
+  return SECTIONS.map(({ id, label }) => ({
+    id,
+    label,
+    href: PROTOTYPE.section(id),
+    empty: !active.has(id),
+    current: id === current,
+  }));
 }
 
 export const CATALOG_LABELS = { catalog: "Каталог", close: "Закрыть" };

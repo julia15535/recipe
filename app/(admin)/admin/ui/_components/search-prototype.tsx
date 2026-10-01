@@ -11,9 +11,9 @@ import { Input } from "@/components/base/input/input";
 import { Tag, TagGroup, TagList } from "@/components/base/tags/tags";
 
 import { type CompositionTagId, PROTOTYPE, SECTIONS, type SectionId, parseSectionId, sectionLabel } from "../_demo/demo-catalog";
-import { useDemoMode } from "../_demo/demo-mode";
 import { type DemoQuery, ingredientChips } from "../_demo/demo-search";
-import { activeSections, demoRecipes } from "../_demo/demo-selection";
+import { RECIPES } from "../_demo/demo-recipes";
+import { activeSections } from "../_demo/demo-selection";
 import { SearchRefine } from "./search-refine";
 import { SearchResults } from "./search-results";
 import { SEGMENT } from "./segment";
@@ -33,7 +33,7 @@ export function SearchPrototype() {
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [section, setSection] = useState<SectionId | null>(initialSection);
   const [tags, setTags] = useState<CompositionTagId[]>([]);
-  const recipes = demoRecipes(useDemoMode());
+  const recipes = RECIPES;
   const active = activeSections(recipes);
   // Раздел из адреса мог опустеть — тогда фильтр не применяется (выбор не теряем), показываем пояснение (ADR-0020).
   const sectionActive = section !== null && active.has(section);

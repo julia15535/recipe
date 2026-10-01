@@ -6,7 +6,7 @@ import { Heading, Link } from "react-aria-components";
 import { AppButton } from "@/components/app-button";
 import { Dialog, DialogTrigger, Modal, ModalOverlay } from "@/components/application/modals/modal";
 
-import { sectionIcon } from "./section-icons";
+import { SectionIcon } from "./section-icon";
 import type { CatalogSection } from "./types";
 
 // Каталог на телефоне: «выпадающий список» владельца — нижний лист с крупными строками под большой
@@ -36,32 +36,11 @@ export function CatalogSheet({ sections, label, closeLabel, className }: Props) 
                     <AppButton color="tertiary" iconLeading={X} aria-label={closeLabel} onPress={close} />
                   </div>
                   <ul className="flex flex-col divide-y divide-secondary">
-                    {sections.map((section) => {
-                      const Icon = sectionIcon(section.id);
-                      return (
-                        <li key={section.id}>
-                          {section.empty ? (
-                            <div className="flex min-h-12 items-center gap-3 py-2 text-quaternary" data-empty>
-                              <Icon className="size-6 shrink-0 text-brand-secondary opacity-35" aria-hidden />
-                              <span className="flex flex-col">
-                                <span className="text-lg">{section.label}</span>
-                                <span className="text-sm">Пока нет рецептов</span>
-                              </span>
-                            </div>
-                          ) : (
-                            <Link
-                              href={section.href}
-                              onPress={close}
-                              className="flex min-h-12 items-center gap-3 rounded-lg py-2 text-lg text-primary outline-brand focus-visible:outline-2"
-                            >
-                              <Icon className="size-6 shrink-0 text-brand-secondary" aria-hidden />
-                              <span className="flex-1">{section.label}</span>
-                              <ChevronRight className="size-5 text-quaternary" aria-hidden />
-                            </Link>
-                          )}
-                        </li>
-                      );
-                    })}
+                    {sections.map((section) => (
+                      <li key={section.id}>
+                        <SheetRow section={section} onNavigate={close} />
+                      </li>
+                    ))}
                   </ul>
                 </>
               )}
@@ -70,5 +49,37 @@ export function CatalogSheet({ sections, label, closeLabel, className }: Props) 
         </ModalOverlay>
       </DialogTrigger>
     </div>
+  );
+}
+
+// Строка листа: текущий раздел — выделен, не ссылка; пустой — бледный с «Пока нет рецептов» (ADR-0020).
+function SheetRow({ section, onNavigate }: { section: CatalogSection; onNavigate: () => void }) {
+  if (section.current)
+    return (
+      <div aria-current="page" className="-mx-2 flex min-h-12 items-center gap-3 rounded-lg bg-accent-100 px-2 py-2 text-lg text-primary" data-current>
+        <SectionIcon id={section.id} className="size-6 shrink-0 text-brand-secondary" />
+        <span className="flex-1">{section.label}</span>
+      </div>
+    );
+  if (section.empty)
+    return (
+      <div className="flex min-h-12 items-center gap-3 py-2 text-quaternary" data-empty>
+        <SectionIcon id={section.id} className="size-6 shrink-0 text-brand-secondary opacity-35" />
+        <span className="flex flex-col">
+          <span className="text-lg">{section.label}</span>
+          <span className="text-sm">Пока нет рецептов</span>
+        </span>
+      </div>
+    );
+  return (
+    <Link
+      href={section.href}
+      onPress={onNavigate}
+      className="flex min-h-12 items-center gap-3 rounded-lg py-2 text-lg text-primary outline-brand focus-visible:outline-2"
+    >
+      <SectionIcon id={section.id} className="size-6 shrink-0 text-brand-secondary" />
+      <span className="flex-1">{section.label}</span>
+      <ChevronRight className="size-5 text-quaternary" aria-hidden />
+    </Link>
   );
 }

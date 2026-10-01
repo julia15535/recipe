@@ -1,16 +1,14 @@
-"use client";
-
 import { CatalogNav } from "@/components/catalog/catalog-nav";
 
 import { CATALOG_LABELS, catalogFor } from "../_demo/demo-catalog";
-import { useDemoMode } from "../_demo/demo-mode";
-import { POPULAR, WEEKLY, activeSections, demoRecipes, pickRecipes } from "../_demo/demo-selection";
+import { RECIPES } from "../_demo/demo-recipes";
+import { POPULAR, WEEKLY, activeSections, pickRecipes } from "../_demo/demo-selection";
+import type { DemoRecipe } from "../_demo/demo-types";
 import { RecipeGrid } from "./recipe-card";
 
 // Главная под шапкой: каталог (11 мест, пустые бледные — ADR-0020), «Подборка недели» и «Популярное»
 // внизу; без рецептов — только каталог и «Скоро здесь появятся рецепты».
-export function HomeContent() {
-  const recipes = demoRecipes(useDemoMode());
+export function HomeContent({ recipes = RECIPES }: { recipes?: DemoRecipe[] }) {
   const weekly = pickRecipes(WEEKLY.slugs, recipes);
   const popular = pickRecipes(POPULAR, recipes);
 

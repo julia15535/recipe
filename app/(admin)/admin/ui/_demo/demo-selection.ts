@@ -8,21 +8,13 @@ export const WEEKLY = { title: "Тёплое и домашнее на выход
 
 export const POPULAR = ["syrniki", "bliny", "hummus", "pumpkin-salad"];
 
-// Режим демо «все / первые / ни одного» — показать, как разделы каталога «оживают» (ADR-0020).
-export const DEMO_MODES = ["all", "first", "none"] as const;
-
-export type DemoMode = (typeof DEMO_MODES)[number];
-
-const FIRST = ["syrniki", "mushroom-soup", "chicken"];
-
-export function demoRecipes(mode: DemoMode): DemoRecipe[] {
-  if (mode === "none") return [];
-  return mode === "first" ? RECIPES.filter((recipe) => FIRST.includes(recipe.slug)) : RECIPES;
+// Раздел активен, если в нём есть хотя бы один рецепт.
+export function activeSections(recipes: DemoRecipe[] = RECIPES): ReadonlySet<SectionId> {
+  return new Set(recipes.flatMap((recipe) => recipe.sections));
 }
 
-// Раздел активен, если в нём есть хотя бы один рецепт.
-export function activeSections(recipes: DemoRecipe[]): ReadonlySet<SectionId> {
-  return new Set(recipes.flatMap((recipe) => recipe.sections));
+export function recipesInSection(section: SectionId, from: DemoRecipe[] = RECIPES): DemoRecipe[] {
+  return from.filter((recipe) => recipe.sections.includes(section));
 }
 
 export function findRecipe(slug: string): DemoRecipe | undefined {

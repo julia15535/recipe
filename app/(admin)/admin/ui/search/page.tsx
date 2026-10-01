@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+import { SiteHeader } from "@/components/site-header";
+
 import { PrototypeBar } from "../_components/prototype-bar";
 import { SearchPrototype } from "../_components/search-prototype";
+import { HEADER } from "../_demo/demo-catalog";
 
 export const metadata: Metadata = { title: "Поиск — пробный экран · Книга рецептов" };
 
@@ -10,7 +13,8 @@ export const metadata: Metadata = { title: "Поиск — пробный экр
 export default function SearchPrototypePage() {
   return (
     <>
-      <PrototypeBar demoSwitch />
+      <PrototypeBar />
+      <SiteHeader {...HEADER} />
       <Suspense>
         <SearchPrototype />
       </Suspense>

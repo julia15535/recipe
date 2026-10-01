@@ -1,3 +1,4 @@
+import { createElement } from "react";
 import {
   Amphora,
   CakeSlice,
@@ -29,6 +30,7 @@ const SECTION_ICONS: Record<string, LucideIcon> = {
   preserves: Amphora,
 };
 
-export function sectionIcon(id: string): LucideIcon {
-  return SECTION_ICONS[id] ?? CookingPot;
+// Иконка раздела; createElement — иконка выбирается по id, а не создаётся компонентом при каждом рендере.
+export function SectionIcon({ id, className }: { id: string; className?: string }) {
+  return createElement(SECTION_ICONS[id] ?? CookingPot, { className, "aria-hidden": true });
 }
