@@ -71,7 +71,7 @@ export function sectionLabel(id: SectionId): string {
   return SECTIONS.find((section) => section.id === id)?.label ?? id;
 }
 
-// Раздел приходит извне (адрес ?section=…) — проверяем схемой.
+// Раздел приходит извне (адрес страницы раздела или ?section= поиска) — проверяем схемой.
 const SectionParam = z.enum(SECTIONS.map(({ id }) => id) as [SectionId, ...SectionId[]]);
 
 export function parseSectionId(value: unknown): SectionId | null {

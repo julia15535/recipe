@@ -170,7 +170,12 @@ test.describe("пробные экраны — страница раздела �
     await page.getByRole("navigation", { name: "Разделы каталога" }).getByRole("link", { name: "Горячее" }).click();
     await expect(page).toHaveURL(/\/admin\/ui\/section\/hot$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Горячее");
-    await expect(recipeCards(page)).toHaveCount(4);
+    await expect(recipeCards(page).getByRole("heading")).toHaveText([
+      "Омлет с овощами",
+      "Боул с лососем, киноа и авокадо",
+      "Курица с травами",
+      "Гречка с грибами и луком",
+    ]);
     await expect(page.getByRole("textbox")).toHaveCount(0);
   });
 
@@ -179,6 +184,10 @@ test.describe("пробные экраны — страница раздела �
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Заготовки");
     await expect(page.getByText("Пока нет рецептов — скоро появятся.")).toBeVisible();
     await expect(recipeCards(page)).toHaveCount(0);
+    // Текущий и пустой одновременно — показывается как текущий.
+    await page.getByRole("button", { name: "Каталог" }).click();
+    await expect(page.getByRole("dialog", { name: "Каталог" }).locator('[aria-current="page"]')).toHaveText("Заготовки");
+    await page.keyboard.press("Escape");
     expect((await request.get("/admin/ui/section/no-such-section")).status()).toBe(404);
   });
 
@@ -188,12 +197,18 @@ test.describe("пробные экраны — страница раздела �
     await expect(page.getByText("Подборка недели")).toBeVisible();
     await expect(page.getByRole("radio", { name: /рецепт/i })).toHaveCount(0);
     await expect(page.getByText("Рецептов:")).toHaveCount(0);
+    await page.goto("/admin/ui/search?section=soups", { waitUntil: "networkidle" });
+    await expect(page.getByText("Рецептов:")).toHaveCount(0);
+    await expect(page.getByText("Нашлось: 1")).toBeVisible();
   });
 
   test("шапка остаётся вверху при прокрутке; лист каталога — поверх неё; фокус не под шапкой", async ({ page }) => {
-    for (const path of ["/admin/ui/search", "/admin/ui/section/soups", "/admin/ui/recipe/syrniki"]) {
+    await page.goto("/admin/ui/search", { waitUntil: "networkidle" });
+    await expect(page.getByRole("banner")).toBeVisible();
+    for (const path of ["/admin/ui/section/hot", "/admin/ui/recipe/syrniki"]) {
       await page.goto(path, { waitUntil: "networkidle" });
-      await expect(page.getByRole("banner")).toBeVisible();
+      await page.mouse.wheel(0, 1500);
+      await expect.poll(async () => (await page.getByRole("banner").boundingBox())?.y).toBe(0);
     }
     await page.goto("/admin/ui/home", { waitUntil: "networkidle" });
     const header = page.getByRole("banner");
@@ -206,7 +221,11 @@ test.describe("пробные экраны — страница раздела �
     if (!headerBox || !cardBox) throw new Error("нет шапки или карточки");
     expect(cardBox.y).toBeGreaterThanOrEqual(headerBox.y + headerBox.height - 1);
 
-    await page.evaluate(() => window.scrollTo(0, 40));
+    // Прокрутить чуть дальше полоски «Пробный экран» — шапка уже прилипла, кнопка «Каталог» видна под ней.
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const barHeight = await header.evaluate((el) => el.getBoundingClientRect().top);
+    await page.evaluate((y) => window.scrollTo(0, y), barHeight + 4);
+    await expect.poll(async () => (await header.boundingBox())?.y).toBe(0);
     const trigger = page.getByRole("button", { name: "Каталог" });
     await trigger.click();
     await expect(page.getByRole("dialog", { name: "Каталог" })).toBeVisible();

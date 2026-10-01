@@ -48,7 +48,12 @@ export default async function SectionPrototypePage({ params }: PageProps<"/admin
         </nav>
         <h1 className="font-display text-display-sm text-primary lg:text-display-md">{sectionLabel(id)}</h1>
         {recipes.length > 0 ? (
-          <RecipeGrid recipes={recipes} />
+          <section aria-labelledby="section-recipes">
+            <h2 id="section-recipes" className="sr-only">
+              Рецепты раздела
+            </h2>
+            <RecipeGrid recipes={recipes} />
+          </section>
         ) : (
           <p className="text-lg text-tertiary">Пока нет рецептов — скоро появятся.</p>
         )}
