@@ -3,12 +3,12 @@ tier: 1
 topic: architecture
 scope: Стек, слои, SEO-рендер, где ИИ, деплой — перед архитектурным решением
 tier2: ""
-updated: 2026-09-29
+updated: 2026-10-01
 importance: high
 source: manual
 status: working
 source_of_truth: supporting
-last_verified: 2026-09-29
+last_verified: 2026-10-01
 review_after: 2026-10-29
 ---
 
@@ -29,10 +29,11 @@ Vitest 4 + Playwright.
 - `app/api/health/live` (без БД), `app/api/health/ready` (БД + `GIT_SHA`) — по нему деплой сверяет релиз.
 
 ## Слои кода
-- `lib/domain/` — чистые функции без IO (пересчёт, округление, КБЖУ); импорты фреймворка/БД
-  запрещены ESLint (`eslint.config.mjs`).
-- `lib/server/` — `server-only`: env (`env.ts`, разбор — `env-schema.ts`), БД (`lib/server/db/client.ts`),
-  логгер с маскированием (`log.ts`). UI в БД не ходит.
+- `lib/domain/` — будущий слой чистых функций без IO (пересчёт, округление); папки пока нет, правило
+  ESLint на импорты фреймворка/БД уже действует (`eslint.config.mjs`).
+- `lib/server/` — `server-only`: env (`env.ts`), БД (`lib/server/db/client.ts`), логгер с маскированием
+  (`log.ts`); без `server-only` намеренно — `env-schema.ts` (его берут instrumentation и тесты) и
+  `lib/server/db/schema/index.ts`. UI в БД не ходит.
 - Env: публичное (`SITE_URL`, `SITE_INDEXABLE`) запекается при сборке; секреты (`DATABASE_URL`)
   лениво; прод без них не стартует (`instrumentation-node.ts`).
 - Миграции: `drizzle-kit generate` → `scripts/migrate.mjs` (advisory lock); роли —

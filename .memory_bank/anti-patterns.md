@@ -3,7 +3,7 @@ tier: 2
 topic: anti-patterns
 scope: Каталог повторяющихся ошибок — чеклист при code-review
 tier1: core/lessons.md
-updated: 2026-09-29
+updated: 2026-10-01
 importance: med
 source: manual
 status: working
@@ -116,6 +116,32 @@ Popover по тапу, не Tooltip.
 дочерний `next-server` держит порт и отдаёт старый HTML со ссылками на удалённые стили — страница без CSS.
 **Convention:** искать по PID и рабочей папке (`readlink /proc/<pid>/cwd`), гасить и дочерний
 `next-server`; проверять, что порт свободен (`ss -ltn`), до нового старта.
+
+## 16. Мелкий текст Manrope (12 px)
+**Симптом:** в `text-xs` пробелы между русскими словами почти исчезают («Отмеченоавтором поингредиентам»),
+особенно после «о» и «е» — видно на снимке, тесты не ловят.
+**Convention:** поясняющий текст — не меньше `text-sm` (14 px); `text-xs` — только подписи из 1–2 слов
+(например, раздел над названием в карточке). Новый мелкий текст — смотреть на снимке экрана.
+
+## 17. Локальный e2e против `.env.local`
+**Симптом:** падают проверки canonical/hreflang и www → основной домен: они ждут
+`SITE_URL=https://mycoruja.food`, а локальная сборка взяла адрес из `.env.local`; `webServer` с
+`pnpm start` при `output: standalone` зависает после тестов.
+**Convention:** локально как в CI — `SITE_URL=https://mycoruja.food pnpm build`, сервер запустить
+отдельно (`pnpm start`, порт 3010), тесты — `E2E_BASE_URL=http://127.0.0.1:3010 SITE_URL=… pnpm e2e`,
+после — погасить сервер по PID (№15).
+
+## 18. «Назад» по `document.referrer` в Next
+**Симптом:** кнопка «Назад» не узнаёт, что пришли со страницы сайта: при переходах внутри Next
+(`Link`, `router.push`) `document.referrer` не меняется, а `history.length` считает и чужие записи
+(вкладка, `about:blank`).
+**Convention:** `window.navigation?.canGoBack` (Navigation API видит только записи сайта) →
+`router.back()`, иначе — на главную (`app/(admin)/admin/ui/_components/search-prototype.tsx`).
+
+## 19. Невидимые кнопки React Aria в проверке размера касаний
+**Симптом:** открытый Modal/Dialog даёт «BUTTON «» 1px» в проверке целей ≥ 44 px — это скрытые кнопки
+«закрыть» для экранного диктора (`DismissButton`), не цели касания.
+**Convention:** в проверке пропускать элементы ≤ 2 px (`e2e/prototypes.spec.ts`, `smallTargets`).
 
 ---
 

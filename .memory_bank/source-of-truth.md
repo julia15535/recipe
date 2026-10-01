@@ -3,7 +3,7 @@ tier: 1
 topic: source-of-truth
 scope: Что считать истиной при конфликте кода, требований и доков
 tier2: ""
-updated: 2026-09-27
+updated: 2026-10-01
 importance: high
 source: manual
 status: stable
@@ -21,7 +21,9 @@ review_after: 2026-12-27
 ## Домен требований — что строим
 Приоритет по убыванию:
 1. Решения владельца в `decisions.md` (новые ADR отменяют старые явно).
-2. Продуктовые решения владельца от 27.09.2026 — `_intake/_processed/brief/product-decisions.md`.
+2. Продуктовые решения владельца (новее — важнее): 01.10.2026 — главная и страница рецепта
+   (`_intake/_processed/brief/product-decisions-2026-10-01.md`); 27.09.2026 —
+   `_intake/_processed/brief/product-decisions.md`.
 3. ТЗ «Личная авторская книга рецептов» — `_intake/_processed/brief/technical_spec_recipe_book.md`.
 
 Продуктовые решения **позже ТЗ и уточняют его**; при расхождении побеждают они. Известные

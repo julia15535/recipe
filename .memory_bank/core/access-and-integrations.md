@@ -3,12 +3,12 @@ tier: 1
 topic: access-and-integrations
 scope: Внешние сервисы (ИИ, STT, Telegram, хостинг) и где ключи
 tier2: ""
-updated: 2026-09-29
+updated: 2026-10-01
 importance: high
 source: manual
 status: draft
 source_of_truth: supporting
-last_verified: 2026-09-29
+last_verified: 2026-10-01
 review_after: 2026-10-27
 ---
 

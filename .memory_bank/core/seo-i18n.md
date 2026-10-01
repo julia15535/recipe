@@ -3,7 +3,7 @@ tier: 1
 topic: seo-i18n
 scope: SEO публичных страниц, RU + EN, URL-схема, SEO-футер
 tier2: ""
-updated: 2026-09-29
+updated: 2026-10-01
 importance: med
 source: _intake/_processed/brief/technical_spec_recipe_book.md
 status: draft
@@ -40,3 +40,5 @@ Schema.org Recipe (JSON-LD) · хлебные крошки · индексиру
   (значение запекается при сборке). Проверки — `e2e/routing.spec.ts`, `e2e/platform.spec.ts`.
 - Публичный пользователь переключает язык (ссылка на другую локаль, cookie сессионная).
 - Slug по локалям (уникальность `(locale, slug)`, старые slug → 301) — в плане схемы БД.
+- Каталог — плоский `/{locale}/catalog/{slug}` (иерархия — хлебными крошками), язык переключается
+  через ID категории; поиск `/{locale}/search` — всегда `noindex` (ADR-0017).

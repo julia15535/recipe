@@ -3,21 +3,21 @@ tier: 1
 topic: deployment
 scope: CI/CD, прод, автодеплой, откат, бэкапы
 tier2: ""
-updated: 2026-09-29
+updated: 2026-10-01
 importance: high
 source: manual
 status: working
 source_of_truth: supporting
-last_verified: 2026-09-29
+last_verified: 2026-10-01
 review_after: 2026-10-29
 ---
 
 # Деплой и прод — Tier 1 сводка (ADR-0014)
 
 ## Путь релиза
-1. PR / push в `main` → GitHub Actions `.github/workflows/ci.yml`: `check` (lint, typecheck, test,
-   миграции) → `image` (образ собирается **один раз**, на нём миграции, тесты БД, e2e, отказы) →
-   `publish` (только текущий HEAD `main`, только если менялся код): `ghcr.io/julia15535/recipe:<sha>`,
+1. PR / push в `main`, `feature/**` → GitHub Actions `.github/workflows/ci.yml`:
+   `check` (lint, typecheck, test, миграции) → `image` (образ собирается **один раз**, на нём миграции,
+   тесты БД, e2e, отказы) → `publish` (только `main`, если менялся код и новее в `main` нет кода, docs не в счёт): `ghcr.io/julia15535/recipe:<sha>`,
    затем `:stable`. Docs-only коммиты образ не собирают; «менялся ли код» на main считается от
    ревизии, опубликованной в `:stable` (`scripts/ci/published-revision.sh`).
 2. Сервер сам забирает `:stable` каждые 5 минут (`deploy/recipe-deploy.sh` + `.timer`): точка отката

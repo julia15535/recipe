@@ -21,7 +21,8 @@ paths:
   `AppButton` (`components/app-button.tsx`: размер `xl` = 48 px, форма «таблетка»); у остальных
   компонентов upstream размеры меньше — добавляй `min-h-11` снаружи.
 - **Без мелких элементов и сложных desktop-dropdown**: выбор — чипы (выбор касанием по всей чипе, не
-  по мелкому крестику), сегменты, нижние листы.
+  по мелкому крестику), сегменты, нижние листы (на `components/application/modals/modal.tsx`, образец —
+  `components/catalog/catalog-sheet.tsx`: фокус, Esc, фон, safe-area).
 - Подсказки на тач — Popover по тапу, не Tooltip (Tooltip React Aria на тач-экранах не открывается).
 - Минимум лишнего: большая структура каталога — в каталоге и SEO-футере, не в основном интерфейсе.
 - Страница рецепта удобна у плиты: компактная шапка, табы «Рецепт / Приготовление».
@@ -31,6 +32,8 @@ paths:
   `bg-secondary`, `text-primary|secondary|tertiary`, `text-brand-secondary`, `border-secondary`,
   `bg-brand-solid`; акцент-персик — `bg-accent-50…400`, `text-accent-700`.
 - Запрещены сырые цвета (`bg-white`, `text-gray-*`, hex в классах) — ломают бренд и будущую тёмную тему.
+- Поясняющий текст — не меньше `text-sm`: в `text-xs` у Manrope пропадают пробелы между словами
+  (`text-xs` — только подписи в 1–2 слова, как раздел в карточке рецепта).
 - Заголовки — `font-display` (Prata, с засечками), текст — Manrope по умолчанию. У Prata одно начертание:
   жирность заголовкам не задавать (браузер «нарисует» жирный — запрещено `font-synthesis: none`).
   Шрифт — только с кириллицей (проверять subsets в next/font: у Fraunces, Young Serif, Newsreader её нет).
