@@ -10,7 +10,7 @@ test.describe("дизайн-система", () => {
     test(`${path}: нет нарушений доступности уровня AA`, async ({ page }) => {
       // networkidle: поиск-прототип дорисовывается в браузере (раздел читается из адреса).
       await page.goto(path, { waitUntil: "networkidle" });
-      const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+      const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
       expect(result.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);
     });
   }

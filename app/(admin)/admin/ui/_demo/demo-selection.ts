@@ -1,4 +1,6 @@
-import { type DemoRecipe, RECIPES } from "./demo-recipes";
+import type { SectionId } from "./demo-catalog";
+import { RECIPES } from "./demo-recipes";
+import type { DemoRecipe } from "./demo-types";
 
 // Подборки главной: «Подборку недели» выбирает владелец (название и рецепты), «Популярное» — потом
 // по счётчику открытий; здесь — примеры. Пустая подборка на странице не показывается.
@@ -6,10 +8,27 @@ export const WEEKLY = { title: "Тёплое и домашнее на выход
 
 export const POPULAR = ["syrniki", "bliny", "hummus", "pumpkin-salad"];
 
+// Режим демо «все / первые / ни одного» — показать, как разделы каталога «оживают» (ADR-0020).
+export const DEMO_MODES = ["all", "first", "none"] as const;
+
+export type DemoMode = (typeof DEMO_MODES)[number];
+
+const FIRST = ["syrniki", "mushroom-soup", "chicken"];
+
+export function demoRecipes(mode: DemoMode): DemoRecipe[] {
+  if (mode === "none") return [];
+  return mode === "first" ? RECIPES.filter((recipe) => FIRST.includes(recipe.slug)) : RECIPES;
+}
+
+// Раздел активен, если в нём есть хотя бы один рецепт.
+export function activeSections(recipes: DemoRecipe[]): ReadonlySet<SectionId> {
+  return new Set(recipes.flatMap((recipe) => recipe.sections));
+}
+
 export function findRecipe(slug: string): DemoRecipe | undefined {
   return RECIPES.find((recipe) => recipe.slug === slug);
 }
 
-export function pickRecipes(slugs: string[]): DemoRecipe[] {
-  return slugs.map(findRecipe).filter((recipe): recipe is DemoRecipe => recipe !== undefined);
+export function pickRecipes(slugs: string[], from: DemoRecipe[] = RECIPES): DemoRecipe[] {
+  return slugs.map((slug) => from.find((recipe) => recipe.slug === slug)).filter((recipe): recipe is DemoRecipe => recipe !== undefined);
 }

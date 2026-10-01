@@ -22,10 +22,16 @@ export const SECTIONS = [
 
 export type SectionId = (typeof SECTIONS)[number]["id"];
 
-// Теги состава (ADR-0019): ставит автор, это не расчёт КБЖУ.
-export const COMPOSITION_TAGS = ["Белок", "Клетчатка", "Полезные жиры", "Мало сахара", "Железо"] as const;
+// Теги состава (ADR-0019, ADR-0021): ставит автор; id стабильный — по нему цвет тега.
+export const COMPOSITION_TAGS = [
+  { id: "protein", label: "Белок" },
+  { id: "fiber", label: "Клетчатка" },
+  { id: "healthy-fats", label: "Полезные жиры" },
+  { id: "low-sugar", label: "Мало сахара" },
+  { id: "iron", label: "Железо" },
+] as const;
 
-export type CompositionTag = (typeof COMPOSITION_TAGS)[number];
+export type CompositionTagId = (typeof COMPOSITION_TAGS)[number]["id"];
 
 export const PROTOTYPE = {
   index: "/admin/ui",
@@ -36,7 +42,10 @@ export const PROTOTYPE = {
   section: (id: SectionId) => `/admin/ui/search?section=${id}`,
 };
 
-export const CATALOG: CatalogSection[] = SECTIONS.map(({ id, label }) => ({ id, label, href: PROTOTYPE.section(id) }));
+// Все 11 мест каталога; раздел без рецептов — пустой (ADR-0020).
+export function catalogFor(active: ReadonlySet<SectionId>): CatalogSection[] {
+  return SECTIONS.map(({ id, label }) => ({ id, label, href: PROTOTYPE.section(id), empty: !active.has(id) }));
+}
 
 export const CATALOG_LABELS = { catalog: "Каталог", close: "Закрыть" };
 
@@ -47,6 +56,10 @@ export const HEADER = {
   searchLabel: "Поиск",
   language: { href: "/en", label: "EN", name: "English", lang: "en" },
 };
+
+export function compositionTags(ids: readonly CompositionTagId[]) {
+  return COMPOSITION_TAGS.filter((tag) => ids.includes(tag.id));
+}
 
 export function sectionLabel(id: SectionId): string {
   return SECTIONS.find((section) => section.id === id)?.label ?? id;

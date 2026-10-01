@@ -6,7 +6,7 @@ import { AppButton } from "@/components/app-button";
 import { Input } from "@/components/base/input/input";
 import { cx } from "@/utils/cx";
 
-import type { DemoIngredient, DemoRecipe } from "../_demo/demo-recipes";
+import type { DemoIngredient, DemoRecipe } from "../_demo/demo-types";
 import { type AmountCheck, MAX_FACTOR, formatAmount, formatInput } from "../_demo/demo-rescale";
 
 type Props = {

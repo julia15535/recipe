@@ -4,7 +4,7 @@ import NextLink from "next/link";
 import { cx } from "@/utils/cx";
 
 import { PROTOTYPE, sectionLabel } from "../_demo/demo-catalog";
-import type { DemoRecipe } from "../_demo/demo-recipes";
+import type { DemoRecipe } from "../_demo/demo-types";
 
 // Фото-карточка рецепта (фото главное; 2 колонки на телефоне, 4 на компьютере). Вместо фото — заглушка
 // из палитры: настоящих снимков блюд пока нет. Над названием — основной раздел (ADR-0018).

@@ -1,5 +1,5 @@
-import type { CompositionTag, SectionId } from "./demo-catalog";
-import { type DemoRecipe, RECIPES } from "./demo-recipes";
+import type { CompositionTagId, SectionId } from "./demo-catalog";
+import type { DemoRecipe } from "./demo-types";
 
 // Демо-поиск прототипа: только чтобы показать экран. Настоящий поиск — индекс в БД с иерархией
 // ингредиентов, без ИИ (ADR-0002), отдельный план.
@@ -8,19 +8,21 @@ export type DemoQuery = {
   text: string;
   ingredients: string[];
   section: SectionId | null;
-  tags: CompositionTag[];
+  tags: CompositionTagId[];
 };
 
-export const INGREDIENT_CHIPS = [...new Set(RECIPES.flatMap((recipe) => recipe.search))];
+export function ingredientChips(recipes: DemoRecipe[]): string[] {
+  return [...new Set(recipes.flatMap((recipe) => recipe.search))];
+}
 
 export function hasCriteria(query: DemoQuery): boolean {
   const main = query.mode === "recipe" ? query.text.trim() !== "" : query.ingredients.length > 0;
   return main || query.section !== null || query.tags.length > 0;
 }
 
-export function searchDemo(query: DemoQuery): DemoRecipe[] {
+export function searchDemo(query: DemoQuery, recipes: DemoRecipe[]): DemoRecipe[] {
   const text = query.text.trim().toLowerCase();
-  return RECIPES.filter(
+  return recipes.filter(
     (recipe) =>
       (query.mode !== "recipe" || recipe.title.toLowerCase().includes(text)) &&
       (query.mode !== "ingredient" || query.ingredients.every((name) => recipe.search.includes(name))) &&

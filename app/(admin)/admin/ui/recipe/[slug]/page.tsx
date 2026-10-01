@@ -10,8 +10,8 @@ import { HEADER } from "../../_demo/demo-catalog";
 import { RECIPES } from "../../_demo/demo-recipes";
 import { findRecipe } from "../../_demo/demo-selection";
 
-// Прототип страницы рецепта (решения владельца 01.10): метки-разделы, без «−/+» порций, пересчёт —
-// вписать своё количество основного ингредиента (ADR-0016), КБЖУ пока нет (ADR-0019).
+// Прототип страницы рецепта (решения владельца 01.10): метки-разделы, строка «время + цветные теги»
+// (ADR-0021), без «−/+» — вписать своё количество основного ингредиента (ADR-0016), КБЖУ пока нет.
 export function generateStaticParams() {
   return RECIPES.map(({ slug }) => ({ slug }));
 }
@@ -27,7 +27,7 @@ export default async function RecipePrototypePage({ params }: PageProps<"/admin/
 
   return (
     <>
-      <PrototypeBar />
+      <PrototypeBar note="пересчёт без округления" />
       <SiteHeader {...HEADER} />
       <main>
         <RecipeBody recipe={recipe}>

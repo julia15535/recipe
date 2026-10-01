@@ -10,7 +10,7 @@ import { sectionIcon } from "./section-icons";
 import type { CatalogSection } from "./types";
 
 // Каталог на телефоне: «выпадающий список» владельца — нижний лист с крупными строками под большой
-// палец (ui-rules: без мелких desktop-dropdown). Фокус внутри, Esc, закрытие по фону, запрет прокрутки
+// палец (ui-rules: без мелких desktop-dropdown); пустой раздел — бледная строка «Пока нет рецептов» (ADR-0020). Фокус внутри, Esc, закрытие по фону, запрет прокрутки
 // страницы и возврат фокуса на кнопку даёт React Aria (Modal из Untitled UI).
 type Props = { sections: CatalogSection[]; label: string; closeLabel: string; className?: string };
 
@@ -40,15 +40,25 @@ export function CatalogSheet({ sections, label, closeLabel, className }: Props) 
                       const Icon = sectionIcon(section.id);
                       return (
                         <li key={section.id}>
-                          <Link
-                            href={section.href}
-                            onPress={close}
-                            className="flex min-h-12 items-center gap-3 rounded-lg py-2 text-lg text-primary outline-brand focus-visible:outline-2"
-                          >
-                            <Icon className="size-6 shrink-0 text-brand-secondary" aria-hidden />
-                            <span className="flex-1">{section.label}</span>
-                            <ChevronRight className="size-5 text-quaternary" aria-hidden />
-                          </Link>
+                          {section.empty ? (
+                            <div className="flex min-h-12 items-center gap-3 py-2 text-quaternary" data-empty>
+                              <Icon className="size-6 shrink-0 text-brand-secondary opacity-35" aria-hidden />
+                              <span className="flex flex-col">
+                                <span className="text-lg">{section.label}</span>
+                                <span className="text-sm">Пока нет рецептов</span>
+                              </span>
+                            </div>
+                          ) : (
+                            <Link
+                              href={section.href}
+                              onPress={close}
+                              className="flex min-h-12 items-center gap-3 rounded-lg py-2 text-lg text-primary outline-brand focus-visible:outline-2"
+                            >
+                              <Icon className="size-6 shrink-0 text-brand-secondary" aria-hidden />
+                              <span className="flex-1">{section.label}</span>
+                              <ChevronRight className="size-5 text-quaternary" aria-hidden />
+                            </Link>
+                          )}
                         </li>
                       );
                     })}

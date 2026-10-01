@@ -1,3 +1,4 @@
 // Раздел каталога для навигации (ADR-0018). Адрес готовит вызывающий: прототип или публичная страница
-// (адрес раздела по ADR-0017 — `/{locale}/catalog/{slug}`, появится со схемой БД).
-export type CatalogSection = { id: string; label: string; href: string };
+// (адрес раздела по ADR-0017 — `/{locale}/catalog/{slug}`, появится со схемой БД). Пустой раздел (нет
+// рецептов) показывается на своём месте бледным и не ведёт никуда (ADR-0020).
+export type CatalogSection = { id: string; label: string; href: string; empty?: boolean };

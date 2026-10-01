@@ -54,4 +54,22 @@
     /* Основной текст и иконки — тёплый графит, не чёрный. */
     --color-text-primary: #36322d;
     --color-fg-primary: #36322d;
+
+    /* Теги «Особенности состава» (ADR-0021, владелец 01.10: «каждому свой цвет по ассоциации»):
+       фон / текст / обводка, приглушённые под оливу и персик; контраст текста 5.7–7.1:1. */
+    --color-tag-protein-bg: #ffe6d6;      /* Белок — персик: мясо, рыба, яйца, творог */
+    --color-tag-protein-fg: #8a4a22;
+    --color-tag-protein-border: #f3c4a6;
+    --color-tag-fiber-bg: #ecf0d7;        /* Клетчатка — олива: овощи, крупы */
+    --color-tag-fiber-fg: #4d5b1a;
+    --color-tag-fiber-border: #cdd6a0;
+    --color-tag-fats-bg: #f8ecc4;         /* Полезные жиры — золото: масло, орехи */
+    --color-tag-fats-fg: #6e5410;
+    --color-tag-fats-border: #e5d08a;
+    --color-tag-sugar-bg: #e3ebf2;        /* Мало сахара — пыльно-голубой: лёгкость */
+    --color-tag-sugar-fg: #34536e;
+    --color-tag-sugar-border: #b8cadb;
+    --color-tag-iron-bg: #f3dfe8;         /* Железо — ягодный: свёкла, гранат, печень */
+    --color-tag-iron-fg: #7a2e52;
+    --color-tag-iron-border: #ddb3c6;
 }

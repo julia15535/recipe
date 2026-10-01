@@ -1,13 +1,14 @@
 import { Clock } from "lucide-react";
 import NextLink from "next/link";
 
+import { CompositionTags } from "@/components/recipe/composition-tags";
 import { cx } from "@/utils/cx";
 
-import { PROTOTYPE, sectionLabel } from "../_demo/demo-catalog";
-import type { DemoRecipe } from "../_demo/demo-recipes";
+import { PROTOTYPE, compositionTags, sectionLabel } from "../_demo/demo-catalog";
+import type { DemoRecipe } from "../_demo/demo-types";
 
 // Шапка рецепта: метки-разделы спокойной строкой ссылок (ADR-0018, не цветные бейджи), название,
-// описание, время, теги состава (ADR-0019) и фото (пока заглушка из палитры).
+// описание, одна строка «время + теги состава своим цветом» (ADR-0021) и фото (пока заглушка из палитры).
 export function RecipeIntro({ recipe }: { recipe: DemoRecipe }) {
   return (
     <div className="flex flex-col gap-3">
@@ -32,32 +33,14 @@ export function RecipeIntro({ recipe }: { recipe: DemoRecipe }) {
       </nav>
       <h1 className="font-display text-display-sm text-primary lg:text-display-md">{recipe.title}</h1>
       <p className="text-lg text-tertiary">{recipe.description}</p>
-      <p className="flex items-center gap-1.5 text-md text-secondary">
-        <Clock className="size-5" aria-hidden />
-        {recipe.time}
-      </p>
-      <CompositionBlock tags={recipe.composition} />
-      <div className={cx("mt-2 aspect-[3/2] rounded-2xl bg-linear-to-br lg:aspect-[2/1]", recipe.tone)} aria-hidden />
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2" data-testid="recipe-meta">
+        <p className="flex items-center gap-1.5 text-md text-secondary">
+          <Clock className="size-5" aria-hidden />
+          {recipe.time}
+        </p>
+        <CompositionTags tags={compositionTags(recipe.composition)} label="Особенности состава" />
+      </div>
+      <div className={cx("mt-2 aspect-[3/2] rounded-2xl bg-linear-to-br lg:aspect-[16/9]", recipe.tone)} aria-hidden />
     </div>
-  );
-}
-
-// Особенности состава: нейтральные чипы без «цвета здоровья» и подпись — это оценка автора, не КБЖУ.
-function CompositionBlock({ tags }: { tags: DemoRecipe["composition"] }) {
-  if (tags.length === 0) return null;
-  return (
-    <section aria-labelledby="composition" className="flex flex-col gap-2 pt-1">
-      <h2 id="composition" className="text-sm font-semibold text-secondary">
-        Особенности состава
-      </h2>
-      <ul className="flex flex-wrap gap-2">
-        {tags.map((tag) => (
-          <li key={tag} className="rounded-full px-3 py-1 text-sm text-secondary ring-1 ring-primary ring-inset">
-            {tag}
-          </li>
-        ))}
-      </ul>
-      <p className="text-sm text-tertiary">Отмечено автором по ингредиентам, это не расчёт КБЖУ.</p>
-    </section>
   );
 }

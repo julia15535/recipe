@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Поиск — пробный экр
 export default function SearchPrototypePage() {
   return (
     <>
-      <PrototypeBar />
+      <PrototypeBar demoSwitch />
       <Suspense>
         <SearchPrototype />
       </Suspense>

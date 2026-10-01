@@ -1,30 +1,10 @@
-import type { CompositionTag, SectionId } from "./demo-catalog";
+import { type DemoRecipe, ing } from "./demo-types";
 
-// Примерные рецепты для прототипов. Первый раздел — основной (ADR-0018); main — индекс основного
-// ингредиента, от которого считается пересчёт (ADR-0016); search — ключи поиска по ингредиенту.
-export type DemoIngredient = { name: string; amount: number; unit: string };
-
-export type DemoRecipe = {
-  slug: string;
-  title: string;
-  description: string;
-  sections: [SectionId, ...SectionId[]];
-  composition: CompositionTag[];
-  time: string;
-  servings: number;
-  tone: string;
-  main: number;
-  ingredients: DemoIngredient[];
-  search: string[];
-  steps: string[];
-};
-
-const ing = (name: string, amount: number, unit: string): DemoIngredient => ({ name, amount, unit });
-
+// Примерные рецепты для прототипов (типы и смысл полей — demo-types.ts).
 export const RECIPES: DemoRecipe[] = [
   {
     slug: "syrniki", title: "Сырники со сметаной", description: "Нежные внутри, с хрустящей корочкой — к чаю или на завтрак.",
-    sections: ["breakfast"], composition: ["Белок"], time: "25 мин", servings: 4, tone: "from-accent-200 to-accent-400", main: 0,
+    sections: ["breakfast"], composition: ["protein"], time: "25 мин", servings: 4, tone: "from-accent-200 to-accent-400", main: 0,
     ingredients: [ing("Творог 5%", 500, "г"), ing("Яйцо", 1, "шт."), ing("Мука", 60, "г"), ing("Сахар", 30, "г"), ing("Сметана к подаче", 100, "г")],
     search: ["Творог", "Яйца", "Мука", "Сметана"],
     steps: ["Разомните творог вилкой до однородности.", "Добавьте яйцо и сахар, перемешайте.", "Всыпьте муку и сформируйте небольшие шайбы.", "Обжарьте на среднем огне по 3–4 минуты с каждой стороны."],
@@ -38,42 +18,49 @@ export const RECIPES: DemoRecipe[] = [
   },
   {
     slug: "omlet", title: "Омлет с овощами", description: "Пышный омлет с томатами и шпинатом — завтрак за 15 минут.",
-    sections: ["breakfast", "hot"], composition: ["Белок", "Мало сахара"], time: "15 мин", servings: 2, tone: "from-brand-100 to-accent-200", main: 0,
+    sections: ["breakfast", "hot"], composition: ["protein", "low-sugar"], time: "15 мин", servings: 2, tone: "from-brand-100 to-accent-200", main: 0,
     ingredients: [ing("Яйцо", 4, "шт."), ing("Молоко", 80, "мл"), ing("Помидор", 1, "шт."), ing("Шпинат", 40, "г"), ing("Масло сливочное", 10, "г")],
     search: ["Яйца", "Молоко", "Томаты"],
     steps: ["Взбейте яйца с молоком и щепоткой соли.", "Обжарьте нарезанный помидор и шпинат на масле 2 минуты.", "Залейте яйцами, накройте крышкой и готовьте 6–7 минут на слабом огне."],
   },
   {
     slug: "mushroom-soup", title: "Суп с белыми грибами", description: "Ароматный и наваристый — с картофелем и зеленью.",
-    sections: ["soups"], composition: ["Клетчатка"], time: "1 ч", servings: 6, tone: "from-brand-200 to-brand-400", main: 0,
+    sections: ["soups"], composition: ["fiber"], time: "1 ч", servings: 6, tone: "from-brand-200 to-brand-400", main: 0,
     ingredients: [ing("Белые грибы", 300, "г"), ing("Картофель", 400, "г"), ing("Лук", 1, "шт."), ing("Морковь", 1, "шт."), ing("Вода", 2, "л")],
     search: ["Грибы", "Картофель"],
     steps: ["Отварите нарезанные грибы в воде 20 минут.", "Обжарьте лук и морковь до мягкости.", "Добавьте в суп картофель и зажарку, варите ещё 20 минут.", "Посолите, подавайте со сметаной и зеленью."],
   },
   {
     slug: "pumpkin-salad", title: "Салат с тыквой и нутом", description: "Тёплая тыква, нут, руккола, семечки и мягкий сыр.",
-    sections: ["salads"], composition: ["Белок", "Клетчатка", "Полезные жиры"], time: "35 мин", servings: 2, tone: "from-accent-100 to-brand-200", main: 0,
+    sections: ["salads"], composition: ["protein", "fiber", "healthy-fats"], time: "35 мин", servings: 2, tone: "from-accent-100 to-brand-200", main: 0,
     ingredients: [ing("Тыква", 400, "г"), ing("Нут варёный", 150, "г"), ing("Руккола", 60, "г"), ing("Тыквенные семечки", 20, "г"), ing("Фета", 80, "г"), ing("Масло оливковое", 20, "мл")],
     search: ["Тыква", "Нут", "Сыр"],
     steps: ["Запеките кубики тыквы с маслом 25 минут при 200 °C.", "Выложите рукколу, нут, тёплую тыкву и раскрошенную фету.", "Посыпьте подсушенными семечками и сбрызните маслом."],
   },
   {
+    slug: "bowl", title: "Боул с лососем, киноа и авокадо", description: "Тёплая киноа, лосось, авокадо, шпинат и семечки — всё в одной миске.",
+    sections: ["salads", "hot"], composition: ["protein", "fiber", "healthy-fats", "low-sugar", "iron"], time: "30 мин", servings: 2, tone: "from-brand-100 to-accent-200", main: 0,
+    ingredients: [ing("Лосось", 300, "г"), ing("Киноа", 120, "г"), ing("Авокадо", 1, "шт."), ing("Шпинат", 60, "г"), ing("Тыквенные семечки", 20, "г")],
+    search: ["Лосось", "Киноа", "Авокадо"],
+    steps: ["Отварите киноа 15 минут.", "Запеките лосось 12 минут при 200 °C.", "Разложите по мискам киноа, шпинат, лосось и авокадо, посыпьте семечками."],
+  },
+  {
     slug: "chicken", title: "Курица с травами", description: "Сочные бёдра в духовке с чесноком и розмарином.",
-    sections: ["hot"], composition: ["Белок"], time: "50 мин", servings: 4, tone: "from-brand-100 to-accent-300", main: 0,
+    sections: ["hot"], composition: ["protein"], time: "50 мин", servings: 4, tone: "from-brand-100 to-accent-300", main: 0,
     ingredients: [ing("Куриные бёдра", 800, "г"), ing("Чеснок", 4, "зубчика"), ing("Розмарин", 2, "веточки"), ing("Масло оливковое", 30, "мл"), ing("Соль", 8, "г")],
     search: ["Курица"],
     steps: ["Натрите бёдра солью, чесноком и маслом.", "Выложите в форму с розмарином.", "Запекайте 40 минут при 200 °C до золотистой корочки."],
   },
   {
     slug: "grechka", title: "Гречка с грибами и луком", description: "Рассыпчатая гречка по-купечески — гарнир или самостоятельное блюдо.",
-    sections: ["sides", "hot"], composition: ["Клетчатка", "Железо"], time: "30 мин", servings: 4, tone: "from-brand-200 to-accent-200", main: 0,
+    sections: ["sides", "hot"], composition: ["fiber", "iron"], time: "30 мин", servings: 4, tone: "from-brand-200 to-accent-200", main: 0,
     ingredients: [ing("Гречка", 200, "г"), ing("Шампиньоны", 250, "г"), ing("Лук", 1, "шт."), ing("Масло сливочное", 20, "г"), ing("Вода", 400, "мл")],
     search: ["Гречка", "Грибы"],
     steps: ["Обжарьте лук и грибы на масле до румяности.", "Добавьте промытую гречку и воду, посолите.", "Варите под крышкой 18 минут на слабом огне."],
   },
   {
     slug: "hummus", title: "Хумус из нута", description: "Нежная паста из нута с тахини и лимоном — к овощам и лепёшкам.",
-    sections: ["starters", "sauces"], composition: ["Белок", "Клетчатка", "Полезные жиры"], time: "20 мин", servings: 6, tone: "from-accent-50 to-brand-200", main: 0,
+    sections: ["starters", "sauces"], composition: ["protein", "fiber", "healthy-fats"], time: "20 мин", servings: 6, tone: "from-accent-50 to-brand-200", main: 0,
     ingredients: [ing("Нут варёный", 250, "г"), ing("Тахини", 60, "г"), ing("Лимонный сок", 30, "мл"), ing("Чеснок", 1, "зубчик"), ing("Масло оливковое", 30, "мл")],
     search: ["Нут"],
     steps: ["Сложите всё в блендер, добавьте 3–4 ложки холодной воды.", "Взбейте до гладкости, посолите по вкусу.", "Подавайте с маслом и паприкой."],
