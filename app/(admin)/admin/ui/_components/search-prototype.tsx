@@ -111,7 +111,7 @@ export function SearchPrototype() {
         )}
 
         {section !== null && !sectionActive && (
-          <p className="text-sm text-tertiary">Раздел «{sectionLabel(section)}» пока пуст — показываем все рецепты.</p>
+          <p className="text-sm text-tertiary">Раздел «{sectionLabel(section)}» пока пуст — выберите другой или начните поиск.</p>
         )}
         <SearchRefine
           sections={refineSections}

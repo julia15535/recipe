@@ -189,7 +189,7 @@ test.describe("пробные экраны — сколько рецептов (
 
   test("поиск: уточнение — только разделы с рецептами; пустой раздел из адреса не применяется", async ({ page }) => {
     await page.goto("/admin/ui/search?section=preserves", { waitUntil: "networkidle" });
-    await expect(page.getByText("Раздел «Заготовки» пока пуст — показываем все рецепты.")).toBeVisible();
+    await expect(page.getByText("Раздел «Заготовки» пока пуст — выберите другой или начните поиск.")).toBeVisible();
     await expect(page.getByText("Начните вводить название")).toBeVisible();
     await setDemoMode(page, "Первые 3 рецепта");
     await page.getByRole("button", { name: "Уточнить" }).click();
