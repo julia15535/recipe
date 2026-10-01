@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import type { CatalogSection } from "@/components/catalog/types";
 
 // Демо-данные прототипов (план home-and-recipe-screens). Настоящий источник разделов и тегов — БД
@@ -50,6 +52,10 @@ export function sectionLabel(id: SectionId): string {
   return SECTIONS.find((section) => section.id === id)?.label ?? id;
 }
 
-export function isSectionId(value: string | null): value is SectionId {
-  return SECTIONS.some((section) => section.id === value);
+// Раздел приходит извне (адрес ?section=…) — проверяем схемой.
+const SectionParam = z.enum(SECTIONS.map(({ id }) => id) as [SectionId, ...SectionId[]]);
+
+export function parseSectionId(value: unknown): SectionId | null {
+  const result = SectionParam.safeParse(value);
+  return result.success ? result.data : null;
 }

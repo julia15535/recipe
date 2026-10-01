@@ -29,6 +29,8 @@ describe("демо-пересчёт прототипа", () => {
     expect(formatAmount(26.4)).toBe("26,4");
     expect(formatAmount(0.5)).toBe("0,5");
     expect(formatAmount(1500)).toBe("1\u00a0500");
+    expect(formatAmount(0.002)).toBe("0,002");
+    expect(formatAmount(0.125)).toBe("0,13");
   });
 
   it("значение поля ввода — без пробела между тысячами и снова читается", () => {

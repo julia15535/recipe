@@ -7,7 +7,8 @@ import { PrototypeBar } from "../../_components/prototype-bar";
 import { RecipeBody } from "../../_components/recipe-body";
 import { RecipeIntro } from "../../_components/recipe-intro";
 import { HEADER } from "../../_demo/demo-catalog";
-import { RECIPES, findRecipe } from "../../_demo/demo-recipes";
+import { RECIPES } from "../../_demo/demo-recipes";
+import { findRecipe } from "../../_demo/demo-selection";
 
 // Прототип страницы рецепта (решения владельца 01.10): метки-разделы, без «−/+» порций, пересчёт —
 // вписать своё количество основного ингредиента (ADR-0016), КБЖУ пока нет (ADR-0019).

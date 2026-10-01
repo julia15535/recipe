@@ -10,6 +10,16 @@ async function expectNoAxeViolations(page: Page) {
   expect(result.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);
 }
 
+// Цели касания меньше 44 px среди видимых кнопок, ссылок, «таблеток» и полей (как в design.spec);
+// 1-пиксельные кнопки «закрыть» для экранного диктора у React Aria — не цели касания, их пропускаем.
+const smallTargets = (page: Page) =>
+  page.evaluate(() =>
+    Array.from(document.querySelectorAll('button, a[href], [role="tab"], [role="row"], input'))
+      .map((el) => ({ el, rect: el.getBoundingClientRect() }))
+      .filter(({ rect }) => rect.width > 2 && rect.height > 2 && rect.height < 43.5)
+      .map(({ el, rect }) => `${el.tagName} «${(el.textContent ?? "").trim().slice(0, 30)}» ${Math.round(rect.height)}px`),
+  );
+
 const ingredientRow = (page: Page, name: string) => page.getByRole("listitem").filter({ hasText: name });
 const servingsCard = (page: Page) => page.locator('[data-testid="servings"]:visible');
 
@@ -21,7 +31,7 @@ test.describe("пробные экраны — телефон", () => {
     await expect(page.getByRole("radio", { name: "По рецепту" })).toBeChecked();
   });
 
-  test("главная: «Каталог» открывает нижний лист; Esc и фон закрывают, фокус возвращается", async ({ page }) => {
+  test("главная: «Каталог» открывает нижний лист; Esc, «Закрыть» и фон закрывают, фокус возвращается", async ({ page }) => {
     await page.goto("/admin/ui/home", { waitUntil: "networkidle" });
     await expect(page.getByRole("navigation", { name: "Каталог" })).toBeHidden();
     const trigger = page.getByRole("button", { name: "Каталог" });
@@ -30,7 +40,14 @@ test.describe("пробные экраны — телефон", () => {
     await trigger.click();
     await expect(sheet.getByRole("link")).toHaveCount(11);
     await expectNoAxeViolations(page);
+    expect(await smallTargets(page)).toEqual([]);
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).toBe("hidden");
     await page.keyboard.press("Escape");
+    await expect(sheet).toBeHidden();
+    await expect(trigger).toBeFocused();
+
+    await trigger.click();
+    await sheet.getByRole("button", { name: "Закрыть" }).click();
     await expect(sheet).toBeHidden();
     await expect(trigger).toBeFocused();
 
@@ -38,12 +55,15 @@ test.describe("пробные экраны — телефон", () => {
     await expect(sheet).toBeVisible();
     await page.mouse.click(187, 40);
     await expect(sheet).toBeHidden();
+    await expect(trigger).toBeFocused();
 
     await trigger.click();
     await sheet.getByRole("link", { name: "Салаты" }).click();
     await expect(page).toHaveURL(/\/admin\/ui\/search\?section=salads$/);
     await expect(page.getByRole("row", { name: "Салаты" })).toHaveAttribute("aria-selected", "true");
     await expect(page.getByText("Нашлось: 1")).toBeVisible();
+    await page.getByRole("row", { name: "Белок", exact: true }).click();
+    await expect(page.getByRole("link", { name: /Салат с тыквой и нутом/ })).toBeVisible();
   });
 
   test("поиск: по ингредиенту, уточнение, два пустых состояния, «назад»", async ({ page }) => {
@@ -58,6 +78,8 @@ test.describe("пробные экраны — телефон", () => {
     await expect(page.getByText("Нашлось: 2")).toBeVisible();
     await expect(page.getByRole("row", { name: "Белок", exact: true })).toBeHidden();
     await page.getByRole("button", { name: "Уточнить" }).click();
+    expect(await smallTargets(page)).toEqual([]);
+    await expectNoAxeViolations(page);
     await page.getByRole("row", { name: "Белок", exact: true }).click();
     await expect(page.getByRole("button", { name: "Уточнить · 1" })).toHaveAttribute("aria-expanded", "true");
     await expect(page.getByText("Ничего не нашлось")).toBeVisible();
@@ -66,8 +88,16 @@ test.describe("пробные экраны — телефон", () => {
 
     await page.getByRole("button", { name: "Как выглядит без рецептов" }).click();
     await expect(page.getByText("Рецепты скоро появятся")).toBeVisible();
-    await page.getByRole("link", { name: "Назад" }).click();
+    await page.getByRole("button", { name: "Назад" }).click();
     await expect(page).toHaveURL(/\/admin\/ui\/home$/);
+  });
+
+  test("поиск: «Назад» возвращает туда, откуда пришли", async ({ page }) => {
+    await page.goto("/admin/ui/recipe/bliny", { waitUntil: "networkidle" });
+    await page.getByRole("link", { name: "Поиск" }).click();
+    await expect(page).toHaveURL(/\/admin\/ui\/search$/);
+    await page.getByRole("button", { name: "Назад" }).click();
+    await expect(page).toHaveURL(/\/admin\/ui\/recipe\/bliny$/);
   });
 
   test("рецепт: своё количество основного ингредиента пересчитывает остальное и порции", async ({ page }) => {

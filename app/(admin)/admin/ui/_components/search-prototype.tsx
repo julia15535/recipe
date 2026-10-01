@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, Search } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import type { Key, Selection } from "react-aria-components";
 
@@ -10,7 +10,7 @@ import { ButtonGroup, ButtonGroupItem } from "@/components/base/button-group/but
 import { Input } from "@/components/base/input/input";
 import { Tag, TagGroup, TagList } from "@/components/base/tags/tags";
 
-import { type CompositionTag, PROTOTYPE, type SectionId, isSectionId } from "../_demo/demo-catalog";
+import { type CompositionTag, PROTOTYPE, type SectionId, parseSectionId } from "../_demo/demo-catalog";
 import { type DemoQuery, INGREDIENT_CHIPS } from "../_demo/demo-search";
 import { SearchRefine } from "./search-refine";
 import { SearchResults } from "./search-results";
@@ -24,11 +24,12 @@ const keysOf = <T extends string>(selection: Selection): T[] => (selection === "
 // касанием по всей «таблетке», уточнение разделом и тегами состава. На сайте — отдельная страница
 // /{locale}/search с состоянием в адресе (ADR-0017); здесь из адреса читается только раздел.
 export function SearchPrototype() {
-  const initialSection = useSearchParams().get("section");
+  const router = useRouter();
+  const initialSection = parseSectionId(useSearchParams().get("section"));
   const [mode, setMode] = useState<DemoQuery["mode"]>("recipe");
   const [text, setText] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([]);
-  const [section, setSection] = useState<SectionId | null>(isSectionId(initialSection) ? initialSection : null);
+  const [section, setSection] = useState<SectionId | null>(initialSection);
   const [tags, setTags] = useState<CompositionTag[]>([]);
   const query: DemoQuery = { mode, text, ingredients, section, tags };
 
@@ -42,12 +43,22 @@ export function SearchPrototype() {
     setSection(null);
     setTags([]);
   };
-  const chips = INGREDIENT_CHIPS.filter((name) => name.toLowerCase().includes(text.trim().toLowerCase()));
+  // Выбранный ингредиент не прячем фильтром поля — иначе он фильтрует результаты, а снять его нельзя.
+  const chips = INGREDIENT_CHIPS.filter(
+    (name) => ingredients.includes(name) || name.toLowerCase().includes(text.trim().toLowerCase()),
+  );
+  // «Назад» — туда, откуда пришли (рецепт, главная). Navigation API видит только записи нашего сайта:
+  // открыли поиск по ссылке извне или браузер его не знает — ведём на главную.
+  const back = () => {
+    const navigation = (window as { navigation?: { canGoBack?: boolean } }).navigation;
+    if (navigation?.canGoBack) router.back();
+    else router.push(PROTOTYPE.home);
+  };
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pt-4 pb-16 lg:px-8">
       <div className="flex items-center gap-3">
-        <AppButton color="tertiary" href={PROTOTYPE.home} iconLeading={ArrowLeft} aria-label="Назад" />
+        <AppButton color="tertiary" onPress={back} iconLeading={ArrowLeft} aria-label="Назад" />
         <h1 className="font-display text-display-xs text-primary">Поиск</h1>
       </div>
 

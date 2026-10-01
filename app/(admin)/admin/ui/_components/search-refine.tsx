@@ -7,7 +7,7 @@ import type { Selection } from "react-aria-components";
 import { AppButton } from "@/components/app-button";
 import { Tag, TagGroup, TagList } from "@/components/base/tags/tags";
 
-import { COMPOSITION_TAGS, type CompositionTag, SECTIONS, type SectionId, isSectionId } from "../_demo/demo-catalog";
+import { COMPOSITION_TAGS, type CompositionTag, SECTIONS, type SectionId, parseSectionId } from "../_demo/demo-catalog";
 
 const CHIP = "min-h-11 rounded-full px-4 text-md";
 const CAPTION = "text-sm font-semibold text-secondary";
@@ -29,7 +29,7 @@ export function SearchRefine({ section, onSectionChange, tags, onTagsChange }: P
 
   const pickSection = (selection: Selection) => {
     const [next] = selection === "all" ? [] : [...selection];
-    onSectionChange(typeof next === "string" && isSectionId(next) ? next : null);
+    onSectionChange(parseSectionId(next));
   };
   const pickTags = (selection: Selection) =>
     onTagsChange(selection === "all" ? [] : COMPOSITION_TAGS.filter((tag) => selection.has(tag)));

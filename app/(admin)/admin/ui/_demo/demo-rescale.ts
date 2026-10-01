@@ -18,9 +18,11 @@ export function parseAmount(raw: string, base: number): AmountCheck {
 }
 
 const NUMBER = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 1 });
+const SMALL = new Intl.NumberFormat("ru-RU", { maximumSignificantDigits: 2 });
 
+// До десятых; меньше единицы — две значащие цифры, чтобы малое количество не превращалось в «0».
 export function formatAmount(value: number): string {
-  return NUMBER.format(value);
+  return value > 0 && value < 1 ? SMALL.format(value) : NUMBER.format(value);
 }
 
 // Значение для поля ввода — без пробела между тысячами («1500», не «1 500»), иначе поле его не примет.

@@ -51,11 +51,11 @@ export const RECIPES: DemoRecipe[] = [
     steps: ["Отварите нарезанные грибы в воде 20 минут.", "Обжарьте лук и морковь до мягкости.", "Добавьте в суп картофель и зажарку, варите ещё 20 минут.", "Посолите, подавайте со сметаной и зеленью."],
   },
   {
-    slug: "pumpkin-salad", title: "Салат с запечённой тыквой", description: "Тёплая тыква, руккола, семечки и мягкий сыр.",
-    sections: ["salads"], composition: ["Клетчатка", "Полезные жиры"], time: "35 мин", servings: 2, tone: "from-accent-100 to-brand-200", main: 0,
-    ingredients: [ing("Тыква", 400, "г"), ing("Руккола", 60, "г"), ing("Тыквенные семечки", 20, "г"), ing("Фета", 80, "г"), ing("Масло оливковое", 20, "мл")],
-    search: ["Тыква", "Сыр"],
-    steps: ["Запеките кубики тыквы с маслом 25 минут при 200 °C.", "Выложите рукколу, тёплую тыкву и раскрошенную фету.", "Посыпьте подсушенными семечками и сбрызните маслом."],
+    slug: "pumpkin-salad", title: "Салат с тыквой и нутом", description: "Тёплая тыква, нут, руккола, семечки и мягкий сыр.",
+    sections: ["salads"], composition: ["Белок", "Клетчатка", "Полезные жиры"], time: "35 мин", servings: 2, tone: "from-accent-100 to-brand-200", main: 0,
+    ingredients: [ing("Тыква", 400, "г"), ing("Нут варёный", 150, "г"), ing("Руккола", 60, "г"), ing("Тыквенные семечки", 20, "г"), ing("Фета", 80, "г"), ing("Масло оливковое", 20, "мл")],
+    search: ["Тыква", "Нут", "Сыр"],
+    steps: ["Запеките кубики тыквы с маслом 25 минут при 200 °C.", "Выложите рукколу, нут, тёплую тыкву и раскрошенную фету.", "Посыпьте подсушенными семечками и сбрызните маслом."],
   },
   {
     slug: "chicken", title: "Курица с травами", description: "Сочные бёдра в духовке с чесноком и розмарином.",
@@ -93,15 +93,3 @@ export const RECIPES: DemoRecipe[] = [
     steps: ["Взбейте яйца с сахаром до пышности.", "Вмешайте муку, выложите в форму на нарезанные яблоки.", "Выпекайте 40 минут при 180 °C."],
   },
 ];
-
-export const WEEKLY = { title: "Тёплое и домашнее на выходные", slugs: ["mushroom-soup", "grechka", "chicken", "sharlotka"] };
-
-export const POPULAR = ["syrniki", "bliny", "hummus", "pumpkin-salad"];
-
-export function findRecipe(slug: string): DemoRecipe | undefined {
-  return RECIPES.find((recipe) => recipe.slug === slug);
-}
-
-export function pickRecipes(slugs: string[]): DemoRecipe[] {
-  return slugs.map(findRecipe).filter((recipe): recipe is DemoRecipe => recipe !== undefined);
-}
