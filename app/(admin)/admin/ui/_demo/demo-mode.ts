@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react";
 
 import { DEMO_MODES, type DemoMode } from "./demo-selection";
 
-// Режим демо общий для главной и поиска — хранится в браузере (localStorage). На сервере и до чтения —
+// Режим демо общий для главной и поиска (страницы рецептов от него не зависят) — хранится в браузере (localStorage). На сервере и до чтения —
 // «все рецепты»; браузер может запретить хранилище — тогда тоже «все».
 const KEY = "recipe-demo-mode";
 const EVENT = "recipe-demo-mode-change";

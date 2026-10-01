@@ -35,9 +35,10 @@ export function SearchPrototype() {
   const [tags, setTags] = useState<CompositionTagId[]>([]);
   const recipes = demoRecipes(useDemoMode());
   const active = activeSections(recipes);
-  // Раздел из адреса мог опустеть — тогда фильтр не применяем и говорим об этом (ADR-0020).
+  // Раздел из адреса мог опустеть — тогда фильтр не применяется (выбор не теряем), показываем пояснение (ADR-0020).
   const sectionActive = section !== null && active.has(section);
   const query: DemoQuery = { mode, text, ingredients, section: sectionActive ? section : null, tags };
+  const refineSections = SECTIONS.filter(({ id }) => active.has(id));
 
   const changeMode = (keys: Set<Key>) => {
     const [next] = keys;
@@ -66,7 +67,7 @@ export function SearchPrototype() {
       <section
         aria-label="Поиск рецептов"
         data-testid="search-card"
-        className="flex flex-col gap-4 lg:mx-auto lg:w-full lg:max-w-3xl lg:rounded-3xl lg:bg-primary lg:p-8 lg:shadow-sm lg:ring-1 lg:ring-secondary"
+        className="flex w-full max-w-3xl flex-col gap-4 lg:mx-auto lg:rounded-3xl lg:bg-primary lg:p-8 lg:shadow-sm lg:ring-1 lg:ring-secondary"
       >
         <div className="flex items-center gap-3">
           <AppButton color="tertiary" onPress={back} iconLeading={ArrowLeft} aria-label="Назад" />
@@ -113,7 +114,7 @@ export function SearchPrototype() {
           <p className="text-sm text-tertiary">Раздел «{sectionLabel(section)}» пока пуст — показываем все рецепты.</p>
         )}
         <SearchRefine
-          sections={SECTIONS.filter(({ id }) => active.has(id))}
+          sections={refineSections}
           section={sectionActive ? section : null}
           onSectionChange={setSection}
           tags={tags}

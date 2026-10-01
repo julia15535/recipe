@@ -1,12 +1,12 @@
 import { cx } from "@/utils/cx";
 
 // Теги «Особенности состава» (ADR-0021): у каждого свой цвет по ассоциации — токены `--color-tag-*`
-// в styles/brand.css; ключ — стабильный id тега, не подпись. Тег без своего цвета — нейтральный.
+// в styles/brand.css (имя токена = id тега); ключ — стабильный id тега, не подпись. Тег без своего цвета — нейтральный.
 const TAG_STYLES: Record<string, string> = {
   protein: "bg-tag-protein-bg text-tag-protein-fg ring-tag-protein-border",
   fiber: "bg-tag-fiber-bg text-tag-fiber-fg ring-tag-fiber-border",
-  "healthy-fats": "bg-tag-fats-bg text-tag-fats-fg ring-tag-fats-border",
-  "low-sugar": "bg-tag-sugar-bg text-tag-sugar-fg ring-tag-sugar-border",
+  "healthy-fats": "bg-tag-healthy-fats-bg text-tag-healthy-fats-fg ring-tag-healthy-fats-border",
+  "low-sugar": "bg-tag-low-sugar-bg text-tag-low-sugar-fg ring-tag-low-sugar-border",
   iron: "bg-tag-iron-bg text-tag-iron-fg ring-tag-iron-border",
 };
 const NEUTRAL = "bg-secondary text-secondary ring-secondary";

@@ -110,7 +110,8 @@ test.describe("пробные экраны — телефон", () => {
 
     await setDemoMode(page, "Ни одного рецепта");
     await expect(page.getByText("Рецепты скоро появятся")).toBeVisible();
-    await expect(page.getByRole("row", { name: "Салаты" })).toHaveCount(0);
+    await expect(page.getByRole("grid", { name: "Раздел" })).toHaveCount(0);
+    await expect(page.getByText("Раздел", { exact: true })).toHaveCount(0);
     await expect(page.getByRole("row", { name: "Белок", exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Назад" }).click();
     await expect(page).toHaveURL(/\/admin\/ui\/home$/);
@@ -133,10 +134,12 @@ test.describe("пробные экраны — телефон", () => {
     await expect(page.getByTestId("recipe-meta")).toHaveText(/25 мин\s*Белок/);
     await expect(page.locator('[data-testid="servings"]')).toHaveCount(1);
     await expect(servingsCard(page)).toHaveText("~ примерно 4 порции");
-    await expect(servingsCard(page)).toContainText("4 порции");
+    await expect(servingsCard(page).locator('[aria-hidden="true"]')).toHaveText("~");
 
     const input = page.getByRole("textbox", { name: "Творог 5%" });
     await expect(input).toHaveAttribute("inputmode", "decimal");
+    await input.fill("220");
+    await expect(servingsCard(page)).toContainText("1,8 порции");
     await input.fill("250");
     await expect(ingredientRow(page, "Мука")).toContainText("30 г");
     await expect(servingsCard(page)).toContainText("2 порции");
@@ -184,7 +187,7 @@ test.describe("пробные экраны — сколько рецептов (
     await expect(sheet.locator("[data-empty]")).toHaveCount(11);
   });
 
-  test("поиск: уточнение — только разделы с рецептами; пустой раздел из адреса сбрасывается", async ({ page }) => {
+  test("поиск: уточнение — только разделы с рецептами; пустой раздел из адреса не применяется", async ({ page }) => {
     await page.goto("/admin/ui/search?section=preserves", { waitUntil: "networkidle" });
     await expect(page.getByText("Раздел «Заготовки» пока пуст — показываем все рецепты.")).toBeVisible();
     await expect(page.getByText("Начните вводить название")).toBeVisible();
@@ -209,11 +212,16 @@ test.describe("пробные экраны — компьютер", () => {
     expect(await textContrast(page, "nav [data-empty]")).toBeGreaterThanOrEqual(4.5);
     await expectNoAxeViolations(page);
 
+    await setDemoMode(page, "Первые 3 рецепта");
+    await expect(ribbon.getByRole("link")).toHaveText(["Завтраки", "Супы", "Горячее"]);
+    await expect(ribbon.locator("[data-empty]")).toHaveCount(8);
+
     await setDemoMode(page, "Ни одного рецепта");
     await expect(ribbon.getByRole("link")).toHaveCount(0);
     await expect(ribbon.locator("[data-empty]")).toHaveCount(11);
-    await page.keyboard.press("Tab");
-    await expect(page.locator("nav [data-empty]:focus")).toHaveCount(0);
+    // Пустые места — не ссылки и не в порядке Tab.
+    expect(await ribbon.locator("[data-empty]").evaluateAll((els) => els.filter((el) => (el as HTMLElement).tabIndex >= 0).length)).toBe(0);
+    await expectNoAxeViolations(page);
   });
 
   test("поиск: форма — карточка по центру, результаты под ней @desktop", async ({ page }) => {

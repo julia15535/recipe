@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 // Дизайн-система (ADR-0015): доступность, размер касания, шрифты без внешних запросов.
-const PROTOTYPES = ["/admin/ui", "/admin/ui/home", "/admin/ui/search", "/admin/ui/recipe/syrniki"];
+const PROTOTYPES = ["/admin/ui", "/admin/ui/home", "/admin/ui/search", "/admin/ui/recipe/syrniki", "/admin/ui/recipe/bowl"];
 const PAGES = ["/ru", "/en", "/admin", ...PROTOTYPES];
 
 test.describe("дизайн-система", () => {

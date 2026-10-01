@@ -63,12 +63,12 @@
     --color-tag-fiber-bg: #ecf0d7;        /* Клетчатка — олива: овощи, крупы */
     --color-tag-fiber-fg: #4d5b1a;
     --color-tag-fiber-border: #cdd6a0;
-    --color-tag-fats-bg: #f8ecc4;         /* Полезные жиры — золото: масло, орехи */
-    --color-tag-fats-fg: #6e5410;
-    --color-tag-fats-border: #e5d08a;
-    --color-tag-sugar-bg: #e3ebf2;        /* Мало сахара — пыльно-голубой: лёгкость */
-    --color-tag-sugar-fg: #34536e;
-    --color-tag-sugar-border: #b8cadb;
+    --color-tag-healthy-fats-bg: #f8ecc4;         /* Полезные жиры — золото: масло, орехи */
+    --color-tag-healthy-fats-fg: #6e5410;
+    --color-tag-healthy-fats-border: #e5d08a;
+    --color-tag-low-sugar-bg: #e3ebf2;        /* Мало сахара — пыльно-голубой: лёгкость */
+    --color-tag-low-sugar-fg: #34536e;
+    --color-tag-low-sugar-border: #b8cadb;
     --color-tag-iron-bg: #f3dfe8;         /* Железо — ягодный: свёкла, гранат, печень */
     --color-tag-iron-fg: #7a2e52;
     --color-tag-iron-border: #ddb3c6;
