@@ -1,4 +1,4 @@
-import type { SectionId } from "./demo-catalog";
+import { HEADER, type SectionId, catalogFor } from "./demo-catalog";
 import { RECIPES } from "./demo-recipes";
 import type { DemoRecipe } from "./demo-types";
 
@@ -15,6 +15,11 @@ export function activeSections(recipes: DemoRecipe[] = RECIPES): ReadonlySet<Sec
 
 export function recipesInSection(section: SectionId, from: DemoRecipe[] = RECIPES): DemoRecipe[] {
   return from.filter((recipe) => recipe.sections.includes(section));
+}
+
+// Пропсы шапки прототипа: строка + каталог (11 мест, пустые бледные, текущий раздел выделен).
+export function headerProps(current?: SectionId) {
+  return { ...HEADER, catalog: { sections: catalogFor(activeSections(), current), label: "Каталог", closeLabel: "Закрыть" } };
 }
 
 export function findRecipe(slug: string): DemoRecipe | undefined {

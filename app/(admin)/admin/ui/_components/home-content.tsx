@@ -1,21 +1,16 @@
-import { CatalogNav } from "@/components/catalog/catalog-nav";
-
-import { CATALOG_LABELS, catalogFor } from "../_demo/demo-catalog";
 import { RECIPES } from "../_demo/demo-recipes";
-import { POPULAR, WEEKLY, activeSections, pickRecipes } from "../_demo/demo-selection";
+import { POPULAR, WEEKLY, pickRecipes } from "../_demo/demo-selection";
 import type { DemoRecipe } from "../_demo/demo-types";
 import { RecipeGrid } from "./recipe-card";
 
-// Главная под шапкой: каталог (11 мест, пустые бледные — ADR-0020), «Подборка недели» и «Популярное»
-// внизу; без рецептов — только каталог и «Скоро здесь появятся рецепты».
+// Главная под шапкой (каталог — в шапке): «Подборка недели» и «Популярное» внизу; без рецептов —
+// «Скоро здесь появятся рецепты».
 export function HomeContent({ recipes = RECIPES }: { recipes?: DemoRecipe[] }) {
   const weekly = pickRecipes(WEEKLY.slugs, recipes);
   const popular = pickRecipes(POPULAR, recipes);
 
   return (
     <>
-      <CatalogNav sections={catalogFor(activeSections(recipes))} labels={CATALOG_LABELS} />
-
       <main className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-4 pt-6 pb-16 lg:px-8 lg:pt-10">
         <h1 className="sr-only">Книга рецептов</h1>
 

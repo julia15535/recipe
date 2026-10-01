@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/site-header";
 
 import { HomeContent } from "../_components/home-content";
 import { PrototypeBar } from "../_components/prototype-bar";
-import { HEADER } from "../_demo/demo-catalog";
+import { headerProps } from "../_demo/demo-selection";
 
 export const metadata: Metadata = { title: "Главная — пробный экран · Книга рецептов" };
 
@@ -14,7 +14,7 @@ export default function HomePrototypePage() {
   return (
     <>
       <PrototypeBar />
-      <SiteHeader {...HEADER} />
+      <SiteHeader {...headerProps()} />
       <HomeContent />
     </>
   );

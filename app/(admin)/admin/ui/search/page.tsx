@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 
 import { PrototypeBar } from "../_components/prototype-bar";
 import { SearchPrototype } from "../_components/search-prototype";
-import { HEADER } from "../_demo/demo-catalog";
+import { headerProps } from "../_demo/demo-selection";
 
 export const metadata: Metadata = { title: "Поиск — пробный экран · Книга рецептов" };
 
@@ -14,7 +14,7 @@ export default function SearchPrototypePage() {
   return (
     <>
       <PrototypeBar />
-      <SiteHeader {...HEADER} />
+      <SiteHeader {...headerProps()} />
       <Suspense>
         <SearchPrototype />
       </Suspense>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronRight, LayoutGrid, X } from "lucide-react";
+import { ChevronRight, Menu, X } from "lucide-react";
 import { Heading, Link } from "react-aria-components";
 
 import { AppButton } from "@/components/app-button";
@@ -9,7 +9,8 @@ import { Dialog, DialogTrigger, Modal, ModalOverlay } from "@/components/applica
 import { SectionIcon } from "./section-icon";
 import type { CatalogSection } from "./types";
 
-// Каталог на телефоне: «выпадающий список» владельца — нижний лист с крупными строками под большой
+// Каталог на телефоне: привычный значок «меню» (три полоски) в строке шапки слева от названия (владелец
+// 01.10: «привычно для пользователей, что это типа меню»); «выпадающий список» — нижний лист с крупными строками под большой
 // палец (ui-rules: без мелких desktop-dropdown); пустой раздел — бледная строка «Пока нет рецептов» (ADR-0020). Фокус внутри, Esc, закрытие по фону, запрет прокрутки
 // страницы и возврат фокуса на кнопку даёт React Aria (Modal из Untitled UI).
 type Props = { sections: CatalogSection[]; label: string; closeLabel: string; className?: string };
@@ -18,9 +19,14 @@ export function CatalogSheet({ sections, label, closeLabel, className }: Props) 
   return (
     <div className={className}>
       <DialogTrigger>
-        <AppButton color="secondary" iconLeading={LayoutGrid} iconTrailing={ChevronDown} className="w-full">
-          {label}
-        </AppButton>
+        {/* Значок «меню» — графитовый и чуть крупнее обычного: его должно быть сразу видно (владелец 01.10). */}
+        <AppButton
+          color="tertiary"
+          size="lg"
+          iconLeading={Menu}
+          aria-label={label}
+          className="*:data-icon:size-6 *:data-icon:text-fg-primary hover:*:data-icon:text-fg-primary"
+        />
         <ModalOverlay
           isDismissable
           className="items-end px-0 pb-0 motion-reduce:animate-none sm:items-end sm:px-0 [--modal-pb:0px] sm:[--modal-pb:0px]"

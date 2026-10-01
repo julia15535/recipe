@@ -74,7 +74,9 @@ test.describe("пробные экраны — телефон", () => {
 
     await trigger.click();
     await expect(sheet).toBeVisible();
-    await page.mouse.click(187, 40);
+    await page.waitForFunction(() => !document.querySelector("[data-entering]"));
+    const sheetTop = (await sheet.boundingBox())?.y ?? 100;
+    await page.mouse.click(187, Math.max(5, sheetTop - 20));
     await expect(sheet).toBeHidden();
     await expect(trigger).toBeFocused();
 
@@ -242,6 +244,52 @@ test.describe("пробные экраны — страница раздела �
     const rows = page.getByRole("grid", { name: "Раздел" }).getByRole("row");
     await expect(rows).toHaveCount(10);
     await expect(rows.filter({ hasText: "Заготовки" })).toHaveCount(0);
+  });
+});
+
+test.describe("шапка с каталогом (владелец: «шапка это вот это»)", () => {
+  test("телефон: каталог — значок «меню» слева от названия в строке шапки", async ({ page }) => {
+    await page.goto("/admin/ui/recipe/bowl", { waitUntil: "networkidle" });
+    const banner = page.getByRole("banner");
+    const menu = banner.getByRole("button", { name: "Каталог" });
+    const title = banner.getByRole("link", { name: "Книга рецептов" });
+    const [menuBox, titleBox] = [await menu.boundingBox(), await title.boundingBox()];
+    if (!menuBox || !titleBox) throw new Error("нет значка меню или названия");
+    expect(menuBox.x + menuBox.width).toBeLessThanOrEqual(titleBox.x);
+    expect(Math.abs(menuBox.y + menuBox.height / 2 - (titleBox.y + titleBox.height / 2))).toBeLessThan(4);
+    await menu.click();
+    await expect(page.getByRole("dialog", { name: "Каталог" }).getByRole("link")).toHaveCount(10);
+  });
+
+  test("телефон 320 px: строка шапки помещается, без горизонтальной прокрутки", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
+    for (const path of ["/admin/ui/home", "/admin/ui/recipe/bowl", "/admin/ui/section/soups"]) {
+      await page.goto(path, { waitUntil: "networkidle" });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+      const banner = page.getByRole("banner");
+      const title = await banner.getByRole("link", { name: "Книга рецептов" }).boundingBox();
+      const search = await banner.getByRole("link", { name: "Поиск" }).boundingBox();
+      if (!title || !search) throw new Error("нет названия или лупы");
+      expect(title.x + title.width).toBeLessThanOrEqual(search.x);
+      expect(title.height).toBeLessThan(50);
+    }
+  });
+
+  test("компьютер: шапка с лентой на всех экранах, закреплена и не выше 150 px @desktop", async ({ page }) => {
+    // Длинные страницы — проверяем «залипание»; короткие (раздел, поиск) на 1280 px не прокручиваются.
+    for (const path of ["/admin/ui/home", "/admin/ui/recipe/bowl"]) {
+      await page.goto(path, { waitUntil: "networkidle" });
+      const banner = page.getByRole("banner");
+      await page.mouse.wheel(0, 1500);
+      await expect.poll(async () => (await banner.boundingBox())?.y).toBe(0);
+      await expect(banner.getByRole("navigation", { name: "Каталог" })).toBeInViewport();
+      expect((await banner.boundingBox())?.height).toBeLessThanOrEqual(150);
+    }
+    for (const path of ["/admin/ui/section/hot", "/admin/ui/search"]) {
+      await page.goto(path, { waitUntil: "networkidle" });
+      await expect(page.getByRole("banner").getByRole("navigation", { name: "Каталог" })).toBeVisible();
+      await expect(page.getByRole("banner").getByRole("button", { name: "Каталог" })).toBeHidden();
+    }
   });
 });
 

@@ -53,7 +53,6 @@ export function catalogFor(active: ReadonlySet<SectionId>, current?: SectionId):
   }));
 }
 
-export const CATALOG_LABELS = { catalog: "Каталог", close: "Закрыть" };
 
 export const HEADER = {
   siteName: "Книга рецептов",

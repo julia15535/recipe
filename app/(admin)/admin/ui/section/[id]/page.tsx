@@ -2,13 +2,12 @@ import type { Metadata } from "next";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
 
-import { CatalogNav } from "@/components/catalog/catalog-nav";
 import { SiteHeader } from "@/components/site-header";
 
 import { PrototypeBar } from "../../_components/prototype-bar";
 import { RecipeGrid } from "../../_components/recipe-card";
-import { CATALOG_LABELS, HEADER, PROTOTYPE, SECTIONS, catalogFor, parseSectionId, sectionLabel } from "../../_demo/demo-catalog";
-import { activeSections, recipesInSection } from "../../_demo/demo-selection";
+import { PROTOTYPE, SECTIONS, parseSectionId, sectionLabel } from "../../_demo/demo-catalog";
+import { headerProps, recipesInSection } from "../../_demo/demo-selection";
 
 // Прототип страницы раздела (владелец 01.10: «убери там поиск в начале, пусть сразу будут рецепты»):
 // крошки, заголовок раздела и его рецепты; на сайте — `/{locale}/catalog/{slug}` (ADR-0017).
@@ -29,8 +28,7 @@ export default async function SectionPrototypePage({ params }: PageProps<"/admin
   return (
     <>
       <PrototypeBar />
-      <SiteHeader {...HEADER} />
-      <CatalogNav sections={catalogFor(activeSections(), id)} labels={CATALOG_LABELS} />
+      <SiteHeader {...headerProps(id)} />
 
       <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pt-4 pb-16 lg:px-8 lg:pt-8">
         <nav aria-label="Хлебные крошки">
