@@ -19,10 +19,11 @@ export type RecipeDraft = {
   tags: TagCode[];
   ingredients: ParsedIngredient[];
   steps: string[];
+  tips: string[];
 };
 export type ParseResult = { ok: boolean; draft: RecipeDraft; mainIndex: number | null; issues: Issue[] };
 
-const EMPTY: RecipeDraft = { title: "", description: null, time: null, yield: null, sections: [], tags: [], ingredients: [], steps: [] };
+const EMPTY: RecipeDraft = { title: "", description: null, time: null, yield: null, sections: [], tags: [], ingredients: [], steps: [], tips: [] };
 
 export function parseRecipeText(text: string): ParseResult {
   const issues = checkLimits(text);
@@ -39,10 +40,12 @@ export function parseRecipeText(text: string): ParseResult {
   const ingredients = readIngredients(blocks.ingredients, issues);
   const mainIndex = findMain(ingredients, issues);
   const steps = readSteps(blocks.steps, issues);
-  for (const line of blocks.tips.slice(0, 1)) issues.push(issue("tips-skipped", line.n, line.text));
+  const tips = blocks.tips.map((line) => line.text.replace(STEP_MARKER, "").trim()).filter(Boolean);
+  if (tips.length > LIMITS.tips) issues.push(issue("too-many-tips"));
+  for (const line of blocks.tips) if (line.text.length > LIMITS.tip) issues.push(issue("tip-too-long", line.n, line.text.slice(0, 80)));
 
   const description = [meta.description ?? "", ...free.map((line) => line.text)].filter(Boolean).join(" ") || null;
-  const draft: RecipeDraft = { ...meta, title, description, ingredients, steps };
+  const draft: RecipeDraft = { ...meta, title, description, ingredients, steps, tips };
   return { ok: !issues.some((item) => item.severity === "error"), draft, mainIndex, issues: sortIssues(issues) };
 }
 

@@ -12,6 +12,7 @@ import { recipeIngredients, recipes } from "@/lib/server/db/schema";
 import vafliV2 from "../../domain/recipe-text/fixtures/vafli-v2.txt?raw";
 import { getRecipe, listRecipes } from "./queries";
 import { createRecipe, replaceRecipe } from "./save";
+import { countImportsLastHour, dropImport, loadImport, storeImport } from "./imports";
 import { deleteDraft, setRecipeStatus } from "./status";
 
 const enabled = process.env.RECIPE_DB_TESTS === "1";
@@ -119,6 +120,36 @@ describe.skipIf(!enabled)("рецепты: БД", () => {
     expect(await deleteDraft(id)).toBe(true);
     expect(await getRecipe(id)).toBeNull();
     expect(await getDb().select().from(recipeIngredients).where(eq(recipeIngredients.recipeId, id))).toEqual([]);
+  });
+
+  it("советы и исходный текст сохраняются и заменяются вместе с рецептом", async () => {
+    const text = simple(`Харчо ${marker}`, "") + "\nСоветы:\n- Лучше на следующий день.\n- Кинзу добавлять в конце.";
+    const outcome = await createRecipe(parsed(text), text, "draft", "сырой текст как вставлен");
+    if (!outcome.ok) throw new Error("не сохранилось");
+    created.push(outcome.id);
+    const stored = await getRecipe(outcome.id);
+    expect(stored?.view.tips.map((tip) => tip.text)).toEqual(["Лучше на следующий день.", "Кинзу добавлять в конце."]);
+    const [row] = await getDb().select({ originalText: recipes.originalText }).from(recipes).where(eq(recipes.id, outcome.id));
+    expect(row?.originalText).toBe("сырой текст как вставлен");
+    const next = simple(`Харчо ${marker}`);
+    expect((await replaceRecipe(outcome.id, 1, parsed(next), next, "новый сырой")).ok).toBe(true);
+    expect((await getRecipe(outcome.id))?.view.tips).toEqual([]);
+    // Правка «по старому формату» (без исходного текста) не стирает исходный текст разбора ИИ.
+    expect((await replaceRecipe(outcome.id, 2, parsed(next), next)).ok).toBe(true);
+    const [kept] = await getDb().select({ originalText: recipes.originalText }).from(recipes).where(eq(recipes.id, outcome.id));
+    expect(kept?.originalText).toBe("новый сырой");
+  });
+
+  it("разбор ИИ хранится на сервере сутки и считается для лимита", async () => {
+    const result = parseRecipeText(simple(`Лагман ${marker}`));
+    const before = await countImportsLastHour();
+    const id = await storeImport("как вставлено", { ok: true, draft: result.draft, mainIndex: result.mainIndex, checks: [] });
+    expect(await countImportsLastHour()).toBe(before + 1);
+    expect((await loadImport(id))?.result.draft.title).toBe(`Лагман ${marker}`);
+    expect((await loadImport(id))?.result.draft.ingredients[1]?.quantity).toEqual({ kind: "exact", amount: fraction(1, 3) });
+    expect(await loadImport(randomUUID())).toBeNull();
+    await dropImport(id);
+    expect(await loadImport(id)).toBeNull();
   });
 
   it("роль рантайма меняет данные рецептов, но не их схему", async () => {

@@ -48,6 +48,7 @@ export function buildRows(recipeId: string, draft: RecipeDraft, mainIndex: numbe
     tags: draft.tags.map((code, position) => ({ recipeId, tagId: tagId(code), position })),
     ingredients,
     steps: draft.steps.map((text, position) => ({ id: randomUUID(), recipeId, position, text })),
+    tips: draft.tips.map((text, position) => ({ id: randomUUID(), recipeId, position, text })),
   };
 }
 

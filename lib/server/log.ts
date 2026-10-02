@@ -5,7 +5,7 @@ type Fields = Record<string, unknown>;
 
 // Ключи, значения которых никогда не пишем в лог (телефон, токены, вход владельца, текст импорта).
 const SECRET_KEY = /(pass(word)?|secret|token|authorization|cookie|api[-_]?key|session|challenge|binding|nonce|hash)/i;
-const SECRET_EXACT_KEY = /^(code|state|update|callback_data|data|initData)$/i;
+const SECRET_EXACT_KEY = /^(code|state|update|callback_data|data|initData|prompt|content|response|recipe|messages|body)$/i;
 const PHONE_KEY = /phone/i;
 const TEXT_KEY = /^(text|importText|transcript|rawText)$/;
 const PHONE_IN_TEXT = /\+?\d[\d\s()-]{8,}\d/g;

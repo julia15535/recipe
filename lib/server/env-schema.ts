@@ -37,7 +37,19 @@ const authSchema = z.object({
 });
 const AUTH_KEYS = ["TELEGRAM_BOT_TOKEN", "TELEGRAM_BOT_USERNAME", "TELEGRAM_WEBHOOK_SECRET", "OWNER_TELEGRAM_ID"] as const;
 
+// ИИ-разбор рецептов (план recipe-ai-parse): Vercel AI Gateway, OpenAI-совместимый Chat Completions.
+// Адрес — только https; http разрешён лишь для заглушки e2e на 127.0.0.1.
+const aiSchema = z.object({
+  AI_GATEWAY_API_KEY: z.string().min(20),
+  AI_GATEWAY_MODEL: z.string().regex(/^[a-z0-9-]+\/[a-z0-9.\-]+$/).default("openai/gpt-6-luna"),
+  AI_GATEWAY_BASE_URL: z
+    .url()
+    .refine((value) => value.startsWith("https://") || /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(value))
+    .default("https://ai-gateway.vercel.sh/v1"),
+});
+
 export type SiteConfig = { siteUrl: string; indexable: boolean };
+export type AiConfig = { apiKey: string; model: string; baseUrl: string };
 export type ServerEnv = z.infer<typeof serverSchema>;
 export type AuthConfig = {
   botToken: string;
@@ -90,5 +102,18 @@ export function parseAuthEnv(source: Source): AuthConfig | null {
     webhookSecret: parsed.data.TELEGRAM_WEBHOOK_SECRET,
     ownerTelegramId: BigInt(parsed.data.OWNER_TELEGRAM_ID),
     apiBase: parsed.data.TELEGRAM_API_BASE.replace(/\/+$/, ""),
+  };
+}
+
+/** ИИ-разбор. Ключа нет — разбор выключен (null): остаётся «старый формат». Ключ есть, а адрес или модель
+ *  неверны — ошибка выкладки. */
+export function parseAiEnv(source: Source): AiConfig | null {
+  if (!source.AI_GATEWAY_API_KEY) return null;
+  const parsed = aiSchema.safeParse(source);
+  if (!parsed.success) fail("ai", parsed.error);
+  return {
+    apiKey: parsed.data.AI_GATEWAY_API_KEY,
+    model: parsed.data.AI_GATEWAY_MODEL,
+    baseUrl: parsed.data.AI_GATEWAY_BASE_URL.replace(/\/+$/, ""),
   };
 }

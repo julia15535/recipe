@@ -78,10 +78,11 @@ describe("разбор текста — ошибки и предупрежден
     expect(codes(base.replace("завтрак", "завтрак, вкуснота"))).toEqual(["warning:unknown-tag"]);
   });
 
-  it("оборванная строка шага (перенос PDF) приклеивается с предупреждением; советы — пока пропускаются", () => {
-    const text = `${base.replace("1. Смешать.", "1. Смешать и")}\nобжарить.\nСоветы:\nПодавать со сметаной.`;
+  it("оборванная строка шага (перенос PDF) приклеивается с предупреждением; советы — отдельным списком", () => {
+    const text = `${base.replace("1. Смешать.", "1. Смешать и")}\nобжарить.\nСоветы:\n- Подавать со сметаной.`;
     expect(parseRecipeText(text).draft.steps).toEqual(["Смешать и обжарить."]);
-    expect(codes(text)).toEqual(["warning:step-joined", "warning:tips-skipped"]);
+    expect(parseRecipeText(text).draft.tips).toEqual(["Подавать со сметаной."]);
+    expect(codes(text)).toEqual(["warning:step-joined"]);
   });
 
   it("шаги как пишет владелец: «1 — Текст» через пустую строку; без номеров — каждая строка шаг", () => {
@@ -96,6 +97,12 @@ describe("разбор текста — ошибки и предупрежден
     ]);
     const plain = parseRecipeText(base.replace("1. Смешать.", "Смешать.\nОбжарить.\nПодать."));
     expect(plain.draft.steps).toEqual(["Смешать.", "Обжарить.", "Подать."]);
+  });
+
+  it("советы: больше 20 или длиннее 1000 знаков — ошибка, а не падение при сохранении", () => {
+    const many = Array.from({ length: 21 }, (_, index) => `- Совет ${index + 1}.`).join("\n");
+    expect(codes(`${base}\nСоветы:\n${many}`)).toContain("error:too-many-tips");
+    expect(codes(`${base}\nСоветы:\n- ${"с".repeat(1001)}`)).toContain("error:tip-too-long");
   });
 
   it("несколько шагов в одной строке и «Приготовление: 1. …» на строке заголовка", () => {

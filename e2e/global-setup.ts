@@ -1,11 +1,13 @@
 import http from "node:http";
 
+import { startAiStub } from "./support/ai-stub";
 import { TELEGRAM } from "./support/telegram";
 
 // Заглушка Bot API для e2e: сайт шлёт ответы бота сюда (TELEGRAM_API_BASE), тесты читают их через
 // GET /__calls — как владелец видит сообщение бота с кодом и кнопками. Сеть и настоящий бот не нужны.
 export default async function globalSetup() {
   if (!TELEGRAM.enabled) return;
+  const stopAi = await startAiStub();
   const calls: { method: string; params: unknown }[] = [];
   let messageId = 100;
   const server = http.createServer((req, res) => {
@@ -32,5 +34,8 @@ export default async function globalSetup() {
     server.once("error", reject);
     server.listen(TELEGRAM.stubPort, "127.0.0.1", resolve);
   });
-  return () => new Promise<void>((resolve) => server.close(() => resolve()));
+  return async () => {
+    await stopAi();
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  };
 }

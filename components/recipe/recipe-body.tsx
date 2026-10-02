@@ -52,7 +52,7 @@ export function RecipeBody({ recipe, children }: { recipe: RecipeView; children:
           <IngredientsPanel recipe={recipe} base={base} factor={factor} raw={raw} check={check} onChange={change} onReset={reset} />
         </TabPanel>
 
-        <TabPanel id="steps" className="pt-6">
+        <TabPanel id="steps" className="flex flex-col gap-8 pt-6">
           <ol className="flex flex-col gap-4">
             {recipe.steps.map((step, index) => (
               <li key={step.id} className="flex gap-3">
@@ -63,6 +63,20 @@ export function RecipeBody({ recipe, children }: { recipe: RecipeView; children:
               </li>
             ))}
           </ol>
+          {recipe.tips.length > 0 && (
+            <section aria-labelledby="recipe-tips" className="flex flex-col gap-3 rounded-2xl bg-accent-50 p-4">
+              <h2 id="recipe-tips" className="font-display text-xl text-primary">
+                Советы
+              </h2>
+              <ul className="flex list-disc flex-col gap-2 pl-5 text-md text-secondary">
+                {recipe.tips.map((tip) => (
+                  <li key={tip.id} className="break-words">
+                    {tip.text}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </TabPanel>
       </Tabs>
     </div>

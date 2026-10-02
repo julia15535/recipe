@@ -1,0 +1,81 @@
+{
+ "result_type": "recipe",
+ "title": "Творожные вафли",
+ "description": null,
+ "time": null,
+ "yield": null,
+ "sections": [
+  "breakfast"
+ ],
+ "tags": [
+  "protein"
+ ],
+ "ingredients": [
+  {
+   "name": "Творог 0,5%",
+   "amount": "275",
+   "unit": "г",
+   "note": null,
+   "is_main": true
+  },
+  {
+   "name": "Яйца",
+   "amount": "2",
+   "unit": "шт.",
+   "note": null,
+   "is_main": false
+  },
+  {
+   "name": "Цельнозерновая мука",
+   "amount": "50",
+   "unit": "г",
+   "note": null,
+   "is_main": false
+  },
+  {
+   "name": "Разрыхлитель",
+   "amount": "1/2",
+   "unit": "ч. л.",
+   "note": null,
+   "is_main": false
+  },
+  {
+   "name": "Соль",
+   "amount": null,
+   "unit": null,
+   "note": "щепотка",
+   "is_main": false
+  },
+  {
+   "name": "Чёрный перец / итальянские травы / паприка",
+   "amount": null,
+   "unit": null,
+   "note": "по желанию",
+   "is_main": false
+  },
+  {
+   "name": "Растительное масло",
+   "amount": "1/2",
+   "unit": "ст. л.",
+   "note": null,
+   "is_main": false
+  },
+  {
+   "name": "Молоко",
+   "amount": "1",
+   "unit": "ст. л.",
+   "note": "если творог сухой",
+   "is_main": false
+  }
+ ],
+ "steps": [
+  "Творог разомни или пробей блендером.",
+  "Добавь яйца, соль и специи.",
+  "Всыпь цельнозерновую муку и разрыхлитель.",
+  "Оставь на 5–7 минут, чтобы цельнозерновая мука впитала влагу.",
+  "Разогрей вафельницу и выпекай 6–7 минут до румяной корочки."
+ ],
+ "tips": [],
+ "doubts": [],
+ "changes": []
+}

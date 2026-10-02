@@ -20,6 +20,8 @@ export const recipes = pgTable(
     id: uuid("id").primaryKey(),
     status: text("status", { enum: RECIPE_STATUSES }).notNull().default("draft"),
     sourceText: text("source_text").notNull(),
+    // Последний вставленный «как есть» текст, из которого ИИ собрал рецепт (план recipe-ai-parse).
+    originalText: text("original_text"),
     revision: integer("revision").notNull().default(1),
     mainIngredientId: uuid("main_ingredient_id").notNull(),
     primarySectionId: uuid("primary_section_id").notNull(),
@@ -32,6 +34,7 @@ export const recipes = pgTable(
   (t) => [
     check("recipes_status_check", sql`${t.status} in ('draft', 'published')`),
     check("recipes_source_text_check", sql`octet_length(${t.sourceText}) between 1 and 20480`),
+    check("recipes_original_text_check", sql`${t.originalText} is null or octet_length(${t.originalText}) between 1 and 20480`),
     check("recipes_revision_check", sql`${t.revision} >= 1`),
     check(
       "recipes_yield_check",

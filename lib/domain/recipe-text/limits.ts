@@ -4,8 +4,8 @@ import { type Issue, issue } from "./issues";
 export const LIMITS = {
   bytes: 20_480,
   lines: 300,
-  // Шаг часто пишут одним абзацем — строка может быть длинной, как шаг.
-  lineLength: 2000,
+  // Шаг часто пишут одним абзацем — строка может быть длинной, как шаг (+ номер в аккуратном тексте).
+  lineLength: 2100,
   title: 120,
   ingredients: 60,
   steps: 40,
@@ -13,6 +13,8 @@ export const LIMITS = {
   name: 200,
   note: 300,
   unit: 30,
+  tips: 20,
+  tip: 1000,
 } as const;
 
 const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;

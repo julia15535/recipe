@@ -29,6 +29,8 @@ mkdir -p /opt/recipe/{db,backups,state} /etc/recipe && chmod 700 /opt/recipe/{ba
 #   /opt/recipe/web.env      DATABASE_URL (recipe_app@recipe-db), SITE_URL, SITE_INDEXABLE=false,
 #                            вход владельца: TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_USERNAME,
 #                            TELEGRAM_WEBHOOK_SECRET, OWNER_TELEGRAM_ID (все четыре или ни одной)
+#                            ИИ-разбор рецептов: AI_GATEWAY_API_KEY (+ AI_GATEWAY_MODEL, по умолчанию
+#                            openai/gpt-6-luna); без ключа — только «старый формат»
 #   /opt/recipe/migrate.env  MIGRATION_DATABASE_URL (recipe_migrator@recipe-db)
 #   /etc/recipe/deploy.env   см. deploy.env.example (домены, email ACME, сеть прокси)
 # GIT_SHA в web.env НЕ задавать: он зашит в образ, и smoke сверяет именно его.
@@ -89,6 +91,12 @@ node --env-file=<тот же файл> scripts/telegram-webhook.mjs info   # url
 # Отозвать все сессии кабинета (владельцу нужно будет войти заново):
 docker exec recipe-db psql -U postgres -d recipe -c "update owner_sessions set revoked_at = now() where revoked_at is null"
 ```
+
+## ИИ-разбор рецептов (Vercel AI Gateway)
+Ключ — общий с проектом sup2 (решение владельца 02.10): расход виден в той же панели Vercel → AI Gateway.
+Сменить модель — `AI_GATEWAY_MODEL` в `web.env` + `recipe-deploy.sh --force` (до этого прогнать проверку модели,
+`.memory_bank/domain/recipe-upload.md`). Свой ключ — создать в Vercel, заменить `AI_GATEWAY_API_KEY`, `--force`.
+Ключ недоступен — кабинет пишет «Разобрать ещё раз» и предлагает разбор по старому формату.
 
 ## Бэкап и восстановление
 - Сервер: `recipe-db-backup.timer` раз в сутки → `/opt/recipe/backups/recipe_*.dump` (`pg_dump -Fc`),

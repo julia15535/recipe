@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { AppButton } from "@/components/app-button";
 import { requireOwner } from "@/lib/server/auth/owner";
+import { getAiConfig } from "@/lib/server/env";
 
 import { RecipeEditor } from "../_components/recipe-editor";
 
@@ -15,7 +16,7 @@ export default async function NewRecipePage() {
         ← Мои рецепты
       </AppButton>
       <h1 className="font-display text-display-xs text-primary">Новый рецепт</h1>
-      <RecipeEditor />
+      <RecipeEditor aiEnabled={getAiConfig() !== null} />
     </main>
   );
 }

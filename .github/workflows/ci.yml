@@ -35,6 +35,10 @@ env:
   E2E_TELEGRAM_WEBHOOK_SECRET: ci-fake-webhook-secret-not-real-0000000000
   E2E_OWNER_TELEGRAM_ID: "1000001"
   E2E_TELEGRAM_STUB_PORT: "3999"
+  # ИИ-разбор рецептов в CI — заглушка шлюза из e2e (e2e/support/ai-stub.ts), фальшивый ключ.
+  AI_GATEWAY_API_KEY: ci-fake-ai-gateway-key-not-real-000000
+  AI_GATEWAY_BASE_URL: http://127.0.0.1:3998/v1
+  E2E_AI_STUB_PORT: "3998"
 
 jobs:
   changes:
@@ -121,7 +125,7 @@ jobs:
             --cap-drop=ALL --security-opt no-new-privileges \
             -e DATABASE_URL -e SITE_URL -e GIT_SHA="$GITHUB_SHA" \
             -e TELEGRAM_BOT_TOKEN -e TELEGRAM_BOT_USERNAME -e TELEGRAM_WEBHOOK_SECRET \
-            -e OWNER_TELEGRAM_ID -e TELEGRAM_API_BASE \
+            -e OWNER_TELEGRAM_ID -e TELEGRAM_API_BASE -e AI_GATEWAY_API_KEY -e AI_GATEWAY_BASE_URL \
             recipe:ci
           for i in $(seq 1 30); do
             curl -fsS http://127.0.0.1:3000/api/health/ready && exit 0

@@ -1,8 +1,10 @@
 import "server-only";
 
 import {
+  type AiConfig,
   type AuthConfig,
   type Mode,
+  parseAiEnv,
   parseAuthEnv,
   parseServerEnv,
   parseSiteConfig,
@@ -10,7 +12,7 @@ import {
   type SiteConfig,
 } from "./env-schema";
 
-export type { AuthConfig, ServerEnv, SiteConfig };
+export type { AiConfig, AuthConfig, ServerEnv, SiteConfig };
 
 export function currentMode(): Mode {
   const mode = process.env.NODE_ENV;
@@ -20,6 +22,7 @@ export function currentMode(): Mode {
 let siteConfig: SiteConfig | undefined;
 let serverEnv: ServerEnv | undefined;
 let authConfig: AuthConfig | null | undefined;
+let aiConfig: AiConfig | null | undefined;
 
 export function getSiteConfig(): SiteConfig {
   siteConfig ??= parseSiteConfig(process.env, currentMode());
@@ -35,4 +38,10 @@ export function getServerEnv(): ServerEnv {
 export function getAuthConfig(): AuthConfig | null {
   if (authConfig === undefined) authConfig = parseAuthEnv(process.env);
   return authConfig;
+}
+
+/** Настройки ИИ-разбора; null — ключа нет, разбор только «по старому формату». */
+export function getAiConfig(): AiConfig | null {
+  if (aiConfig === undefined) aiConfig = parseAiEnv(process.env);
+  return aiConfig;
 }

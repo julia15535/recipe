@@ -34,7 +34,7 @@ export function getRecipe(id: string): Promise<StoredRecipe | null> {
       .innerJoin(t.recipeLocalizations, eq(t.recipeLocalizations.recipeId, t.recipes.id))
       .where(and(eq(t.recipes.id, id), eq(t.recipeLocalizations.locale, "ru")));
     if (!head) return null;
-    const [sections, tags, ingredients, steps] = await Promise.all([
+    const [sections, tags, ingredients, steps, tips] = await Promise.all([
       db
         .select({ code: t.sections.code, label: t.sectionLocalizations.label })
         .from(t.recipeSections)
@@ -51,6 +51,7 @@ export function getRecipe(id: string): Promise<StoredRecipe | null> {
         .orderBy(asc(t.recipeCompositionTags.position)),
       db.select().from(t.recipeIngredients).where(eq(t.recipeIngredients.recipeId, id)).orderBy(asc(t.recipeIngredients.position)),
       db.select().from(t.recipeSteps).where(eq(t.recipeSteps.recipeId, id)).orderBy(asc(t.recipeSteps.position)),
+      db.select().from(t.recipeTips).where(eq(t.recipeTips.recipeId, id)).orderBy(asc(t.recipeTips.position)),
     ]);
     const { recipes: recipe, recipe_localizations: text } = head;
     const view: RecipeView = {
@@ -63,6 +64,7 @@ export function getRecipe(id: string): Promise<StoredRecipe | null> {
       ingredients: ingredients.map((row) => ({ id: row.id, name: row.displayName, quantity: quantityOf(row), unit: row.unit, note: row.note })),
       mainId: recipe.mainIngredientId,
       steps: steps.map((row) => ({ id: row.id, text: row.text })),
+      tips: tips.map((row) => ({ id: row.id, text: row.text })),
     };
     return { id, status: recipe.status, revision: recipe.revision, sourceText: recipe.sourceText, slug: text.slug, view };
   });

@@ -22,13 +22,14 @@ export type IssueCode =
   | "too-many-steps"
   | "step-too-long"
   | "step-joined"
-  | "tips-skipped"
+  | "too-many-tips"
+  | "tip-too-long"
   | "yield-unparsed"
   | "yield-word";
 
 export type Issue = { code: IssueCode; severity: "error" | "warning"; line: number | null; raw: string | null; message: string };
 
-const WARNINGS = new Set<IssueCode>(["unknown-tag", "unknown-unit", "step-joined", "tips-skipped", "yield-unparsed", "yield-word"]);
+const WARNINGS = new Set<IssueCode>(["unknown-tag", "unknown-unit", "step-joined", "yield-unparsed", "yield-word"]);
 
 const SECTION_HINT = "завтрак, суп, салат, горячее, гарнир, закуска, выпечка, десерт, соус, напиток или заготовка";
 
@@ -56,7 +57,8 @@ const MESSAGES: Record<IssueCode, (subject: string) => string> = {
   "too-many-steps": () => "Слишком много шагов — не больше 40.",
   "step-too-long": () => "Шаг слишком длинный — разбейте его на несколько.",
   "step-joined": () => "Строка без номера — добавлена к предыдущему шагу.",
-  "tips-skipped": () => "Советы пока не сохраняются — добавим их позже.",
+  "too-many-tips": () => "Слишком много советов — не больше 20.",
+  "tip-too-long": () => "Совет слишком длинный — не больше 1000 знаков, разбейте его.",
   "yield-unparsed": () => "Выход не распознан и пропущен. Пример: «Выход: 4 порции».",
   "yield-word": (word) => `Слово «${word}» при пересчёте не склоняется. Если нужно — напишите «4 шт.» или «4 порции».`,
 };

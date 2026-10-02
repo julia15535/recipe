@@ -3,11 +3,10 @@ export function RecipeTextField({ value, onChange }: { value: string; onChange: 
   return (
     <div className="flex flex-col gap-2">
       <label htmlFor="recipe-text" className="text-md font-semibold text-primary">
-        Текст рецепта
+        Рецепт
       </label>
       <p id="recipe-text-hint" className="text-sm text-tertiary">
-        Как пишете обычно: название, «Теги: завтрак, белок», «Ингредиенты:» (у основного — «— основной ингредиент»),
-        «Приготовление:» и шаги — «1.», «1 —» или каждый с новой строки.
+        Вставьте как есть: абзацем, списком, из заметок или PDF. ИИ разложит по ингредиентам и шагам, а вы проверите.
       </p>
       <textarea
         id="recipe-text"
@@ -18,7 +17,7 @@ export function RecipeTextField({ value, onChange }: { value: string; onChange: 
         autoCapitalize="off"
         autoCorrect="off"
         className="min-h-[50dvh] w-full rounded-xl bg-primary p-3 text-md text-primary shadow-xs ring-1 ring-primary outline-hidden ring-inset placeholder:text-placeholder focus:ring-2 focus:ring-brand"
-        placeholder={"Творожные вафли\nТеги: завтрак, белок\nИнгредиенты:\n● Творог — 275 г - основной ингредиент\n…\nПриготовление:\n1. …"}
+        placeholder={"Например: Сырники. Творог 500 г, яйцо, 2 ложки сахара, мука. Творог размять, добавить яйцо…"}
       />
     </div>
   );

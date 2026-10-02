@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseAuthEnv, parseServerEnv, parseSiteConfig } from "./env-schema";
+import { parseAiEnv, parseAuthEnv, parseServerEnv, parseSiteConfig } from "./env-schema";
 
 describe("parseSiteConfig", () => {
   it("в разработке подставляет локальный адрес и не индексирует", () => {
@@ -65,5 +65,26 @@ describe("parseAuthEnv", () => {
   it("отвергает короткий секрет webhook и нечисловой id", () => {
     expect(() => parseAuthEnv({ ...valid, TELEGRAM_WEBHOOK_SECRET: "short" })).toThrow(/TELEGRAM_WEBHOOK_SECRET/);
     expect(() => parseAuthEnv({ ...valid, OWNER_TELEGRAM_ID: "@some_user" })).toThrow(/OWNER_TELEGRAM_ID/);
+  });
+});
+
+describe("parseAiEnv", () => {
+  const key = "vck_fake_key_for_tests_only_0000000000";
+
+  it("без ключа ИИ выключен; с ключом — модель и адрес по умолчанию", () => {
+    expect(parseAiEnv({})).toBeNull();
+    expect(parseAiEnv({ AI_GATEWAY_API_KEY: key })).toEqual({
+      apiKey: key,
+      model: "openai/gpt-6-luna",
+      baseUrl: "https://ai-gateway.vercel.sh/v1",
+    });
+  });
+
+  it("http — только заглушка на 127.0.0.1; неверная модель — ошибка без значения ключа", () => {
+    expect(parseAiEnv({ AI_GATEWAY_API_KEY: key, AI_GATEWAY_BASE_URL: "http://127.0.0.1:3998/v1" })?.baseUrl).toBe("http://127.0.0.1:3998/v1");
+    expect(() => parseAiEnv({ AI_GATEWAY_API_KEY: key, AI_GATEWAY_BASE_URL: "http://evil.example/v1" })).toThrow(/AI_GATEWAY_BASE_URL/);
+    const bad = () => parseAiEnv({ AI_GATEWAY_API_KEY: key, AI_GATEWAY_MODEL: "gpt 6" });
+    expect(bad).toThrow(/AI_GATEWAY_MODEL/);
+    expect(bad).not.toThrow(/vck_fake/);
   });
 });

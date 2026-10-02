@@ -34,6 +34,18 @@ describe("redact", () => {
     });
   });
 
+  it("не пишет текст запроса к ИИ и ответ модели", () => {
+    expect(redact({ prompt: "p", content: "c", response: "r", recipe: "x", messages: [1], body: "b", task: "recipe v1" })).toEqual({
+      prompt: "[redacted]",
+      content: "[redacted]",
+      response: "[redacted]",
+      recipe: "[redacted]",
+      messages: "[redacted]",
+      body: "[redacted]",
+      task: "recipe v1",
+    });
+  });
+
   it("не трогает обычные поля", () => {
     expect(redact({ requestId: "r-1", status: 200, ok: true })).toEqual({ requestId: "r-1", status: 200, ok: true });
   });
