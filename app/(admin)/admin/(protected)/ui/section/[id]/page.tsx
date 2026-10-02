@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
 
+import { RecipeGrid } from "@/components/recipe/recipe-card";
 import { SiteHeader } from "@/components/site-header";
 import { requireOwner } from "@/lib/server/auth/owner";
 
 import { PrototypeBar } from "../../_components/prototype-bar";
-import { RecipeGrid } from "../../_components/recipe-card";
+import { demoCards } from "../../_demo/demo-cards";
 import { PROTOTYPE, parseSectionId, sectionLabel } from "../../_demo/demo-catalog";
 import { headerProps, recipesInSection } from "../../_demo/demo-selection";
 
@@ -48,7 +49,7 @@ export default async function SectionPrototypePage({ params }: PageProps<"/admin
             <h2 id="section-recipes" className="sr-only">
               Рецепты раздела
             </h2>
-            <RecipeGrid recipes={recipes} />
+            <RecipeGrid cards={demoCards(recipes)} />
           </section>
         ) : (
           <p className="text-lg text-tertiary">Пока нет рецептов — скоро появятся.</p>

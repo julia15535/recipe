@@ -12,11 +12,13 @@ import { requireOwner } from "@/lib/server/auth/owner";
 import { StorageError } from "@/lib/server/db/errors";
 import { log } from "@/lib/server/log";
 import { catalogLabels, getCatalog } from "@/lib/server/recipes/catalog";
+import { refreshPublicSite } from "@/lib/server/recipes/public-cache";
 import { createRecipe, replaceRecipe } from "@/lib/server/recipes/save";
 import { deleteDraft, setRecipeStatus } from "@/lib/server/recipes/status";
 
 // Действия кабинета с рецептами (план recipe-upload). Каждое — requireOwner(); сохранение заново
 // разбирает присланный ТЕКСТ: готовые ингредиенты, статус, адрес или id разделов от браузера не берём.
+// После каждой успешной записи — refreshPublicSite(): сайт сразу видит публикацию, правку, снятие.
 export type Preview = { ok: boolean; issues: Issue[]; view: RecipeView | null };
 export type SaveResult = { ok: true; id: string } | { ok: false; issues: Issue[]; message: string | null };
 
@@ -50,7 +52,9 @@ export async function saveNewRecipe(input: string, publish: boolean): Promise<Sa
   const parsed = result;
   return safely(async () => {
     const saved = await createRecipe(parsed, source, publish === true ? "published" : "draft");
-    return saved.ok ? { ok: true, id: saved.id } : FAILED;
+    if (!saved.ok) return FAILED;
+    refreshPublicSite();
+    return { ok: true, id: saved.id };
   });
 }
 
@@ -65,7 +69,10 @@ export async function saveRecipeText(recipeId: string, revision: number, input: 
   const parsed = result;
   return safely(async () => {
     const saved = await replaceRecipe(target.data, expected.data, parsed, source);
-    if (saved.ok) return { ok: true, id: saved.id };
+    if (saved.ok) {
+      refreshPublicSite();
+      return { ok: true, id: saved.id };
+    }
     const message =
       saved.reason === "conflict" ? "Рецепт уже изменён в другой вкладке — обновите страницу." : "Рецепт не найден — возможно, его удалили.";
     return { ok: false, issues: [], message };
@@ -78,11 +85,13 @@ export async function changeRecipeStatus(form: FormData): Promise<void> {
   await requireOwner();
   const { id: recipeId, status } = statusForm.parse({ id: form.get("id"), status: form.get("status") });
   await setRecipeStatus(recipeId, status);
+  refreshPublicSite();
   refresh();
 }
 
 export async function removeDraft(form: FormData): Promise<void> {
   await requireOwner();
   await deleteDraft(id.parse(form.get("id")));
+  refreshPublicSite();
   redirect("/admin");
 }

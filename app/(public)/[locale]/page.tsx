@@ -1,25 +1,67 @@
 import type { Metadata } from "next";
-import { useLocale, useTranslations } from "next-intl";
-import { getLocale } from "next-intl/server";
+import { io } from "next/cache";
+import { getLocale, getTranslations } from "next-intl/server";
+import { Suspense } from "react";
 
 import { AppButton } from "@/components/app-button";
-import { localizedAlternates } from "@/lib/i18n/alternates";
+import { RecipeGrid } from "@/components/recipe/recipe-card";
+import { cachedCatalog, cachedNewRecipes } from "@/lib/server/recipes/public-cache";
 
-// Заглушка главной (каркас): проверяет локали, шрифты и бренд. Настоящая главная — после схемы
-// каталога и поиска.
+import { toCards } from "./_components/cards";
+import { pageMetadata } from "./_components/page-metadata";
+import { HeaderFallback, PublicHeader } from "./_components/public-header";
+
+// Главная (владелец 02.10: «Каталог + «Новые рецепты»»): шапка с каталогом и до 12 последних опубликованных
+// рецептов. Английской версии пока нет — `/en` заглушка с noindex (план public-pages).
 export async function generateMetadata(): Promise<Metadata> {
-  return { alternates: localizedAlternates(await getLocale(), "/") };
+  const locale = await getLocale();
+  if (locale !== "ru") return { title: (await getTranslations("Soon"))("title"), robots: { index: false, follow: false } };
+  return pageMetadata({ locale, path: "/" });
 }
 
-export default function HomePage() {
-  const t = useTranslations("Home");
-  const otherLocale = useLocale() === "ru" ? "en" : "ru";
+export default async function HomePage() {
+  if ((await getLocale()) !== "ru") return <ComingSoon />;
+  return (
+    <Suspense fallback={<HeaderFallback />}>
+      <HomeScreen />
+    </Suspense>
+  );
+}
+
+async function HomeScreen() {
+  await io();
+  const [catalog, recipes] = await Promise.all([cachedCatalog("ru"), cachedNewRecipes("ru")]);
+  return (
+    <>
+      <PublicHeader locale="ru" sections={catalog.sections} />
+      <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pt-6 pb-16 lg:px-8 lg:pt-10">
+        <h1 className="sr-only">Книга рецептов</h1>
+        {recipes.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 py-12 text-center">
+            <p className="font-display text-display-xs text-primary">Скоро здесь появятся рецепты</p>
+            <p className="text-md text-tertiary">Автор готовит первые рецепты — загляните чуть позже.</p>
+          </div>
+        ) : (
+          <section aria-labelledby="new-recipes" className="flex flex-col gap-4">
+            <h2 id="new-recipes" className="font-display text-display-xs text-primary">
+              Новые рецепты
+            </h2>
+            <RecipeGrid cards={toCards("ru", recipes)} />
+          </section>
+        )}
+      </main>
+    </>
+  );
+}
+
+async function ComingSoon() {
+  const t = await getTranslations("Soon");
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-screen-sm flex-col gap-6 px-4 py-10">
       <h1 className="font-display text-display-sm text-primary">{t("title")}</h1>
       <p className="text-lg text-tertiary">{t("lead")}</p>
-      <AppButton color="secondary" href={`/${otherLocale}`} className="self-start">
-        {t("switchLanguage")}
+      <AppButton href="/ru" className="self-start">
+        {t("open")}
       </AppButton>
     </main>
   );

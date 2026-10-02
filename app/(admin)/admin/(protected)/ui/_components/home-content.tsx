@@ -1,6 +1,8 @@
+import { RecipeGrid } from "@/components/recipe/recipe-card";
+
+import { demoCards } from "../_demo/demo-cards";
 import { RECIPES } from "../_demo/demo-recipes";
 import { POPULAR, WEEKLY, pickRecipes } from "../_demo/demo-selection";
-import { RecipeGrid } from "./recipe-card";
 
 // Главная под шапкой (каталог — в шапке): «Подборка недели» и «Популярное» внизу; без рецептов —
 // «Скоро здесь появятся рецепты» (на сайте — пока каталог пуст; в прототипе рецепты есть всегда).
@@ -28,7 +30,7 @@ export function HomeContent() {
               {WEEKLY.title}
             </h2>
           </div>
-          <RecipeGrid recipes={weekly} />
+          <RecipeGrid cards={demoCards(weekly)} />
         </section>
       )}
 
@@ -40,7 +42,7 @@ export function HomeContent() {
             </h2>
             <p className="text-sm text-tertiary">Появится позже, когда рецептов станет больше. Сейчас — пример.</p>
           </div>
-          <RecipeGrid recipes={popular} />
+          <RecipeGrid cards={demoCards(popular)} />
         </section>
       )}
     </main>

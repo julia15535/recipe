@@ -238,6 +238,25 @@ Popover по тапу, не Tooltip.
 **Convention:** перед фоновым переносом — `git status` чистый (всё закоммичено); итог фоновой задачи читать и сверять
 версию на проде (`/api/health/ready`) до сообщения владельцу.
 
+## 37. Значок-компонент из серверной страницы в клиентскую кнопку
+**Симптом (02.10):** typecheck, lint и сборка зелёные, а страница кабинета падает «Что-то пошло не так»:
+`Functions cannot be passed directly to Client Components` — сервер передал `iconLeading={ExternalLink}` в `AppButton`.
+**Convention:** кнопки со значком — внутри клиентского компонента (`app/(admin)/admin/(protected)/recipes/_components/recipe-actions.tsx`), сервер
+передаёт только данные (адрес, текст); новую серверную страницу открыть в браузере до e2e.
+
+## 38. axe во время анимации закрытия окна
+**Симптом:** `color-contrast: 19` на странице раздела — axe проверил лист каталога, пока тот гас после Esc.
+**Convention:** после закрытия окна ждать `expect(dialog).toBeHidden()`, перед axe — `waitForLoadState("networkidle")`
+(`e2e/public.spec.ts`).
+
+## 39. Несколько `<meta name="robots">` на странице 404
+**Симптом:** strict mode violation в e2e: у 404 свои robots у layout, страницы и not-found.
+**Convention:** проверять, что ВСЕ robots содержат noindex (`expectNoindex` в `e2e/public.spec.ts`), а не один локатор.
+
+## 40. `pkill -f` с шаблоном из той же команды
+**Симптом:** команда оборвалась с кодом 144 — `pkill -f "next start -p 3010"` убил и свою оболочку (шаблон есть в её
+командной строке). **Convention:** процесс — по порту: `ss -ltnp | grep ':3010 '` → `kill <pid>`.
+
 ---
 
 # Анти-паттерны ПАМЯТИ (уроки эксплуатации — актуальны любому проекту с Memory Bank)

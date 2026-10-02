@@ -1,16 +1,17 @@
 "use client";
 
-import { EyeOff, Pencil, Send, Trash2 } from "lucide-react";
+import { ExternalLink, EyeOff, Pencil, Send, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { AppButton } from "@/components/app-button";
 
 import { changeRecipeStatus, removeDraft } from "../actions";
 
-type Props = { id: string; status: "draft" | "published" };
+type Props = { id: string; status: "draft" | "published"; siteHref: string };
 
-// Действия над рецептом: изменить текст, опубликовать / снять, удалить черновик (с подтверждением).
-export function RecipeActions({ id, status }: Props) {
+// Действия над рецептом: изменить текст, опубликовать / снять, удалить черновик (с подтверждением); у
+// опубликованного — «Открыть на сайте» (адрес `/ru/recipe/{slug}` не меняется при правке).
+export function RecipeActions({ id, status, siteHref }: Props) {
   const [confirming, setConfirming] = useState(false);
   return (
     <div className="flex flex-col gap-3">
@@ -25,6 +26,11 @@ export function RecipeActions({ id, status }: Props) {
             {status === "draft" ? "Опубликовать" : "Снять с публикации"}
           </AppButton>
         </form>
+        {status === "published" && (
+          <AppButton color="tertiary" iconLeading={ExternalLink} href={siteHref}>
+            Открыть на сайте
+          </AppButton>
+        )}
         {status === "draft" && !confirming && (
           <AppButton color="tertiary" iconLeading={Trash2} onPress={() => setConfirming(true)}>
             Удалить

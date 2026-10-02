@@ -1,12 +1,17 @@
 {
   "Meta": {
     "siteName": "Recipe Book",
-    "description": "A personal recipe book: fast search, serving and nutrition recalculation."
+    "description": "Home recipes: search by name and ingredients, scale to the amount you have."
   },
-  "Home": {
-    "title": "Recipe Book",
-    "lead": "Recipes are coming soon: search by name and ingredients, serving and nutrition recalculation.",
-    "switchLanguage": "Русская версия"
+  "Site": {
+    "search": "Search",
+    "catalog": "Catalogue",
+    "close": "Close"
+  },
+  "Soon": {
+    "title": "English version is coming soon",
+    "lead": "Meanwhile, the recipes are available in Russian.",
+    "open": "Open the Russian version"
   },
   "NotFound": {
     "title": "Page not found",

@@ -16,7 +16,7 @@ review_after: 2026-10-29
 
 ## Путь релиза
 1. PR / push в `main`, `feature/**` → GitHub Actions `.github/workflows/ci.yml`:
-   `check` (lint, typecheck, test, миграции) → `image` (образ собирается **один раз**, на нём миграции,
+   `check` (lint, typecheck, test, миграции) → `image` (образ собирается **один раз**, до запуска БД — ADR-0027; на нём миграции,
    тесты БД, e2e с фальшивым ботом, отказы) → `publish` (только `main` с новым кодом):
    `ghcr.io/julia15535/recipe:<sha>`, затем `:stable`. «Менялся ли код» на main — от ревизии в `:stable`
    (`scripts/ci/published-revision.sh`), docs-only образ не собирают.
@@ -34,7 +34,6 @@ review_after: 2026-10-29
   OOM-приоритетом; как создан `recipe-db` — `deploy/README.md`.
   Секреты: `/opt/recipe/web.env` (`recipe_app`, бот входа, ключ ИИ) и `/opt/recipe/migrate.env`; новый `web.env` —
   через `recipe-deploy.sh --force`; webhook, смена токена, отзыв сессий — `deploy/README.md`.
-- До запуска сайт закрыт: `SITE_INDEXABLE=false` → `robots.txt` Disallow + `noindex`.
 
 ## Бэкап (решение владельца 29.09)
 Сервер: `deploy/recipe-db-backup.sh` раз в сутки, `pg_dump -Fc`, ≤ 7 дней. Локально у владельца:

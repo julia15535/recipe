@@ -7,7 +7,7 @@ import { TELEGRAM } from "./support/telegram";
 // Кабинет и пробные экраны закрыты входом: без секрета webhook (e2e против прода) их не проверить.
 const ADMIN = ["/admin/ui", "/admin/ui/home", "/admin/ui/search", "/admin/ui/recipe/syrniki", "/admin/ui/recipe/bowl", "/admin/ui/recipe/vafli-iz-tvoroga", "/admin/ui/section/soups"];
 const PROTOTYPES = TELEGRAM.enabled ? ADMIN : [];
-const PAGES = ["/ru", "/en", ...(TELEGRAM.enabled ? ["/admin", ...PROTOTYPES] : [])];
+const PAGES = ["/ru", "/en", "/ru/search", "/ru/catalog/zagotovki", ...(TELEGRAM.enabled ? ["/admin", ...PROTOTYPES] : [])];
 
 test.describe("дизайн-система", () => {
   for (const path of PAGES) {
@@ -47,7 +47,8 @@ test.describe("дизайн-система", () => {
     page.on("request", (req) => {
       if (/fonts\.(googleapis|gstatic)\.com/.test(req.url())) external.push(req.url());
     });
-    await page.goto("/ru");
+    // На главной заголовок h1 только для читалок экрана — берём страницу раздела с видимым заголовком.
+    await page.goto("/ru/catalog/zagotovki");
     await page.evaluate(() => document.fonts.ready);
     const fonts = await page.evaluate(() => {
       const h1 = getComputedStyle(document.querySelector("h1") as Element);

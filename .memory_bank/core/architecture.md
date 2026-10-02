@@ -20,14 +20,14 @@ TypeScript 6 strict · Tailwind 4 + Untitled UI React (ADR-0015) · Zod 4 · nex
 Vitest 4 + Playwright.
 
 ## Маршруты
-- `app/(public)/[locale]/` — публичный сайт, `/ru` `/en` статические (`next/root-params` в
-  `i18n/request.ts`); неизвестный путь → локализованная 404 (`app/(public)/[locale]/[...rest]/page.tsx`), вне
-  локалей — `app/not-found.tsx`.
+- `app/(public)/[locale]/` — сайт (ADR-0027): `/ru`, `catalog/[slug]`, `recipe/[slug]`, `search`; данные — под
+  `<Suspense>` после `io()` из `"use cache"` (`lib/server/recipes/public-cache.ts`), сборка без БД. Локаль —
+  `next/root-params` (`i18n/request.ts`); неизвестный путь → локализованная 404 (внутри потока — 200 + noindex).
 - `app/(admin)/admin/` — кабинет: свой root layout, RU, `noindex`, полностью динамический; открыт только
   `login/`, остальное — группа `(protected)` с пробными экранами `ui/` (ADR-0022, `domain/owner-auth.md`).
 - `proxy.ts` — next-intl для публичных путей; `/admin` — CSP с nonce и 307 на вход без cookie сессии;
   `www` → apex — `redirects()` в `next.config.ts`.
-- API: `health/live`, `health/ready` (БД + `GIT_SHA` — по нему деплой сверяет релиз), `telegram/webhook`, `auth/status`.
+- API: `health/live`, `health/ready` (БД + `GIT_SHA`), `telegram/webhook`, `auth/status`.
 
 ## Слои кода
 - `lib/domain/` — чистые функции без IO (ESLint `eslint.config.mjs`): дроби, пересчёт, разбор текста рецепта
@@ -41,11 +41,9 @@ Vitest 4 + Playwright.
   `deploy/recipe-roles.sql`.
 
 ## Направления для следующих планов
-- Кэш публичных страниц: `"use cache"` + `cacheTag` (`recipe:{id}`, `recipes`, `category:{id}`,
-  `tag:{id}`, `catalog`), правка владельцем → `updateTag` (ADR-0013).
 - Импорт: очередь-таблица в Postgres (`FOR UPDATE SKIP LOCKED`), воркер — контейнер из того же образа;
   загрузки — потоковый Route Handler с лимитами.
 - ИИ на входе — `lib/server/ai/` (fetch-клиент Vercel AI Gateway, ADR-0024); фото и голос — тем же путём.
-- Критический CVE Next/React — обновление в тот же день.
+- Критический CVE Next/React — обновление в тот же день. Кэш сайта и его сброс — ADR-0027.
 
 **Деплой и прод:** `core/deployment.md`.

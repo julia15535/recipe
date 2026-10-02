@@ -103,14 +103,16 @@ jobs:
           node-version-file: .nvmrc
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - name: База для проверок (та же, что локально)
-        run: docker compose up -d --wait db
+      # Сборка — ДО запуска базы: публичные страницы обязаны собираться без БД (данные — только под
+      # <Suspense> после io(), план public-pages); обращение к базе при сборке уронит этот шаг.
       - name: Сборка образа — один раз
         run: |
           docker build \
             --build-arg SITE_URL="$SITE_URL" \
             --build-arg GIT_SHA="$GITHUB_SHA" \
             -t recipe:ci .
+      - name: База для проверок (та же, что локально)
+        run: docker compose up -d --wait db
       - name: Миграции внутри образа (дважды) и параллельный запуск
         env:
           MIGRATE_COMMAND: docker run --rm --network host -e MIGRATION_DATABASE_URL recipe:ci node migrator/migrate.mjs

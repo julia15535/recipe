@@ -6,6 +6,7 @@ import { AppButton } from "@/components/app-button";
 import { RecipeBody } from "@/components/recipe/recipe-body";
 import { RecipeIntro } from "@/components/recipe/recipe-intro";
 import { requireOwner } from "@/lib/server/auth/owner";
+import { recipePath } from "@/lib/server/recipes/public";
 import { getRecipe } from "@/lib/server/recipes/queries";
 
 import { RecipeActions } from "../_components/recipe-actions";
@@ -27,11 +28,8 @@ export default async function RecipePage({ params }: PageProps<"/admin/recipes/[
         </AppButton>
         <div className="flex flex-wrap items-center gap-3">
           <StatusBadge status={recipe.status} />
-          {recipe.status === "published" && (
-            <p className="text-sm text-tertiary">Появится на сайте, когда откроем страницы рецептов.</p>
-          )}
         </div>
-        <RecipeActions id={recipe.id} status={recipe.status} />
+        <RecipeActions id={recipe.id} status={recipe.status} siteHref={recipePath("ru", recipe.slug)} />
       </div>
       <RecipeBody recipe={recipe.view}>
         <RecipeIntro recipe={recipe.view} />

@@ -12,13 +12,14 @@ import type { CatalogSection } from "@/components/catalog/types";
 // закреплена целиком при прокрутке на всех страницах. Компьютер (от 1024 px): строка + лента разделов;
 // телефон и планшет: одна строка, каталог — привычный значок «меню» слева от названия, по нажатию —
 // нижний лист. Слой z-40 — под окнами React Aria (z-50); полная высота — --site-header-height в
-// app/globals.css (от неё scroll-padding). Тексты и адреса — от вызывающего (RU/EN или прототип).
+// app/globals.css (от неё scroll-padding). Тексты и адреса — от вызывающего (RU/EN или прототип). Кнопки
+// языка нет, пока нет второй версии сайта (план public-pages: английский — позже).
 type Props = {
   siteName: string;
   homeHref: string;
   searchHref: string;
   searchLabel: string;
-  language: { href: string; label: string; name: string; lang: string };
+  language?: { href: string; label: string; name: string; lang: string };
   catalog?: { sections: CatalogSection[]; label: string; closeLabel: string };
 };
 
@@ -39,9 +40,11 @@ export function SiteHeader({ siteName, homeHref, searchHref, searchLabel, langua
         <AppButton color="secondary" href={searchHref} iconLeading={Search} className="max-sm:hidden">
           {searchLabel}
         </AppButton>
-        <AppButton color="tertiary" size="lg" href={language.href} aria-label={language.name} lang={language.lang}>
-          {language.label}
-        </AppButton>
+        {language && (
+          <AppButton color="tertiary" size="lg" href={language.href} aria-label={language.name} lang={language.lang}>
+            {language.label}
+          </AppButton>
+        )}
       </div>
       {catalog && <CatalogRibbon sections={catalog.sections} label={catalog.label} className="max-lg:hidden" />}
     </header>
