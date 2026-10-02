@@ -32,7 +32,7 @@ export function RecipeIntro({ recipe }: { recipe: DemoRecipe }) {
         </ul>
       </nav>
       <h1 className="font-display text-display-sm text-primary lg:text-display-md">{recipe.title}</h1>
-      <p className="text-lg text-tertiary">{recipe.description}</p>
+      {recipe.description && <p className="text-lg text-tertiary">{recipe.description}</p>}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2" data-testid="recipe-meta">
         {recipe.time && (
           <p className="flex items-center gap-1.5 text-md text-secondary">

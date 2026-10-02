@@ -169,16 +169,19 @@ test.describe("пробные экраны — телефон", () => {
 });
 
 test.describe("первый рецепт владельца — вафли из творога", () => {
-  test("диапазон «½–1 ч. л.», «по желанию», выход в вафлях, без времени — и пересчёт", async ({ page }) => {
+  test("версия 2: без описания и выхода, «щепотка» и «по желанию» без чисел, молоко с пометкой — и пересчёт", async ({ page }) => {
     await page.goto("/admin/ui/recipe/vafli-iz-tvoroga", { waitUntil: "networkidle" });
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Вафли из творога");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Творожные вафли");
     await expect(page.getByTestId("recipe-meta")).toHaveText("Белок");
     await expect(page.getByTestId("recipe-meta").locator("svg")).toHaveCount(0);
-    await expect(servingsCard(page)).toHaveText("~ примерно 4 вафли");
-    await expect(ingredientRow(page, "Разрыхлитель")).toContainText("½–1 ч. л.");
-    await expect(ingredientRow(page, "Соль")).toContainText("½ ч. л.");
-    const spices = ingredientRow(page, "Чёрный перец").getByTestId("ingredient-amount");
-    await expect(spices).toHaveText("по желанию");
+    await expect(page.locator('[data-testid="servings"]')).toHaveCount(0);
+    await expect(page.getByText("Несладкие творожные вафли")).toHaveCount(0);
+    const amount = (name: string) => ingredientRow(page, name).getByTestId("ingredient-amount");
+    await expect(amount("Разрыхлитель")).toHaveText("½ ч. л.");
+    await expect(amount("Соль")).toHaveText("щепотка");
+    await expect(amount("Чёрный перец")).toHaveText("по желанию");
+    await expect(amount("Растительное масло")).toHaveText("½ ст. л.");
+    await expect(amount("Молоко")).toHaveText("1 ст. л., если творог сухой");
     await expectNoAxeViolations(page);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
 
@@ -186,26 +189,40 @@ test.describe("первый рецепт владельца — вафли из 
     await input.fill("550");
     await expect(ingredientRow(page, "Яйца")).toContainText("4 шт.");
     await expect(ingredientRow(page, "Цельнозерновая мука")).toContainText("100 г");
-    await expect(ingredientRow(page, "Разрыхлитель")).toContainText("1–2 ч. л.");
-    await expect(ingredientRow(page, "Соль")).toContainText("1 ч. л.");
-    await expect(spices).toHaveText("по желанию");
-    await expect(servingsCard(page)).toContainText("8 вафель");
+    await expect(amount("Разрыхлитель")).toHaveText("1 ч. л.");
+    await expect(amount("Соль")).toHaveText("щепотка");
+    await expect(amount("Чёрный перец")).toHaveText("по желанию");
+    await expect(amount("Растительное масло")).toHaveText("1 ст. л.");
+    await expect(amount("Молоко")).toHaveText("2 ст. л., если творог сухой");
+  });
 
-    await input.fill("137,5");
-    await expect(ingredientRow(page, "Яйца")).toContainText("1 шт.");
-    await expect(ingredientRow(page, "Разрыхлитель")).toContainText("¼–½ ч. л.");
-    await expect(ingredientRow(page, "Соль")).toContainText("¼ ч. л.");
-    await expect(servingsCard(page)).toContainText("2 вафли");
-    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  test("основной ингредиент — название слева, как у остальных, поле рядом в одной строке", async ({ page }) => {
+    for (const width of [375, 1280]) {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto("/admin/ui/recipe/lemonade", { waitUntil: "networkidle" });
+      const name = page.getByText("Лимоны", { exact: true });
+      const input = page.getByRole("textbox", { name: "Лимоны" });
+      const [nameBox, inputBox, sugarBox] = await Promise.all([
+        name.boundingBox(),
+        input.boundingBox(),
+        ingredientRow(page, "Сахар").getByText("Сахар").boundingBox(),
+      ]);
+      if (!nameBox || !inputBox || !sugarBox) throw new Error("нет названия, поля или строки «Сахар»");
+      expect(nameBox.x + nameBox.width).toBeLessThanOrEqual(inputBox.x);
+      expect(Math.abs(nameBox.y + nameBox.height / 2 - (inputBox.y + inputBox.height / 2))).toBeLessThan(6);
+      expect(Math.abs(nameBox.x - sugarBox.x)).toBeLessThan(2);
+      const fonts = await Promise.all([name, ingredientRow(page, "Сахар").getByText("Сахар")].map((l) => l.evaluate((el) => getComputedStyle(el).fontSize)));
+      expect(fonts[0]).toBe(fonts[1]);
+    }
   });
 
   test("вафли — в «Завтраках» и в поиске по ингредиенту «Творог»", async ({ page }) => {
     await page.goto("/admin/ui/section/breakfast", { waitUntil: "networkidle" });
-    await expect(recipeCards(page).filter({ hasText: "Вафли из творога" })).toHaveCount(1);
+    await expect(recipeCards(page).filter({ hasText: "Творожные вафли" })).toHaveCount(1);
     await page.goto("/admin/ui/search", { waitUntil: "networkidle" });
     await page.getByRole("radio", { name: "По ингредиенту" }).click();
     await page.getByRole("row", { name: "Творог" }).click();
-    await expect(page.getByRole("link", { name: /Вафли из творога/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Творожные вафли/ })).toBeVisible();
   });
 });
 

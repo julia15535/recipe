@@ -6,7 +6,7 @@ import { RECIPES } from "./demo-recipes";
 // точное число, без количества — обязательно пометка («по желанию»), выход > 0.
 describe("примерные рецепты прототипа", () => {
   it.each(RECIPES.map((recipe) => [recipe.slug, recipe] as const))("%s — модель согласована", (_, recipe) => {
-    expect(recipe.yield.amount).toBeGreaterThan(0);
+    if (recipe.yield) expect(recipe.yield.amount).toBeGreaterThan(0);
     expect(recipe.ingredients[recipe.main]?.quantity.kind).toBe("exact");
     for (const { quantity, note } of recipe.ingredients) {
       if (quantity.kind === "exact") expect(quantity.value).toBeGreaterThan(0);

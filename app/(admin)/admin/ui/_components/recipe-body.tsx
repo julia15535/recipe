@@ -22,7 +22,7 @@ export function RecipeBody({ recipe, children }: { recipe: DemoRecipe; children:
     if (next.ok) setFactor(next.value / base);
   };
   const reset = () => change(formatInput(base));
-  const servings = recipe.yield.amount * factor;
+
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pt-4 pb-16 lg:pt-8">
@@ -40,11 +40,13 @@ export function RecipeBody({ recipe, children }: { recipe: DemoRecipe; children:
         <TabPanel id="recipe" className="flex flex-col gap-2 pt-6">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <h2 className="font-display text-display-xs text-primary">Ингредиенты</h2>
-            <p className="text-lg text-secondary" aria-live="polite" data-testid="servings">
-              <span aria-hidden>~ </span>
-              <span className="sr-only">примерно </span>
-              {yieldLabel(servings, recipe.yield.forms)}
-            </p>
+            {recipe.yield && (
+              <p className="text-lg text-secondary" aria-live="polite" data-testid="servings">
+                <span aria-hidden>~ </span>
+                <span className="sr-only">примерно </span>
+                {yieldLabel(recipe.yield.amount * factor, recipe.yield.forms)}
+              </p>
+            )}
           </div>
           <IngredientsPanel recipe={recipe} factor={factor} raw={raw} check={check} onChange={change} onReset={reset} />
         </TabPanel>

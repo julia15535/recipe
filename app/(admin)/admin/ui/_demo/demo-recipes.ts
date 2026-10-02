@@ -1,12 +1,16 @@
-import { type DemoRecipe, ing, optional, range } from "./demo-types";
+import { type DemoRecipe, ing, optional } from "./demo-types";
 
 // Примерные рецепты для прототипов (типы и смысл полей — demo-types.ts).
 export const RECIPES: DemoRecipe[] = [
-  // Первый настоящий рецепт владельца (02.10, `_intake/_processed/recipes/vafli-iz-tvoroga.md`); описание — предложение агента.
+  // Рецепт владельца, версия 2 (02.10, `_intake/_processed/recipes/vafli-iz-tvoroga.md`): без описания и выхода.
   {
-    slug: "vafli-iz-tvoroga", title: "Вафли из творога", description: "Несладкие творожные вафли на цельнозерновой муке — с травами и специями.",
-    sections: ["breakfast"], composition: ["protein"], yield: { amount: 4, forms: ["вафля", "вафли", "вафель"] }, tone: "from-accent-100 to-accent-300", main: 0,
-    ingredients: [ing("Творог 0,5%", 275, "г"), ing("Яйца", 2, "шт."), ing("Цельнозерновая мука", 50, "г"), range("Разрыхлитель", 0.5, 1, "ч. л."), ing("Соль", 0.5, "ч. л."), optional("Чёрный перец, итальянские травы или паприка")],
+    slug: "vafli-iz-tvoroga", title: "Творожные вафли",
+    sections: ["breakfast"], composition: ["protein"], tone: "from-accent-100 to-accent-300", main: 0,
+    ingredients: [
+      ing("Творог 0,5%", 275, "г"), ing("Яйца", 2, "шт."), ing("Цельнозерновая мука", 50, "г"), ing("Разрыхлитель", 0.5, "ч. л."),
+      optional("Соль", "щепотка"), optional("Чёрный перец, итальянские травы или паприка"), ing("Растительное масло", 0.5, "ст. л."),
+      { ...ing("Молоко", 1, "ст. л."), note: "если творог сухой" },
+    ],
     search: ["Творог", "Яйца", "Мука"],
     steps: ["Творог разомни или пробей блендером.", "Добавь яйца, соль и специи.", "Всыпь цельнозерновую муку и разрыхлитель.", "Оставь на 5–7 минут, чтобы цельнозерновая мука впитала влагу.", "Разогрей вафельницу и выпекай 6–7 минут до румяной корочки."],
   },

@@ -40,20 +40,26 @@ export function IngredientsPanel({ recipe, factor, raw, check, onChange, onReset
   );
 }
 
+// Число — жирным, пометка («по желанию», «если творог сухой») — обычным текстом; короткая пометка без числа
+// не переносится.
 function IngredientAmount({ item, factor }: { item: DemoIngredient; factor: number }) {
   const amount = formatQuantity(item.quantity, factor, item.unit);
-  const parts = [amount && `${amount} ${item.unit ?? ""}`.trim(), item.note].filter(Boolean);
   return (
-    <span className={cx("text-right", amount ? "shrink-0 font-semibold text-primary" : "text-tertiary")} data-testid="ingredient-amount">
-      {parts.join(", ")}
+    <span className={cx("text-right", amount ? "" : "shrink-0 whitespace-nowrap")} data-testid="ingredient-amount">
+      {amount && <span className="font-semibold whitespace-nowrap text-primary">{`${amount} ${item.unit ?? ""}`.trim()}</span>}
+      {amount && item.note && <span className="text-tertiary">, {item.note}</span>}
+      {!amount && <span className="text-tertiary">{item.note}</span>}
     </span>
   );
 }
 
 type MainProps = Omit<Props, "recipe" | "factor"> & { item: DemoIngredient; base: number };
 
+// Строка основного ингредиента — как у остальных (владелец 02.10, макет): название слева тем же шрифтом,
+// поле количества с единицей сразу рядом; поле называется названием ингредиента (aria-labelledby).
 function MainIngredient({ item, base, raw, check, onChange, onReset }: MainProps) {
   const hintId = useId();
+  const nameId = useId();
   const hints: Record<Exclude<AmountCheck, { ok: true }>["reason"], string> = {
     empty: "Впишите количество",
     format: "Только число, например 250 или 2,5",
@@ -62,18 +68,23 @@ function MainIngredient({ item, base, raw, check, onChange, onReset }: MainProps
   };
   return (
     <div className="-mx-3 flex flex-col gap-2 rounded-2xl bg-accent-50 px-3 py-3">
-      <div className="flex items-end gap-2">
-        <Input
-          label={item.name}
-          value={raw}
-          onChange={onChange}
-          inputMode="decimal"
-          size="lg"
-          isInvalid={!check.ok}
-          aria-describedby={hintId}
-          className="w-40"
-        />
-        <span className="pb-3 text-md text-secondary">{item.unit}</span>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-md">
+        <span id={nameId} className="text-secondary">
+          {item.name}
+        </span>
+        <div className="flex items-center gap-2">
+          <Input
+            aria-labelledby={nameId}
+            value={raw}
+            onChange={onChange}
+            inputMode="decimal"
+            size="lg"
+            isInvalid={!check.ok}
+            aria-describedby={hintId}
+            className="w-32"
+          />
+          <span className="text-secondary">{item.unit}</span>
+        </div>
       </div>
       <p id={hintId} aria-live="polite" className={cx("text-sm", check.ok ? "text-tertiary" : "text-error-primary")}>
         {check.ok ? "Основной ингредиент: впишите своё количество — остальное пересчитается." : hints[check.reason]}

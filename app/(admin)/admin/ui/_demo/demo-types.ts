@@ -11,17 +11,17 @@ export type DemoQuantity = { kind: "exact"; value: number } | { kind: "range"; m
 export type DemoIngredient = { name: string; quantity: DemoQuantity; unit?: string; note?: string };
 
 // Выход: число и изделие с формами слова («вафля / вафли / вафель»); по умолчанию — порции. Показ — «~ N»
-// (владелец 01.10: «~ 4 порции»).
+// (владелец 01.10: «~ 4 порции»). Необязателен: у вафель «абстрактно, зависит от граммов на вафлю» (02.10).
 export type DemoYield = { amount: number; forms?: readonly [one: string, few: string, many: string] };
 
 export type DemoRecipe = {
   slug: string;
   title: string;
-  description: string;
+  description?: string;
   sections: [SectionId, ...SectionId[]];
   composition: CompositionTagId[];
   time?: string;
-  yield: DemoYield;
+  yield?: DemoYield;
   tone: string;
   main: number;
   ingredients: DemoIngredient[];
