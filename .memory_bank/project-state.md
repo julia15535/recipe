@@ -22,7 +22,7 @@ review_after: 2026-10-13
 - **Прод:** https://mycoruja.food — каркас (заглушки `/ru`, `/en`, `/admin`) + пробные экраны для
   владельца `/admin/ui` (главная, поиск, рецепт на примерных рецептах), закрытые входом владельца через
   бота (`/admin/login`, выкачено 02.10, `f9bcf7c`, webhook включён); в кабинете — загрузка рецептов текстом
-  (план `recipe-upload`, выкладка 02.10); закрыт от индексации
+  (план `recipe-upload`, выкачено 02.10, `2365bab`); закрыт от индексации
   (`SITE_INDEXABLE=false`); сертификат Let's Encrypt с автопродлением (acme-companion).
 - **Репозиторий:** `github.com/julia15535/recipe` (публичный), ветка `main`; push — по SSH ключом
   владельца, CI — GitHub Actions (`.github/workflows/ci.yml`).
