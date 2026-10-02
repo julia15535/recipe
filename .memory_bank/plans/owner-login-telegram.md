@@ -146,6 +146,9 @@ long-poll через прокси) — сложнее, чем нужно одн�
   anti-patterns №30); исправлено
 - 2026-10-02 — CI ветки зелёный (28ba8d3). Владелец разрешила запись на прод → 4 настройки бота дописаны в
   `/opt/recipe/web.env` (копия `web.env.bak-20261002`, права 600); merge в main
+- 2026-10-02 — прод `f9bcf7c` (миграция 0001 применена, контейнер healthy, рестартов 0): `/admin` → 307 на
+  вход, страница входа с кнопкой, webhook без секрета → 401; `telegram-webhook.mjs set` — url задан,
+  `allowed_updates` message+callback_query, ошибок нет. Ждём проверку входа владельцем
 
 ## Completion summary
 [—]
