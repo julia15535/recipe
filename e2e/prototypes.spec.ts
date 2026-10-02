@@ -194,25 +194,37 @@ test.describe("первый рецепт владельца — вафли из 
     await expect(amount("Чёрный перец")).toHaveText("по желанию");
     await expect(amount("Растительное масло")).toHaveText("1 ст. л.");
     await expect(amount("Молоко")).toHaveText("2 ст. л., если творог сухой");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+
+    await input.fill("137,5");
+    await expect(ingredientRow(page, "Яйца")).toContainText("1 шт.");
+    await expect(amount("Разрыхлитель")).toHaveText("¼ ч. л.");
+    await expect(amount("Растительное масло")).toHaveText("¼ ст. л.");
+    await expect(amount("Молоко")).toHaveText("½ ст. л., если творог сухой");
   });
 
   test("основной ингредиент — название слева, как у остальных, поле рядом в одной строке", async ({ page }) => {
-    for (const width of [375, 1280]) {
+    for (const [width, slug, main, other] of [
+      [375, "lemonade", "Лимоны", "Сахар"],
+      [1280, "lemonade", "Лимоны", "Сахар"],
+      [375, "vafli-iz-tvoroga", "Творог 0,5%", "Яйца"],
+    ] as const) {
       await page.setViewportSize({ width, height: 800 });
-      await page.goto("/admin/ui/recipe/lemonade", { waitUntil: "networkidle" });
-      const name = page.getByText("Лимоны", { exact: true });
-      const input = page.getByRole("textbox", { name: "Лимоны" });
+      await page.goto(`/admin/ui/recipe/${slug}`, { waitUntil: "networkidle" });
+      const name = page.getByText(main, { exact: true });
+      const input = page.getByRole("textbox", { name: main });
       const [nameBox, inputBox, sugarBox] = await Promise.all([
         name.boundingBox(),
         input.boundingBox(),
-        ingredientRow(page, "Сахар").getByText("Сахар").boundingBox(),
+        ingredientRow(page, other).getByText(other, { exact: true }).boundingBox(),
       ]);
       if (!nameBox || !inputBox || !sugarBox) throw new Error("нет названия, поля или строки «Сахар»");
       expect(nameBox.x + nameBox.width).toBeLessThanOrEqual(inputBox.x);
       expect(Math.abs(nameBox.y + nameBox.height / 2 - (inputBox.y + inputBox.height / 2))).toBeLessThan(6);
       expect(Math.abs(nameBox.x - sugarBox.x)).toBeLessThan(2);
-      const fonts = await Promise.all([name, ingredientRow(page, "Сахар").getByText("Сахар")].map((l) => l.evaluate((el) => getComputedStyle(el).fontSize)));
-      expect(fonts[0]).toBe(fonts[1]);
+      const style = (el: Element) => [getComputedStyle(el).fontSize, getComputedStyle(el).fontWeight, getComputedStyle(el).color].join();
+      const styles = await Promise.all([name, ingredientRow(page, other).getByText(other, { exact: true })].map((l) => l.evaluate(style)));
+      expect(styles[0]).toBe(styles[1]);
     }
   });
 

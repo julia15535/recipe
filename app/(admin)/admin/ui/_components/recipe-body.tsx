@@ -8,8 +8,8 @@ import { formatInput, parseAmount, yieldLabel } from "../_demo/demo-rescale";
 import { type DemoRecipe, baseAmount } from "../_demo/demo-types";
 import { IngredientsPanel } from "./ingredients-panel";
 
-// Тело рецепта: вкладки «Рецепт / Приготовление» (решение владельца); порции — «~ N порций» справа от
-// заголовка «Ингредиенты» (ADR-0021), меняются при вводе количества основного ингредиента (ADR-0016).
+// Тело рецепта: вкладки «Рецепт / Приготовление» (решение владельца); выход — «~ N порций» справа от
+// заголовка «Ингредиенты» (ADR-0021), если задан, меняется при вводе количества основного ингредиента (ADR-0016).
 export function RecipeBody({ recipe, children }: { recipe: DemoRecipe; children: ReactNode }) {
   const base = baseAmount(recipe);
   const [raw, setRaw] = useState(formatInput(base));
@@ -22,7 +22,6 @@ export function RecipeBody({ recipe, children }: { recipe: DemoRecipe; children:
     if (next.ok) setFactor(next.value / base);
   };
   const reset = () => change(formatInput(base));
-
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pt-4 pb-16 lg:pt-8">
