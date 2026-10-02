@@ -15,6 +15,20 @@
       "when": 1790932369293,
       "tag": "0001_owner_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790938770682,
+      "tag": "0002_recipes",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790938792335,
+      "tag": "0003_recipes_constraints_seed",
+      "breakpoints": true
     }
   ]
 }

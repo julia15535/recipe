@@ -4,14 +4,16 @@ import { useId } from "react";
 
 import { AppButton } from "@/components/app-button";
 import { Input } from "@/components/base/input/input";
+import { type Fraction, fraction, mul } from "@/lib/domain/fraction";
+import { type AmountCheck, MAX_FACTOR, formatAmount, formatInput, formatQuantity } from "@/lib/domain/rescale";
 import { cx } from "@/utils/cx";
 
-import { type AmountCheck, MAX_FACTOR, formatAmount, formatInput, formatQuantity } from "../_demo/demo-rescale";
-import { type DemoIngredient, type DemoRecipe, baseAmount } from "../_demo/demo-types";
+import type { RecipeView, ViewIngredient } from "./view";
 
 type Props = {
-  recipe: DemoRecipe;
-  factor: number;
+  recipe: RecipeView;
+  base: Fraction;
+  factor: Fraction;
   raw: string;
   check: AmountCheck;
   onChange: (raw: string) => void;
@@ -19,19 +21,18 @@ type Props = {
 };
 
 // Список ингредиентов: у основного — поле «своё количество» (ADR-0016, без «−/+»), остальные
-// пересчитываются от него (диапазон — с обеих сторон); «по желанию» без количества не пересчитывается.
-// При неверном вводе — подсказка, числа остаются от последнего верного.
-export function IngredientsPanel({ recipe, factor, raw, check, onChange, onReset }: Props) {
+// пересчитываются от него (диапазон — с обеих сторон); без количества («по желанию») — как есть.
+export function IngredientsPanel({ recipe, base, factor, raw, check, onChange, onReset }: Props) {
   return (
     <ul className="flex flex-col divide-y divide-secondary">
-      {recipe.ingredients.map((item, index) =>
-        index === recipe.main ? (
-          <li key={item.name} className="py-3">
-            <MainIngredient item={item} base={baseAmount(recipe)} raw={raw} check={check} onChange={onChange} onReset={onReset} />
+      {recipe.ingredients.map((item) =>
+        item.id === recipe.mainId ? (
+          <li key={item.id} className="py-3">
+            <MainIngredient item={item} base={base} raw={raw} check={check} onChange={onChange} onReset={onReset} />
           </li>
         ) : (
-          <li key={item.name} className="flex items-baseline justify-between gap-4 py-3 text-md">
-            <span className="text-secondary">{item.name}</span>
+          <li key={item.id} className="flex items-baseline justify-between gap-4 py-3 text-md">
+            <span className="break-words text-secondary">{item.name}</span>
             <IngredientAmount item={item} factor={factor} />
           </li>
         ),
@@ -40,9 +41,9 @@ export function IngredientsPanel({ recipe, factor, raw, check, onChange, onReset
   );
 }
 
-// Число — жирным, пометка («по желанию», «если творог сухой») — обычным текстом; короткая пометка без числа
-// не переносится.
-function IngredientAmount({ item, factor }: { item: DemoIngredient; factor: number }) {
+// Число — жирным, пометка («по желанию», «если творог сухой») — обычным текстом; короткая пометка без
+// числа не переносится.
+function IngredientAmount({ item, factor }: { item: ViewIngredient; factor: Fraction }) {
   const amount = formatQuantity(item.quantity, factor, item.unit);
   return (
     <span className={cx("text-right", amount ? "" : "shrink-0 whitespace-nowrap")} data-testid="ingredient-amount">
@@ -53,10 +54,10 @@ function IngredientAmount({ item, factor }: { item: DemoIngredient; factor: numb
   );
 }
 
-type MainProps = Omit<Props, "recipe" | "factor"> & { item: DemoIngredient; base: number };
+type MainProps = Omit<Props, "recipe" | "factor"> & { item: ViewIngredient };
 
-// Строка основного ингредиента — как у остальных (владелец 02.10, макет): название слева тем же шрифтом,
-// поле количества с единицей сразу рядом; поле называется названием ингредиента (aria-labelledby).
+// Строка основного ингредиента — как у остальных (владелец 02.10, макет): название слева, поле с
+// единицей рядом; поле называется названием ингредиента (aria-labelledby).
 function MainIngredient({ item, base, raw, check, onChange, onReset }: MainProps) {
   const hintId = useId();
   const nameId = useId();
@@ -64,12 +65,12 @@ function MainIngredient({ item, base, raw, check, onChange, onReset }: MainProps
     empty: "Впишите количество",
     format: "Только число, например 250 или 2,5",
     zero: "Количество должно быть больше нуля",
-    tooBig: `Слишком много — не больше ${formatAmount(base * MAX_FACTOR, item.unit)} ${item.unit ?? ""}`,
+    tooBig: `Слишком много — не больше ${formatAmount(mul(base, fraction(MAX_FACTOR)), item.unit)} ${item.unit ?? ""}`,
   };
   return (
     <div className="-mx-3 flex flex-col gap-2 rounded-2xl bg-accent-50 px-3 py-3">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-md">
-        <span id={nameId} className="text-secondary">
+        <span id={nameId} className="break-words text-secondary">
           {item.name}
         </span>
         <div className="flex items-center gap-2">

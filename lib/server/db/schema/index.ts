@@ -1,4 +1,6 @@
-// Схема Drizzle — единственный источник типов БД (ADR-0012). Доменные таблицы (рецепт,
-// ингредиенты, каталог) появятся в плане «схема БД». Файл не импортирует server-only:
+// Схема Drizzle — единственный источник типов БД (ADR-0012). Файл не импортирует server-only:
 // его читает drizzle-kit в обычном Node.
 export * from "./auth";
+export * from "./catalog";
+export * from "./recipe-rows";
+export * from "./recipes";

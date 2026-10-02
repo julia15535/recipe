@@ -22,6 +22,7 @@ test.skip(!TELEGRAM.enabled, "нет E2E_TELEGRAM_WEBHOOK_SECRET");
 test.use({ extraHTTPHeaders: CLIENT_IP });
 
 const SESSION = "__Host-owner_session";
+const FAKE_ID = "00000000-0000-4000-8000-000000000000";
 const BINDING = "__Host-login_binding";
 const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
@@ -38,7 +39,7 @@ test.describe("вход владельца — без сессии", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test("кабинет и пробные экраны ведут на вход; страница входа ничего не создаёт до нажатия", async ({ page, request }) => {
-    for (const path of ["/admin", "/admin/ui", "/admin/ui/home", "/admin/ui/recipe/syrniki"]) {
+    for (const path of ["/admin", "/admin/ui", "/admin/ui/home", "/admin/ui/recipe/syrniki", "/admin/recipes/new", `/admin/recipes/${FAKE_ID}`, `/admin/recipes/${FAKE_ID}/edit`]) {
       const res = await request.get(path, { maxRedirects: 0 });
       expect(res.status()).toBe(307);
       expect(res.headers().location).toMatch(/\/admin\/login$/);

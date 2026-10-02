@@ -38,9 +38,3 @@ export const range = (name: string, min: number, max: number, unit: string): Dem
 });
 
 export const optional = (name: string, note = "по желанию"): DemoIngredient => ({ name, quantity: { kind: "none" }, note });
-
-// Количество основного ингредиента — база пересчёта (у основного всегда точное число).
-export function baseAmount(recipe: DemoRecipe): number {
-  const quantity = recipe.ingredients[recipe.main]?.quantity;
-  return quantity?.kind === "exact" ? quantity.value : 1;
-}
