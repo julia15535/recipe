@@ -54,7 +54,10 @@ export function formatAmount(value: number, unit?: string): string {
 // без количества («по желанию») — null, строка не пересчитывается.
 export function formatQuantity(quantity: DemoQuantity, factor: number, unit?: string): string | null {
   if (quantity.kind === "exact") return formatAmount(quantity.value * factor, unit);
-  if (quantity.kind === "range") return `${formatAmount(quantity.min * factor, unit)}–${formatAmount(quantity.max * factor, unit)}`;
+  if (quantity.kind === "range") {
+    const [min, max] = [formatAmount(quantity.min * factor, unit), formatAmount(quantity.max * factor, unit)];
+    return min === max ? min : `${min}–${max}`;
+  }
   return null;
 }
 

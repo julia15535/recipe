@@ -28,6 +28,7 @@ describe("демо-пересчёт прототипа", () => {
     expect(yieldLabel(4, waffles)).toBe("4 вафли");
     expect(yieldLabel(8, waffles)).toBe("8 вафель");
     expect(yieldLabel(21, waffles)).toBe("21 вафля");
+    expect(yieldLabel(4.4, waffles)).toBe("4,4 вафли");
   });
 
   it("ложки и штуки — простыми дробями, только при точном равенстве", () => {
@@ -36,7 +37,10 @@ describe("демо-пересчёт прототипа", () => {
     expect(formatAmount(1.5, "ст. л.")).toBe("1½");
     expect(formatAmount(1 / 3, "шт.")).toBe("⅓");
     expect(formatAmount(2, "шт.")).toBe("2");
-    expect(formatAmount(0.249, "ч. л.")).not.toBe("¼");
+    expect(formatAmount(0.249, "ч. л.")).toBe("0,25");
+    expect(formatAmount(2 / 3, "ст. л.")).toBe("⅔");
+    expect(formatAmount(0.75, "ч. л.")).toBe("¾");
+    expect(formatAmount(4 / 3, "шт.")).toBe("1⅓");
     expect(formatAmount(0.364, "ч. л.")).toBe("0,36");
     expect(formatAmount(137.5, "г")).toBe("137,5");
   });
@@ -46,6 +50,8 @@ describe("демо-пересчёт прототипа", () => {
     expect(formatQuantity({ kind: "range", min: 0.5, max: 1 }, 1, "ч. л.")).toBe("½–1");
     expect(formatQuantity({ kind: "range", min: 0.5, max: 1 }, 2, "ч. л.")).toBe("1–2");
     expect(formatQuantity({ kind: "range", min: 0.5, max: 1 }, 0.5, "ч. л.")).toBe("¼–½");
+    expect(formatQuantity({ kind: "range", min: 0.5, max: 1 }, 0.727, "ч. л.")).toBe("0,36–0,73");
+    expect(formatQuantity({ kind: "range", min: 1, max: 1 }, 1, "ч. л.")).toBe("1");
     expect(formatQuantity({ kind: "none" }, 2)).toBeNull();
   });
 

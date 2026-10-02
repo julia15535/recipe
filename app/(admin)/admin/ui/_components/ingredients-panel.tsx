@@ -43,7 +43,11 @@ export function IngredientsPanel({ recipe, factor, raw, check, onChange, onReset
 function IngredientAmount({ item, factor }: { item: DemoIngredient; factor: number }) {
   const amount = formatQuantity(item.quantity, factor, item.unit);
   const parts = [amount && `${amount} ${item.unit ?? ""}`.trim(), item.note].filter(Boolean);
-  return <span className={cx("shrink-0 text-right", amount ? "font-semibold text-primary" : "text-tertiary")}>{parts.join(", ")}</span>;
+  return (
+    <span className={cx("text-right", amount ? "shrink-0 font-semibold text-primary" : "text-tertiary")} data-testid="ingredient-amount">
+      {parts.join(", ")}
+    </span>
+  );
 }
 
 type MainProps = Omit<Props, "recipe" | "factor"> & { item: DemoIngredient; base: number };

@@ -177,8 +177,8 @@ test.describe("первый рецепт владельца — вафли из 
     await expect(servingsCard(page)).toHaveText("~ примерно 4 вафли");
     await expect(ingredientRow(page, "Разрыхлитель")).toContainText("½–1 ч. л.");
     await expect(ingredientRow(page, "Соль")).toContainText("½ ч. л.");
-    const spices = ingredientRow(page, "Чёрный перец");
-    await expect(spices).toContainText("по желанию");
+    const spices = ingredientRow(page, "Чёрный перец").getByTestId("ingredient-amount");
+    await expect(spices).toHaveText("по желанию");
     await expectNoAxeViolations(page);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
 
@@ -188,7 +188,7 @@ test.describe("первый рецепт владельца — вафли из 
     await expect(ingredientRow(page, "Цельнозерновая мука")).toContainText("100 г");
     await expect(ingredientRow(page, "Разрыхлитель")).toContainText("1–2 ч. л.");
     await expect(ingredientRow(page, "Соль")).toContainText("1 ч. л.");
-    await expect(spices).toHaveText(/по желанию$/);
+    await expect(spices).toHaveText("по желанию");
     await expect(servingsCard(page)).toContainText("8 вафель");
 
     await input.fill("137,5");
@@ -196,6 +196,7 @@ test.describe("первый рецепт владельца — вафли из 
     await expect(ingredientRow(page, "Разрыхлитель")).toContainText("¼–½ ч. л.");
     await expect(ingredientRow(page, "Соль")).toContainText("¼ ч. л.");
     await expect(servingsCard(page)).toContainText("2 вафли");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
   });
 
   test("вафли — в «Завтраках» и в поиске по ингредиенту «Творог»", async ({ page }) => {
