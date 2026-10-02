@@ -25,6 +25,16 @@ env:
   SITE_URL: https://mycoruja.food
   DATABASE_URL: postgres://recipe_app:recipe_app_dev@127.0.0.1:5434/recipe
   MIGRATION_DATABASE_URL: postgres://recipe_migrator:recipe_migrator_dev@127.0.0.1:5434/recipe
+  # Вход владельца в CI — заведомо фальшивые значения, не настоящий бот. Ответы бота уходят в
+  # заглушку Bot API из e2e (e2e/global-setup.ts) — сеть и Telegram не нужны.
+  TELEGRAM_BOT_TOKEN: "1000000:ci-fake-token-not-a-real-bot-000000"
+  TELEGRAM_BOT_USERNAME: ci_fake_recipe_bot
+  TELEGRAM_WEBHOOK_SECRET: ci-fake-webhook-secret-not-real-0000000000
+  OWNER_TELEGRAM_ID: "1000001"
+  TELEGRAM_API_BASE: http://127.0.0.1:3999
+  E2E_TELEGRAM_WEBHOOK_SECRET: ci-fake-webhook-secret-not-real-0000000000
+  E2E_OWNER_TELEGRAM_ID: "1000001"
+  E2E_TELEGRAM_STUB_PORT: "3999"
 
 jobs:
   changes:
@@ -110,6 +120,8 @@ jobs:
             --read-only --tmpfs /tmp --tmpfs /app/.next/cache:uid=10001,gid=10001 \
             --cap-drop=ALL --security-opt no-new-privileges \
             -e DATABASE_URL -e SITE_URL -e GIT_SHA="$GITHUB_SHA" \
+            -e TELEGRAM_BOT_TOKEN -e TELEGRAM_BOT_USERNAME -e TELEGRAM_WEBHOOK_SECRET \
+            -e OWNER_TELEGRAM_ID -e TELEGRAM_API_BASE \
             recipe:ci
           for i in $(seq 1 30); do
             curl -fsS http://127.0.0.1:3000/api/health/ready && exit 0

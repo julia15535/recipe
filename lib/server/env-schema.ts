@@ -22,8 +22,30 @@ const serverSchema = z.object({
   GIT_SHA: z.string().min(1),
 });
 
+// Вход владельца через Telegram-бота (план owner-login-telegram). TELEGRAM_API_BASE — только для
+// заглушки Bot API в CI/e2e; в проде не задаётся.
+const authSchema = z.object({
+  TELEGRAM_BOT_TOKEN: z.string().regex(/^\d{5,20}:[A-Za-z0-9_-]{30,64}$/),
+  TELEGRAM_BOT_USERNAME: z.string().regex(/^[A-Za-z][A-Za-z0-9_]{3,30}bot$/i),
+  TELEGRAM_WEBHOOK_SECRET: z.string().regex(/^[A-Za-z0-9_-]{32,256}$/),
+  // Telegram: id пользователя — не больше 52 значащих бит.
+  OWNER_TELEGRAM_ID: z
+    .string()
+    .regex(/^[1-9]\d{0,15}$/)
+    .refine((value) => /^\d+$/.test(value) && BigInt(value) < 2n ** 52n),
+  TELEGRAM_API_BASE: z.url().default("https://api.telegram.org"),
+});
+const AUTH_KEYS = ["TELEGRAM_BOT_TOKEN", "TELEGRAM_BOT_USERNAME", "TELEGRAM_WEBHOOK_SECRET", "OWNER_TELEGRAM_ID"] as const;
+
 export type SiteConfig = { siteUrl: string; indexable: boolean };
 export type ServerEnv = z.infer<typeof serverSchema>;
+export type AuthConfig = {
+  botToken: string;
+  botUsername: string;
+  webhookSecret: string;
+  ownerTelegramId: bigint;
+  apiBase: string;
+};
 
 function withDevDefaults(source: Source, mode: Mode, keys: readonly (keyof typeof DEV_DEFAULTS)[]): Source {
   if (mode === "production") return source;
@@ -52,4 +74,21 @@ export function parseServerEnv(source: Source, mode: Mode): ServerEnv {
   const parsed = serverSchema.safeParse(withDevDefaults(source, mode, ["DATABASE_URL", "GIT_SHA"]));
   if (!parsed.success) fail("server", parsed.error);
   return parsed.data;
+}
+
+/**
+ * Вход владельца. Ни одна из четырёх переменных не задана → вход выключен (null), сайт работает.
+ * Задана часть или формат неверен → ошибка: это ошибка выкладки, а не «вход выключен».
+ */
+export function parseAuthEnv(source: Source): AuthConfig | null {
+  if (AUTH_KEYS.every((key) => !source[key])) return null;
+  const parsed = authSchema.safeParse(source);
+  if (!parsed.success) fail("auth", parsed.error);
+  return {
+    botToken: parsed.data.TELEGRAM_BOT_TOKEN,
+    botUsername: parsed.data.TELEGRAM_BOT_USERNAME,
+    webhookSecret: parsed.data.TELEGRAM_WEBHOOK_SECRET,
+    ownerTelegramId: BigInt(parsed.data.OWNER_TELEGRAM_ID),
+    apiBase: parsed.data.TELEGRAM_API_BASE.replace(/\/+$/, ""),
+  };
 }

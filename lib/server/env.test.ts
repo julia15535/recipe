@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseServerEnv, parseSiteConfig } from "./env-schema";
+import { parseAuthEnv, parseServerEnv, parseSiteConfig } from "./env-schema";
 
 describe("parseSiteConfig", () => {
   it("в разработке подставляет локальный адрес и не индексирует", () => {
@@ -34,5 +34,36 @@ describe("parseServerEnv", () => {
 
   it("не дописывает дефолты в production, даже если часть переменных есть", () => {
     expect(() => parseServerEnv({ DATABASE_URL: "postgres://app@db:5432/recipe" }, "production")).toThrow(/GIT_SHA/);
+  });
+});
+
+describe("parseAuthEnv", () => {
+  const valid = {
+    TELEGRAM_BOT_TOKEN: "123456:fake-token-for-tests-only-aaaaaaaaaa",
+    TELEGRAM_BOT_USERNAME: "test_recipes_bot",
+    TELEGRAM_WEBHOOK_SECRET: "fake-webhook-secret-for-tests-0000000",
+    OWNER_TELEGRAM_ID: "4503599627370495",
+  };
+
+  it("без переменных вход выключен, а не ошибка", () => {
+    expect(parseAuthEnv({})).toBeNull();
+  });
+
+  it("id владельца — bigint (предел Telegram 2^52); адрес Bot API по умолчанию — Telegram", () => {
+    const config = parseAuthEnv(valid);
+    expect(config?.ownerTelegramId).toBe(4503599627370495n);
+    expect(() => parseAuthEnv({ ...valid, OWNER_TELEGRAM_ID: "4503599627370496" })).toThrow(/OWNER_TELEGRAM_ID/);
+    expect(config?.apiBase).toBe("https://api.telegram.org");
+  });
+
+  it("часть переменных — ошибка с именами, без значений", () => {
+    const run = () => parseAuthEnv({ TELEGRAM_BOT_TOKEN: valid.TELEGRAM_BOT_TOKEN });
+    expect(run).toThrow(/TELEGRAM_BOT_USERNAME.*TELEGRAM_WEBHOOK_SECRET.*OWNER_TELEGRAM_ID/);
+    expect(run).not.toThrow(/fake-token/);
+  });
+
+  it("отвергает короткий секрет webhook и нечисловой id", () => {
+    expect(() => parseAuthEnv({ ...valid, TELEGRAM_WEBHOOK_SECRET: "short" })).toThrow(/TELEGRAM_WEBHOOK_SECRET/);
+    expect(() => parseAuthEnv({ ...valid, OWNER_TELEGRAM_ID: "@some_user" })).toThrow(/OWNER_TELEGRAM_ID/);
   });
 });

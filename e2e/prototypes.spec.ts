@@ -1,9 +1,14 @@
 import AxeBuilder from "@axe-core/playwright";
 import { type Page, expect, test } from "@playwright/test";
 
+import { TELEGRAM } from "./support/telegram";
+
 // Пробные экраны (планы home-and-recipe-screens, screens-owner-feedback): каталог с 11 местами (пустые —
 // бледные, ADR-0020), поиск за лупой, строка «время + цветные теги» и «~ N порций» (ADR-0021), пересчёт
 // от основного ингредиента (ADR-0016). Тесты с меткой @desktop идут на 1280 px, остальные — на 375 px.
+// Пробные экраны закрыты входом владельца — нужна сессия из e2e/auth.setup.ts.
+test.skip(!TELEGRAM.enabled, "нет E2E_TELEGRAM_WEBHOOK_SECRET — пробные экраны закрыты входом");
+
 const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 async function expectNoAxeViolations(page: Page) {
@@ -253,7 +258,7 @@ test.describe("пробные экраны — страница раздела �
     await expect(page.getByRole("textbox")).toHaveCount(0);
   });
 
-  test("пустой раздел по адресу — «Пока нет рецептов», неизвестный — 404", async ({ page, request }) => {
+  test("пустой раздел по адресу — «Пока нет рецептов», неизвестный — 404", async ({ page }) => {
     await page.goto("/admin/ui/section/preserves", { waitUntil: "networkidle" });
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Заготовки");
     await expect(page.getByText("Пока нет рецептов — скоро появятся.")).toBeVisible();
@@ -262,7 +267,9 @@ test.describe("пробные экраны — страница раздела �
     await page.getByRole("button", { name: "Каталог" }).click();
     await expect(page.getByRole("dialog", { name: "Каталог" }).locator('[aria-current="page"]')).toHaveText("Заготовки");
     await page.keyboard.press("Escape");
-    expect((await request.get("/admin/ui/section/no-such-section")).status()).toBe(404);
+    // Кабинет отдаётся потоком (CSP с nonce) — notFound() приходит после заголовков, код 200.
+    await page.goto("/admin/ui/section/no-such-section");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Такой страницы в кабинете нет");
   });
 
   test("старый выбор «Рецептов: 0» в браузере больше не прячет рецепты; переключателя нет", async ({ page }) => {

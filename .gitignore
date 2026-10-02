@@ -19,6 +19,7 @@
 /playwright-report/
 /test-results/
 /blob-report/
+/e2e/.auth/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store

@@ -1,9 +1,13 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
+import { TELEGRAM } from "./support/telegram";
+
 // Дизайн-система (ADR-0015): доступность, размер касания, шрифты без внешних запросов.
-const PROTOTYPES = ["/admin/ui", "/admin/ui/home", "/admin/ui/search", "/admin/ui/recipe/syrniki", "/admin/ui/recipe/bowl", "/admin/ui/recipe/vafli-iz-tvoroga", "/admin/ui/section/soups"];
-const PAGES = ["/ru", "/en", "/admin", ...PROTOTYPES];
+// Кабинет и пробные экраны закрыты входом: без секрета webhook (e2e против прода) их не проверить.
+const ADMIN = ["/admin/ui", "/admin/ui/home", "/admin/ui/search", "/admin/ui/recipe/syrniki", "/admin/ui/recipe/bowl", "/admin/ui/recipe/vafli-iz-tvoroga", "/admin/ui/section/soups"];
+const PROTOTYPES = TELEGRAM.enabled ? ADMIN : [];
+const PAGES = ["/ru", "/en", ...(TELEGRAM.enabled ? ["/admin", ...PROTOTYPES] : [])];
 
 test.describe("дизайн-система", () => {
   for (const path of PAGES) {

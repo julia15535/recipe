@@ -3,24 +3,22 @@ import NextLink from "next/link";
 import { notFound } from "next/navigation";
 
 import { SiteHeader } from "@/components/site-header";
+import { requireOwner } from "@/lib/server/auth/owner";
 
 import { PrototypeBar } from "../../_components/prototype-bar";
 import { RecipeGrid } from "../../_components/recipe-card";
-import { PROTOTYPE, SECTIONS, parseSectionId, sectionLabel } from "../../_demo/demo-catalog";
+import { PROTOTYPE, parseSectionId, sectionLabel } from "../../_demo/demo-catalog";
 import { headerProps, recipesInSection } from "../../_demo/demo-selection";
 
 // Прототип страницы раздела (владелец 01.10: «убери там поиск в начале, пусть сразу будут рецепты»):
 // крошки, заголовок раздела и его рецепты; на сайте — `/{locale}/catalog/{slug}` (ADR-0017).
-export function generateStaticParams() {
-  return SECTIONS.map(({ id }) => ({ id }));
-}
-
 export async function generateMetadata({ params }: PageProps<"/admin/ui/section/[id]">): Promise<Metadata> {
   const id = parseSectionId((await params).id);
   return { title: `${id ? sectionLabel(id) : "Раздел"} — пробный экран · Книга рецептов` };
 }
 
 export default async function SectionPrototypePage({ params }: PageProps<"/admin/ui/section/[id]">) {
+  await requireOwner();
   const id = parseSectionId((await params).id);
   if (!id) notFound();
   const recipes = recipesInSection(id);

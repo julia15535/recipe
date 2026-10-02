@@ -1,5 +1,6 @@
 import "server-only";
-import { drizzle } from "drizzle-orm/postgres-js";
+import type { PgDatabase } from "drizzle-orm/pg-core";
+import { drizzle, type PostgresJsQueryResultHKT } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
 import { getServerEnv } from "@/lib/server/env";
@@ -25,6 +26,9 @@ export function getSql(): Sql {
 export function getDb() {
   return drizzle(getSql(), { schema });
 }
+
+/** База или открытая транзакция — функции доступа к данным принимают любое из двух. */
+export type Executor = PgDatabase<PostgresJsQueryResultHKT, typeof schema>;
 
 /** `select 1` с жёстким таймаутом — для /api/health/ready. */
 export async function pingDb(timeoutMs: number): Promise<boolean> {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { AppButton } from "@/components/app-button";
+import { requireOwner } from "@/lib/server/auth/owner";
 
 import { PROTOTYPE } from "./_demo/demo-catalog";
 
@@ -13,8 +14,9 @@ const SCREENS = [
 ];
 
 // Список пробных экранов (план home-and-recipe-screens): владелец смотрит их с телефона и компьютера
-// до того, как они появятся на настоящем сайте. Закрыто от поисковиков; паролем — когда появится вход.
-export default function PrototypesIndexPage() {
+// до того, как они появятся на настоящем сайте. Закрыто от поисковиков и входом владельца.
+export default async function PrototypesIndexPage() {
+  await requireOwner();
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-screen-sm flex-col gap-6 px-4 py-10">
       <header className="flex flex-col gap-2">

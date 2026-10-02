@@ -26,7 +26,9 @@ mkdir -p /opt/recipe/{db,backups,state} /etc/recipe && chmod 700 /opt/recipe/{ba
 # Секреты: генерируются на сервере, файлы 0600, наружу не печатаются.
 #   /opt/recipe/db.env       POSTGRES_USER=postgres, POSTGRES_PASSWORD, POSTGRES_DB=recipe
 #   /opt/recipe/roles.env    RECIPE_APP_PASSWORD, RECIPE_MIGRATOR_PASSWORD
-#   /opt/recipe/web.env      DATABASE_URL (recipe_app@recipe-db), SITE_URL, SITE_INDEXABLE=false
+#   /opt/recipe/web.env      DATABASE_URL (recipe_app@recipe-db), SITE_URL, SITE_INDEXABLE=false,
+#                            вход владельца: TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_USERNAME,
+#                            TELEGRAM_WEBHOOK_SECRET, OWNER_TELEGRAM_ID (все четыре или ни одной)
 #   /opt/recipe/migrate.env  MIGRATION_DATABASE_URL (recipe_migrator@recipe-db)
 #   /etc/recipe/deploy.env   см. deploy.env.example (домены, email ACME, сеть прокси)
 # GIT_SHA в web.env НЕ задавать: он зашит в образ, и smoke сверяет именно его.
@@ -62,6 +64,30 @@ journalctl -u recipe-deploy --since today          # что делал авто�
 : > /opt/recipe/state/failed-images                # снять карантин
 docker logs --tail 200 recipe-web                  # логи сайта (JSON, телефоны/токены замаскированы)
 cat /opt/recipe/state/heartbeat                    # таймер деплоя жив (обновляется каждый тик)
+```
+
+## Вход владельца (Telegram-бот)
+Как устроено — `.memory_bank/core/auth-publishing.md`. Значения — только в `/opt/recipe/web.env` (0600) и
+в `_secrets/ACCESS.md`. Задана часть переменных — кандидат не стартует: прод остаётся на прежнем
+контейнере, образ уходит в карантин (после `--force` того же образа — снять карантин, см. «Повседневное»).
+```bash
+# Включить webhook (после выкладки образа со входом), с машины, где есть токен:
+node --env-file=<файл: TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET, SITE_URL> scripts/telegram-webhook.mjs set
+node --env-file=<тот же файл> scripts/telegram-webhook.mjs info   # url, очередь, последняя ошибка
+```
+Новые значения в `web.env` подхватывает только новый контейнер: `/usr/local/bin/recipe-deploy.sh --force`.
+
+**Аварийно** (по порядку, без спешки — кабинет без входа просто закрыт):
+| Что случилось | Что сделать |
+|---------------|-------------|
+| Утёк токен бота | @BotFather → `/revoke` → новый токен в `web.env` и `_secrets` → `recipe-deploy.sh --force` → `telegram-webhook.mjs set` |
+| Утёк секрет webhook | новый секрет (`openssl rand -hex 32`) в `web.env` и `_secrets` → `--force` → `set` |
+| Чужой вошёл / потерян телефон | отозвать все сессии (ниже); в Telegram: «Устройства» → завершить чужие сеансы, включить облачный пароль |
+| Сменился аккаунт владельца | новый `OWNER_TELEGRAM_ID` в `web.env` → `--force`: старые сессии перестают действовать сразу |
+| Webhook не доходит | `telegram-webhook.mjs info` (`last_error`); запасной путь — long-poll одним процессом (не сделан) |
+```bash
+# Отозвать все сессии кабинета (владельцу нужно будет войти заново):
+docker exec recipe-db psql -U postgres -d recipe -c "update owner_sessions set revoked_at = now() where revoked_at is null"
 ```
 
 ## Бэкап и восстановление

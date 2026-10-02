@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
-// ADR-0011: базовые заголовки безопасности. frame-ancestors — директива CSP; полный CSP появится
-// до админки и импорта, пока от встраивания в iframe защищает X-Frame-Options.
+// ADR-0011: базовые заголовки безопасности. Строгая CSP с nonce — у кабинета /admin (proxy.ts);
+// публичным страницам от встраивания в iframe пока хватает X-Frame-Options.
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -21,7 +21,13 @@ const nextConfig: NextConfig = {
   // next dev иначе дописывает свой блок в AGENTS.md/CLAUDE.md — CLAUDE.md проекта трогать нельзя.
   agentRules: false,
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    // Кабинет не передаёт адрес страницы никуда (ссылка на бота уходит в Telegram без Referer).
+    const adminHeaders = [{ key: "Referrer-Policy", value: "no-referrer" }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      { source: "/admin", headers: adminHeaders },
+      { source: "/admin/:path*", headers: adminHeaders },
+    ];
   },
   async redirects() {
     if (!siteHost || siteHost.startsWith("localhost") || siteHost.startsWith("127.")) return [];

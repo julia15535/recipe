@@ -50,6 +50,7 @@ SOFTWARE.
 - `react-aria-components`, `tailwindcss-react-aria-components` — Apache-2.0 (Adobe)
 - `lucide-react` — ISC (иконки)
 - `@tailwindcss/typography`, `tailwindcss-animate`, `tailwind-merge` (его использует `utils/cx.ts`) — MIT
+- `uqr` (QR-код ссылки на бота на странице входа) — MIT (UnJS)
 
 ## Шрифты
 - Prata (заголовки) и Manrope (текст) — SIL Open Font License 1.1; подключаются через `next/font/google`,

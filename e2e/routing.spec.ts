@@ -48,8 +48,11 @@ test.describe("локали и маршруты", () => {
     expect((await request.get("/fr")).status()).toBe(404);
   });
 
-  test("/admin — без локали, закрыт от индексации, по-русски", async ({ request }) => {
-    const res = await request.get("/admin", { maxRedirects: 0 });
+  test("/admin — без локали, закрыт от индексации, по-русски; без входа — на /admin/login", async ({ request }) => {
+    const closed = await request.get("/admin", { maxRedirects: 0, headers: { cookie: "" } });
+    expect(closed.status()).toBe(307);
+    expect(closed.headers().location).toMatch(/\/admin\/login$/);
+    const res = await request.get("/admin/login", { maxRedirects: 0 });
     expect(res.status()).toBe(200);
     const html = await res.text();
     expect(html).toMatch(/<html[^>]*lang="ru"/);

@@ -3,8 +3,9 @@ import "server-only";
 type Level = "debug" | "info" | "warn" | "error";
 type Fields = Record<string, unknown>;
 
-// Ключи, значения которых никогда не пишем в лог (телефон, токены, текст импорта рецепта).
-const SECRET_KEY = /(pass(word)?|secret|token|authorization|cookie|api[-_]?key|session)/i;
+// Ключи, значения которых никогда не пишем в лог (телефон, токены, вход владельца, текст импорта).
+const SECRET_KEY = /(pass(word)?|secret|token|authorization|cookie|api[-_]?key|session|challenge|binding|nonce|hash)/i;
+const SECRET_EXACT_KEY = /^(code|state|update|callback_data|data|initData)$/i;
 const PHONE_KEY = /phone/i;
 const TEXT_KEY = /^(text|importText|transcript|rawText)$/;
 const PHONE_IN_TEXT = /\+?\d[\d\s()-]{8,}\d/g;
@@ -18,7 +19,7 @@ function maskPhone(value: string): string {
 /** Маскирует секреты рекурсивно. Экспортирована для тестов. */
 export function redact(value: unknown, key = "", depth = 0): unknown {
   if (depth > MAX_DEPTH) return "[depth]";
-  if (SECRET_KEY.test(key)) return "[redacted]";
+  if (SECRET_KEY.test(key) || SECRET_EXACT_KEY.test(key)) return "[redacted]";
   if (typeof value === "string") {
     if (PHONE_KEY.test(key)) return maskPhone(value);
     if (TEXT_KEY.test(key)) return `[text len=${value.length}]`;
