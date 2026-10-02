@@ -35,14 +35,14 @@ Vitest 4 + Playwright.
 - `lib/server/` — `server-only`: env, БД (`lib/server/db/client.ts`), логгер с маскированием (`log.ts`), вход
   (`lib/server/auth/`, `requireOwner()`), рецепты (`lib/server/recipes/`); без него намеренно — `env-schema.ts`, схема БД и чистые модули входа.
   UI в БД не ходит.
-- Env: публичное (`SITE_URL`, `SITE_INDEXABLE`) запекается при сборке; секреты (`DATABASE_URL`)
+- Env: публичное (`SITE_URL`, `SITE_INDEXABLE`) запекается при сборке (`SITE_INDEXABLE` ещё читают metadata
+  разделов и рецептов при запросе — ADR-0027); секреты (`DATABASE_URL`)
   лениво; прод без них не стартует (`instrumentation-node.ts`).
 - Миграции: `drizzle-kit generate` → `scripts/migrate.mjs` (advisory lock); роли —
   `deploy/recipe-roles.sql`.
 
 ## Направления для следующих планов
-- Импорт: очередь-таблица в Postgres (`FOR UPDATE SKIP LOCKED`), воркер — контейнер из того же образа;
-  загрузки — потоковый Route Handler с лимитами.
+- Импорт файлов: очередь-таблица в Postgres (`SKIP LOCKED`), воркер из того же образа, потоковый Route Handler.
 - ИИ на входе — `lib/server/ai/` (fetch-клиент Vercel AI Gateway, ADR-0024); фото и голос — тем же путём.
 - Критический CVE Next/React — обновление в тот же день. Кэш сайта и его сброс — ADR-0027.
 

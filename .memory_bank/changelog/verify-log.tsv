@@ -50,3 +50,16 @@ date	doc	reason	claims	mismatch	fixed	note
 2026-10-02	.memory_bank/core/auth-publishing.md	code	6	1	1	
 2026-10-02	.memory_bank/core/architecture.md	code	6	1	1	
 2026-10-02	.memory_bank/core/deployment.md	code	3	0	0	
+2026-10-02	.memory_bank/core/seo-i18n.md	code	18	0	0	
+2026-10-02	.memory_bank/core/search.md	code	20	1	1	
+2026-10-02	.memory_bank/core/ux.md	code	15	0	0	
+2026-10-02	.memory_bank/core/architecture.md	code	19	1	1	
+2026-10-02	.memory_bank/core/deployment.md	code	20	0	0	
+2026-10-02	.memory_bank/domain/screens.md	code	38	4	4	
+2026-10-02	.memory_bank/domain/recipe-upload.md	code	85	5	5	
+2026-10-02	.memory_bank/core/recipe-upload.md	code	12	1	1	
+2026-10-02	.memory_bank/core/catalog.md	rotation	16	2	2	
+2026-10-02	.memory_bank/core/auth-publishing.md	code	17	1	1	
+2026-10-02	.memory_bank/domain/owner-auth.md	code	6	0	0	
+2026-10-02	.memory_bank/core/access-and-integrations.md	code	3	0	0	
+2026-10-02	.claude/rules/ui-rules.md	code	6	1	1	
