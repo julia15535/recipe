@@ -6,10 +6,11 @@ export type Line = { n: number; text: string };
 export type KeyLine = { key: string; value: string; line: Line };
 export type Blocks = { title: Line | null; description: Line[]; keys: KeyLine[]; ingredients: Line[]; steps: Line[]; tips: Line[] };
 
+// Заголовок блока — один на строке или с текстом после двоеточия («Приготовление: 1. Творог…»).
 const HEADERS = {
-  ingredients: /^(?:ингредиенты|состав|продукты)\s*:?$/i,
-  steps: /^(?:приготовление|способ приготовления|как готовить|шаги)\s*:?$/i,
-  tips: /^(?:советы|совет)\s*:?$/i,
+  ingredients: /^(?:ингредиенты|состав|продукты)\s*(?::\s*(.*))?$/i,
+  steps: /^(?:приготовление|способ приготовления|как готовить|как приготовить|шаги)\s*(?::\s*(.*))?$/i,
+  tips: /^(?:советы|совет)\s*(?::\s*(.*))?$/i,
 } as const;
 const KEY = /^(название|рецепт|теги|тег|разделы|раздел|категории|категория|описание|время приготовления|время|выход|порции|порций)\s*:\s*(.*)$/i;
 
@@ -22,6 +23,8 @@ export function splitBlocks(text: string): Blocks {
     const header = (Object.keys(HEADERS) as (keyof typeof HEADERS)[]).find((name) => HEADERS[name].test(line.text));
     if (header) {
       mode = header;
+      const rest = HEADERS[header].exec(line.text)?.[1]?.trim();
+      if (rest) blocks[header].push({ n: line.n, text: rest });
       return;
     }
     const key = mode === "steps" ? null : KEY.exec(line.text);

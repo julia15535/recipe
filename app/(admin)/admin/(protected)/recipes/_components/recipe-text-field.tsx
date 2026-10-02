@@ -7,7 +7,7 @@ export function RecipeTextField({ value, onChange }: { value: string; onChange: 
       </label>
       <p id="recipe-text-hint" className="text-sm text-tertiary">
         Как пишете обычно: название, «Теги: завтрак, белок», «Ингредиенты:» (у основного — «— основной ингредиент»),
-        «Приготовление:» с шагами по номерам.
+        «Приготовление:» и шаги — «1.», «1 —» или каждый с новой строки.
       </p>
       <textarea
         id="recipe-text"

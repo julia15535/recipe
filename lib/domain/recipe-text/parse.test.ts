@@ -78,10 +78,44 @@ describe("разбор текста — ошибки и предупрежден
     expect(codes(base.replace("завтрак", "завтрак, вкуснота"))).toEqual(["warning:unknown-tag"]);
   });
 
-  it("строка без номера в шагах приклеивается с предупреждением; советы — пока пропускаются", () => {
-    const result = parseRecipeText(`${base}\nи обжарить.\nСоветы:\nПодавать со сметаной.`);
-    expect(result.draft.steps).toEqual(["Смешать. и обжарить."]);
-    expect(codes(`${base}\nи обжарить.\nСоветы:\nПодавать со сметаной.`)).toEqual(["warning:step-joined", "warning:tips-skipped"]);
+  it("оборванная строка шага (перенос PDF) приклеивается с предупреждением; советы — пока пропускаются", () => {
+    const text = `${base.replace("1. Смешать.", "1. Смешать и")}\nобжарить.\nСоветы:\nПодавать со сметаной.`;
+    expect(parseRecipeText(text).draft.steps).toEqual(["Смешать и обжарить."]);
+    expect(codes(text)).toEqual(["warning:step-joined", "warning:tips-skipped"]);
+  });
+
+  it("шаги как пишет владелец: «1 — Текст» через пустую строку; без номеров — каждая строка шаг", () => {
+    const owner = parseRecipeText(
+      `${base.split("Приготовление:")[0]}Приготовление\n\n1 — Орехи выложить на противень и поставить в духовку на 7–8 минут. Также можно на сковороде.\n\n2 — Готовые орехи остудить и порубить.\n\n3 — Апельсин вымыть.`,
+    );
+    expect(owner.issues).toEqual([]);
+    expect(owner.draft.steps).toEqual([
+      "Орехи выложить на противень и поставить в духовку на 7–8 минут. Также можно на сковороде.",
+      "Готовые орехи остудить и порубить.",
+      "Апельсин вымыть.",
+    ]);
+    const plain = parseRecipeText(base.replace("1. Смешать.", "Смешать.\nОбжарить.\nПодать."));
+    expect(plain.draft.steps).toEqual(["Смешать.", "Обжарить.", "Подать."]);
+  });
+
+  it("несколько шагов в одной строке и «Приготовление: 1. …» на строке заголовка", () => {
+    const inline = parseRecipeText(base.replace("1. Смешать.", "1. Смешать творог. 2. Добавить 2 ст. л. сахара. 3) Жарить 3–4 минуты. 4 — Подать."));
+    expect(inline.draft.steps).toEqual(["Смешать творог.", "Добавить 2 ст. л. сахара.", "Жарить 3–4 минуты.", "Подать."]);
+    const sameLine = parseRecipeText(base.replace("Приготовление:\n1. Смешать.", "Приготовление: 1. Смешать.\n2. Жарить."));
+    expect(sameLine.ok).toBe(true);
+    expect(sameLine.draft.steps).toEqual(["Смешать.", "Жарить."]);
+  });
+
+  it("ингредиенты владельца без маркеров: «сода — 3/4 ч. л. (примерно 3 г)», «соль — на кончике ножа (…)»", () => {
+    const result = parseRecipeText(
+      base.replace("- Сахар — 2 ст. л.", "сода — 3/4 ч. л. (примерно 3 г)\nсоль — на кончике ножа (примерно 1 г)\nимбирь молотый — 1/2 ч. л. (примерно 1 г)"),
+    );
+    expect(result.ok).toBe(true);
+    expect(result.draft.ingredients.slice(1).map(({ name, unit, note }) => [name, unit, note])).toEqual([
+      ["Сода", "ч. л.", "примерно 3 г"],
+      ["Соль", null, "на кончике ножа, примерно 1 г"],
+      ["Имбирь молотый", "ч. л.", "примерно 1 г"],
+    ]);
   });
 
   it("пределы: пусто, больше 20 КБ в байтах UTF-8 (эмодзи — 4 байта), служебные символы", () => {
@@ -103,7 +137,7 @@ describe("разбор текста — ошибки и предупрежден
     expect(result.draft.title).toBe("Сырники");
     expect(result.draft.description).toBe("Любимые сырники");
     expect(result.draft.time).toBeNull();
-    expect(result.draft.steps.at(-1)).toBe("Смешать. Время приготовления: 30 минут");
+    expect(result.draft.steps.at(-1)).toBe("Время приготовления: 30 минут");
     const long = parseRecipeText(`Сырники\nНазвание: ${"а".repeat(130)}\nТеги: завтрак`);
     expect(long.issues.find((item) => item.code === "title-too-long")?.line).toBe(2);
   });

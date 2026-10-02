@@ -4,7 +4,8 @@ import { type Issue, issue } from "./issues";
 export const LIMITS = {
   bytes: 20_480,
   lines: 300,
-  lineLength: 500,
+  // Шаг часто пишут одним абзацем — строка может быть длинной, как шаг.
+  lineLength: 2000,
   title: 120,
   ingredients: 60,
   steps: 40,

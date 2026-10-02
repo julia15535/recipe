@@ -4,7 +4,7 @@ import type { SectionCode, TagCode } from "../catalog";
 import type { Fraction } from "../fraction";
 import type { WordForms } from "../rescale";
 import { type Blocks, type Line, splitBlocks } from "./blocks";
-import { type IngredientLine, MARKER, parseIngredientLine } from "./ingredient-line";
+import { type IngredientLine, parseIngredientLine } from "./ingredient-line";
 import { type Issue, issue } from "./issues";
 import { LIMITS, checkLimits } from "./limits";
 import { readMeta } from "./meta";
@@ -83,16 +83,28 @@ function findMain(ingredients: ParsedIngredient[], issues: Issue[]): number | nu
   return marked.length === 1 && main?.quantity.kind === "exact" ? (marked[0] ?? null) : null;
 }
 
+// Номер шага: «1.», «1)», «1:», «1 — » (так пишет владелец, 02.10), «Шаг 1», «1.Творог», маркеры списка.
+const STEP_MARKER = /^\s*(?:(?:шаг\s*)?\d{1,2}\s*(?:[.):](?=\s|\p{L})|[—–-]\s)|шаг\s*\d{1,2}(?=\s)|[●•▪◦∙·*]|[-–—](?=\s))\s*/iu;
+// Несколько шагов в одной строке: «1. Творог разомни. 2. Добавь яйца.» — делим перед «N. Заглавная»
+// или «N — Заглавная»; «на 7–8 минут» не делится (после числа — не заглавная).
+const INLINE_STEP = /\s+(?=\d{1,2}\s*(?:[.)]|[—–-]\s)\s*\p{Lu})/u;
+// Строка — продолжение шага, только если шаг оборван (без точки в конце) и строка с маленькой буквы
+// (так переносит строки PDF); иначе это новый шаг, даже без номера.
+const CONTINUES = (previous: string, text: string) => !/[.!?…:;)»"]$/.test(previous) && /^\p{Ll}/u.test(text);
+
 function readSteps(lines: Line[], issues: Issue[]): string[] {
   const steps: string[] = [];
   for (const line of lines) {
-    const marked = MARKER.test(line.text);
-    const text = line.text.replace(MARKER, "").trim();
-    if (!text) continue; // строка из одного маркера — пустой шаг не создаём
-    if (!marked && steps.length > 0) {
-      steps[steps.length - 1] = `${steps.at(-1)} ${text}`;
-      issues.push(issue("step-joined", line.n, line.text));
-    } else steps.push(text);
+    for (const part of line.text.split(INLINE_STEP)) {
+      const marked = STEP_MARKER.test(part);
+      const text = part.replace(STEP_MARKER, "").trim();
+      if (!text) continue; // строка из одного маркера — пустой шаг не создаём
+      const previous = steps.at(-1);
+      if (!marked && previous !== undefined && CONTINUES(previous, text)) {
+        steps[steps.length - 1] = `${previous} ${text}`;
+        issues.push(issue("step-joined", line.n, line.text));
+      } else steps.push(text);
+    }
   }
   if (steps.length === 0) issues.push(issue("no-steps"));
   if (steps.length > LIMITS.steps) issues.push(issue("too-many-steps"));
