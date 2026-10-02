@@ -34,10 +34,12 @@ export function RecipeIntro({ recipe }: { recipe: DemoRecipe }) {
       <h1 className="font-display text-display-sm text-primary lg:text-display-md">{recipe.title}</h1>
       <p className="text-lg text-tertiary">{recipe.description}</p>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2" data-testid="recipe-meta">
-        <p className="flex items-center gap-1.5 text-md text-secondary">
-          <Clock className="size-5" aria-hidden />
-          {recipe.time}
-        </p>
+        {recipe.time && (
+          <p className="flex items-center gap-1.5 text-md text-secondary">
+            <Clock className="size-5" aria-hidden />
+            {recipe.time}
+          </p>
+        )}
         <CompositionTags tags={compositionTags(recipe.composition)} label="Особенности состава" />
       </div>
       <div className={cx("mt-2 aspect-[3/2] rounded-2xl bg-linear-to-br lg:aspect-[16/9]", recipe.tone)} aria-hidden />

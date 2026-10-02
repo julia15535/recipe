@@ -168,6 +168,46 @@ test.describe("пробные экраны — телефон", () => {
   });
 });
 
+test.describe("первый рецепт владельца — вафли из творога", () => {
+  test("диапазон «½–1 ч. л.», «по желанию», выход в вафлях, без времени — и пересчёт", async ({ page }) => {
+    await page.goto("/admin/ui/recipe/vafli-iz-tvoroga", { waitUntil: "networkidle" });
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Вафли из творога");
+    await expect(page.getByTestId("recipe-meta")).toHaveText("Белок");
+    await expect(page.getByTestId("recipe-meta").locator("svg")).toHaveCount(0);
+    await expect(servingsCard(page)).toHaveText("~ примерно 4 вафли");
+    await expect(ingredientRow(page, "Разрыхлитель")).toContainText("½–1 ч. л.");
+    await expect(ingredientRow(page, "Соль")).toContainText("½ ч. л.");
+    const spices = ingredientRow(page, "Чёрный перец");
+    await expect(spices).toContainText("по желанию");
+    await expectNoAxeViolations(page);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+
+    const input = page.getByRole("textbox", { name: "Творог 0,5%" });
+    await input.fill("550");
+    await expect(ingredientRow(page, "Яйца")).toContainText("4 шт.");
+    await expect(ingredientRow(page, "Цельнозерновая мука")).toContainText("100 г");
+    await expect(ingredientRow(page, "Разрыхлитель")).toContainText("1–2 ч. л.");
+    await expect(ingredientRow(page, "Соль")).toContainText("1 ч. л.");
+    await expect(spices).toHaveText(/по желанию$/);
+    await expect(servingsCard(page)).toContainText("8 вафель");
+
+    await input.fill("137,5");
+    await expect(ingredientRow(page, "Яйца")).toContainText("1 шт.");
+    await expect(ingredientRow(page, "Разрыхлитель")).toContainText("¼–½ ч. л.");
+    await expect(ingredientRow(page, "Соль")).toContainText("¼ ч. л.");
+    await expect(servingsCard(page)).toContainText("2 вафли");
+  });
+
+  test("вафли — в «Завтраках» и в поиске по ингредиенту «Творог»", async ({ page }) => {
+    await page.goto("/admin/ui/section/breakfast", { waitUntil: "networkidle" });
+    await expect(recipeCards(page).filter({ hasText: "Вафли из творога" })).toHaveCount(1);
+    await page.goto("/admin/ui/search", { waitUntil: "networkidle" });
+    await page.getByRole("radio", { name: "По ингредиенту" }).click();
+    await page.getByRole("row", { name: "Творог" }).click();
+    await expect(page.getByRole("link", { name: /Вафли из творога/ })).toBeVisible();
+  });
+});
+
 test.describe("пробные экраны — страница раздела и закреплённая шапка", () => {
   test("раздел над названием рецепта открывает страницу раздела сразу с рецептами", async ({ page }) => {
     await page.goto("/admin/ui/recipe/bowl", { waitUntil: "networkidle" });

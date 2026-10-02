@@ -18,10 +18,12 @@ export function RecipeCard({ recipe }: { recipe: DemoRecipe }) {
       <div className="flex flex-col gap-1.5 p-3">
         <span className="text-xs font-semibold tracking-wide text-brand-secondary uppercase">{sectionLabel(recipe.sections[0])}</span>
         <h3 className="font-display text-lg leading-snug text-primary group-hover:underline">{recipe.title}</h3>
-        <span className="flex items-center gap-1 text-sm text-tertiary">
-          <Clock className="size-4" aria-hidden />
-          {recipe.time}
-        </span>
+        {recipe.time && (
+          <span className="flex items-center gap-1 text-sm text-tertiary">
+            <Clock className="size-4" aria-hidden />
+            {recipe.time}
+          </span>
+        )}
       </div>
     </NextLink>
   );

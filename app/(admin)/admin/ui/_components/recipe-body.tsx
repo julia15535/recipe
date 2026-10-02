@@ -4,14 +4,14 @@ import { type ReactNode, useState } from "react";
 
 import { Tab, TabList, TabPanel, Tabs } from "@/components/application/tabs/tabs";
 
-import type { DemoRecipe } from "../_demo/demo-types";
-import { formatInput, parseAmount, servingsLabel } from "../_demo/demo-rescale";
+import { formatInput, parseAmount, yieldLabel } from "../_demo/demo-rescale";
+import { type DemoRecipe, baseAmount } from "../_demo/demo-types";
 import { IngredientsPanel } from "./ingredients-panel";
 
 // Тело рецепта: вкладки «Рецепт / Приготовление» (решение владельца); порции — «~ N порций» справа от
 // заголовка «Ингредиенты» (ADR-0021), меняются при вводе количества основного ингредиента (ADR-0016).
 export function RecipeBody({ recipe, children }: { recipe: DemoRecipe; children: ReactNode }) {
-  const base = recipe.ingredients[recipe.main]?.amount ?? 1;
+  const base = baseAmount(recipe);
   const [raw, setRaw] = useState(formatInput(base));
   const [factor, setFactor] = useState(1);
   const check = parseAmount(raw, base);
@@ -22,7 +22,7 @@ export function RecipeBody({ recipe, children }: { recipe: DemoRecipe; children:
     if (next.ok) setFactor(next.value / base);
   };
   const reset = () => change(formatInput(base));
-  const servings = recipe.servings * factor;
+  const servings = recipe.yield.amount * factor;
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pt-4 pb-16 lg:pt-8">
@@ -43,7 +43,7 @@ export function RecipeBody({ recipe, children }: { recipe: DemoRecipe; children:
             <p className="text-lg text-secondary" aria-live="polite" data-testid="servings">
               <span aria-hidden>~ </span>
               <span className="sr-only">примерно </span>
-              {servingsLabel(servings)}
+              {yieldLabel(servings, recipe.yield.forms)}
             </p>
           </div>
           <IngredientsPanel recipe={recipe} factor={factor} raw={raw} check={check} onChange={change} onReset={reset} />
