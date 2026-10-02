@@ -41,3 +41,12 @@ date	doc	reason	claims	mismatch	fixed	note
 2026-10-02	domain/recipe-model.md	code	16	0	0	
 2026-10-02	core/data-models.md	code	4	1	1	
 2026-10-02	core/ux.md	code	2	1	1	
+2026-10-02	.memory_bank/core/access-and-integrations.md	rotation	15	0	0	
+2026-10-02	.memory_bank/core/seo-i18n.md	code	13	0	0	
+2026-10-02	.memory_bank/core/ux.md	code	20	0	0	
+2026-10-02	.memory_bank/core/search.md	code	13	0	0	
+2026-10-02	.memory_bank/core/rescaling.md	code	12	1	1	
+2026-10-02	.memory_bank/domain/owner-auth.md	code	22	2	2	
+2026-10-02	.memory_bank/core/auth-publishing.md	code	6	1	1	
+2026-10-02	.memory_bank/core/architecture.md	code	6	1	1	
+2026-10-02	.memory_bank/core/deployment.md	code	3	0	0	

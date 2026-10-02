@@ -5,7 +5,6 @@ product_brief.md           # бизнес-контекст продукта
 core/lessons.md            # журнал уроков
 # КОДА ЕЩЁ НЕТ (29.09: только ТЗ и память, план stack-and-skeleton — draft). Появится код по теме — добавь в
 # сводку якорь `путь` и УБЕРИ строку отсюда, иначе сводка останется вне проверки дрейфа:
-core/auth-publishing.md
 core/data-models.md
 core/flows.md
 core/ingredients.md

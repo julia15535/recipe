@@ -14,7 +14,7 @@ review_after: 2026-12-27
 
 # Экраны сайта — детали (решения владельца 01.10)
 
-> Прототипы на примерных рецептах — `app/(admin)/admin/ui/` (`/admin/ui/home`, `/section/[id]`,
+> Прототипы на примерных рецептах — `app/(admin)/admin/(protected)/ui/` (`/admin/ui/home`, `/section/[id]`,
 > `/search`, `/recipe/[slug]`), проверки — `e2e/prototypes.spec.ts`. Публичные `/ru`, `/en` получат эти
 > экраны вместе со схемой БД (адреса — ADR-0017).
 

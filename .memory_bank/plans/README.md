@@ -37,7 +37,7 @@ draft → in_progress → completed → перенос в completed_plans/
 
 | slug | Название | status | created | updated |
 |------|----------|--------|---------|---------|
-| _(нет активных планов)_ | | | | |
+| owner-login-telegram | Вход владельца в кабинет через своего Telegram-бота (подтверждение «Старт»), только её аккаунт | in_progress | 2026-10-02 | 2026-10-02 |
 <!-- GENERATED:plans-registry END -->
 
 > Шаблон нового плана — `_template.md`. Реестр регенерирует аудит — руками не правим.

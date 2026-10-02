@@ -3,7 +3,7 @@ tier: 2
 topic: anti-patterns
 scope: Каталог повторяющихся ошибок — чеклист при code-review
 tier1: core/lessons.md
-updated: 2026-10-01
+updated: 2026-10-02
 importance: med
 source: manual
 status: working
@@ -136,7 +136,7 @@ Popover по тапу, не Tooltip.
 (`Link`, `router.push`) `document.referrer` не меняется, а `history.length` считает и чужие записи
 (вкладка, `about:blank`).
 **Convention:** `window.navigation?.canGoBack` (Navigation API видит только записи сайта) →
-`router.back()`, иначе — на главную (`app/(admin)/admin/ui/_components/search-prototype.tsx`).
+`router.back()`, иначе — на главную (`app/(admin)/admin/(protected)/ui/_components/search-prototype.tsx`).
 
 ## 19. Невидимые кнопки React Aria в проверке размера касаний
 **Симптом:** открытый Modal/Dialog даёт «BUTTON «» 1px» в проверке целей ≥ 44 px — это скрытые кнопки
@@ -159,6 +159,47 @@ Popover по тапу, не Tooltip.
 **Симптом:** `const Icon = pick(id); <Icon />` внутри компонента — ESLint `react-hooks/static-components`
 («Cannot create components during render»).
 **Convention:** отдельный компонент с `createElement(MAP[id] ?? Fallback, props)` (`components/catalog/section-icon.tsx`).
+
+## 23. Код ответа в кабинете при `redirect()`/`notFound()` (Cache Components)
+**Симптом:** без входа `/admin` отвечает 200 (переход на вход — уже в браузере), несуществующая страница
+кабинета — тоже 200; тест «ждём 404/307» падает.
+**Причина:** кабинет полностью динамический и отдаётся потоком (CSP с nonce, `instant = false`) — заголовки
+уходят до того, как рендер дойдёт до `redirect()`/`notFound()`.
+**Convention:** честный 307 — «оптимистично» в `proxy.ts` по наличию cookie (проверка — всё равно
+`requireOwner()`); в e2e проверять страницу («Такой страницы в кабинете нет»), а не код.
+
+## 24. Иконка-компонент из серверного компонента в кнопку
+**Симптом:** `Functions cannot be passed directly to Client Components` при `<AppButton iconLeading={Send}>`
+в серверном компоненте (страница падает в «Что-то пошло не так»).
+**Convention:** кнопки с иконкой — внутри `"use client"`-компонента (`app/(admin)/admin/(protected)/_components/logout-form.tsx`).
+
+## 25. Отказ Server Action через `redirect("?e=…")`
+**Симптом:** ответ с `x-action-redirect: /admin/login?e=limit`, но адрес и страница не меняются — сообщение
+об ошибке не видно (Next 16.3.8, тот же путь с другим `?`).
+**Convention:** отказ — возвращать состояние через `useActionState` (`start-login-form.tsx`), успех — `refresh()`.
+
+## 26. Лимит попыток по IP и e2e с одного адреса
+**Симптом:** повторные прогоны e2e за 10 минут падают на входе: сработал свой же лимит (20 попыток с IP).
+**Convention:** каждый прогон шлёт свой `X-Real-IP` (`e2e/support/telegram.ts` `CLIENT_IP`); без прокси сайт
+берёт его как есть. За nginx-proxy заголовок перезаписывает прокси.
+
+## 27. `request` в Playwright без сессии
+**Симптом:** закрытая страница через фикстуру `request` отдаёт вход, хотя у проекта `storageState`.
+**Причина:** фикстура `request` создаётся без `storageState` браузера.
+**Convention:** запросы с сессией — `page.request`; без сессии и как «Telegram» — отдельный `request.newContext()`.
+
+## 28. Вход по ссылке из бота без подтверждения (login CSRF)
+**Симптом (на плане, до кода):** `/start <challenge>` сразу подтверждает вход → злоумышленник начинает вход у
+себя и подсовывает владельцу свою ссылку; она жмёт «Старт» — сессию получает чужой браузер (критика Codex 02.10).
+Отброшен и архивный Telegram Login Widget.
+**Convention:** `/start` только показывает код; подтверждает кнопка, «только если этот же код на экране»;
+сессию получает браузер с cookie привязки (ADR-0022, `lib/server/auth/webhook.ts`).
+
+## 29. Лимит, который проверяется после работы с БД
+**Симптом (ревью Codex 02.10):** уже заблокированный по лимиту запрос всё равно делал уборку и подсчёты
+в БД — поток POST занимал весь пул из 5 соединений; публичный бот писал в БД каждое чужое сообщение.
+**Convention:** отказ по лимиту — первым и без БД (`lib/server/auth/rate-limit.ts`), уборка — редко и
+порциями (`prune.ts`), от посторонних в БД ничего не пишем; подлинному обновлению Telegram — всегда 2xx.
 
 ---
 

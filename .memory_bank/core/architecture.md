@@ -3,12 +3,12 @@ tier: 1
 topic: architecture
 scope: Стек, слои, SEO-рендер, где ИИ, деплой — перед архитектурным решением
 tier2: ""
-updated: 2026-10-01
+updated: 2026-10-02
 importance: high
 source: manual
 status: working
 source_of_truth: supporting
-last_verified: 2026-10-01
+last_verified: 2026-10-02
 review_after: 2026-10-29
 ---
 
@@ -23,17 +23,18 @@ Vitest 4 + Playwright.
 - `app/(public)/[locale]/` — публичный сайт, `/ru` `/en` статические (`next/root-params` в
   `i18n/request.ts`); неизвестный путь → локализованная 404 (`app/(public)/[locale]/[...rest]/page.tsx`), вне
   локалей — `app/not-found.tsx`.
-- `app/(admin)/admin/` — админка, свой root layout, только RU, `noindex`.
-- `proxy.ts` — один на приложение: next-intl для публичных путей, `/admin` мимо; `www` → apex —
-  `redirects()` в `next.config.ts` (покрывает и файлы, и `/api`).
-- `app/api/health/live` (без БД), `app/api/health/ready` (БД + `GIT_SHA`) — по нему деплой сверяет релиз.
+- `app/(admin)/admin/` — кабинет: свой root layout, RU, `noindex`, полностью динамический; открыт только
+  `login/`, остальное — группа `(protected)` с пробными экранами `ui/` (ADR-0022, `domain/owner-auth.md`).
+- `proxy.ts` — next-intl для публичных путей; `/admin` — CSP с nonce и 307 на вход без cookie сессии;
+  `www` → apex — `redirects()` в `next.config.ts`.
+- API: `health/live`, `health/ready` (БД + `GIT_SHA` — по нему деплой сверяет релиз), `telegram/webhook`, `auth/status`.
 
 ## Слои кода
 - `lib/domain/` — будущий слой чистых функций без IO (пересчёт, округление); папки пока нет, правило
   ESLint на импорты фреймворка/БД уже действует (`eslint.config.mjs`).
-- `lib/server/` — `server-only`: env (`env.ts`), БД (`lib/server/db/client.ts`), логгер с маскированием
-  (`log.ts`); без `server-only` намеренно — `env-schema.ts` (его берут instrumentation и тесты) и
-  `lib/server/db/schema/index.ts`. UI в БД не ходит.
+- `lib/server/` — `server-only`: env, БД (`lib/server/db/client.ts`), логгер с маскированием (`log.ts`), вход
+  (`lib/server/auth/`, `requireOwner()`); без него намеренно — `env-schema.ts`, схема БД и чистые модули входа.
+  UI в БД не ходит.
 - Env: публичное (`SITE_URL`, `SITE_INDEXABLE`) запекается при сборке; секреты (`DATABASE_URL`)
   лениво; прод без них не стартует (`instrumentation-node.ts`).
 - Миграции: `drizzle-kit generate` → `scripts/migrate.mjs` (advisory lock); роли —
@@ -42,10 +43,9 @@ Vitest 4 + Playwright.
 ## Направления для следующих планов
 - Кэш публичных страниц: `"use cache"` + `cacheTag` (`recipe:{id}`, `recipes`, `category:{id}`,
   `tag:{id}`, `catalog`), правка владельцем → `updateTag` (ADR-0013).
-- Фоновые задачи импорта: очередь-таблица в Postgres (`FOR UPDATE SKIP LOCKED`), воркер — отдельный
-  контейнер из того же образа. Загрузки — потоковый Route Handler с лимитами, не Server Actions.
-- Вход — порт sup2 D10; ИИ — fetch-клиент через Vercel AI Gateway (как sup2).
-- Rate limit входа и импорта — прокси + лимит в Postgres. Slug по локалям — в плане схемы БД.
+- Импорт: очередь-таблица в Postgres (`FOR UPDATE SKIP LOCKED`), воркер — контейнер из того же образа;
+  загрузки — потоковый Route Handler с лимитами.
+- ИИ — fetch-клиент через Vercel AI Gateway (как sup2); лимиты импорта — в Postgres, как у входа.
 - Критический CVE Next/React — обновление в тот же день.
 
 **Деплой и прод:** `core/deployment.md`.

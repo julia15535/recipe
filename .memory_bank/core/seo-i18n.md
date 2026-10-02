@@ -3,12 +3,12 @@ tier: 1
 topic: seo-i18n
 scope: SEO публичных страниц, RU + EN, URL-схема, SEO-футер
 tier2: ""
-updated: 2026-10-01
+updated: 2026-10-02
 importance: med
 source: _intake/_processed/brief/technical_spec_recipe_book.md
 status: draft
 source_of_truth: supporting
-last_verified: 2026-10-01
+last_verified: 2026-10-02
 review_after: 2026-12-27
 ---
 

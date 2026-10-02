@@ -20,7 +20,7 @@
 |----------------|--------|--------|
 | Внешние сервисы (ИИ, STT, Telegram, хостинг) и где ключи | `core/access-and-integrations.md` | — |
 | Стек, слои, SEO-рендер, где ИИ, деплой — перед архитектурным решением | `core/architecture.md` | — |
-| Вход владельца через Telegram, права посетителей, публикация рецепта | `core/auth-publishing.md` | — |
+| Вход владельца через Telegram, права посетителей, публикация рецепта | `core/auth-publishing.md` | `domain/owner-auth.md` |
 | Каталог — категории по типу блюда, подкатегории, теги, правка из админки | `core/catalog.md` | `domain/catalog-structure.md` |
 | Сущности — рецепт, ингредиенты, шаги, справочники, категории/теги | `core/data-models.md` | `domain/recipe-model.md` |
 | CI/CD, прод, автодеплой, откат, бэкапы | `core/deployment.md` | — |

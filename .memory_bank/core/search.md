@@ -3,12 +3,12 @@ tier: 1
 topic: search
 scope: Поиск — «По рецепту / По ингредиенту», иерархия, уточнение категорией и тегом
 tier2: ../domain/search-spec.md
-updated: 2026-10-01
+updated: 2026-10-02
 importance: high
 source: _intake/_processed/brief/product-decisions-2026-10-01.md
 status: draft
 source_of_truth: supporting
-last_verified: 2026-10-01
+last_verified: 2026-10-02
 review_after: 2026-12-27
 ---
 
@@ -24,7 +24,7 @@ review_after: 2026-12-27
 - Уточнение без сложной формы — разделом (только разделы с рецептами, ADR-0020) и тегами, в т. ч.
   «особенностями состава» (ADR-0019):
   `курица + грибы → Горячее`, «Салаты + Белок». Раздел из каталога открывает страницу раздела, не поиск (владелец 01.10).
-- Прототип на демо-данных: `/admin/ui/search` (`app/(admin)/admin/ui/_components/search-prototype.tsx`, e2e — `e2e/prototypes.spec.ts`).
+- Прототип на демо-данных: `/admin/ui/search` (`app/(admin)/admin/(protected)/ui/_components/search-prototype.tsx`, e2e — `e2e/prototypes.spec.ts`).
 - «Что приготовить из того, что есть дома» — не основной сценарий.
 - На главной НЕ показывать огромный каталог ингредиентов.
 
