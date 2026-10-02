@@ -47,7 +47,7 @@ export const recipeIngredients = pgTable(
           and ${t.amountMaxNum} is not null and ${t.amountMaxDen} is not null
           and ${t.amountNum}::numeric * ${t.amountMaxDen} <= ${t.amountMaxNum}::numeric * ${t.amountDen})
         or (${t.quantityKind} = 'none' and ${t.amountNum} is null and ${t.amountDen} is null
-          and ${t.amountMaxNum} is null and ${t.amountMaxDen} is null and ${t.note} is not null)`,
+          and ${t.amountMaxNum} is null and ${t.amountMaxDen} is null)`,
     ),
   ],
 );

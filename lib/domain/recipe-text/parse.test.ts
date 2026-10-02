@@ -55,11 +55,18 @@ describe("разбор текста владельца — вафли", () => {
 describe("разбор текста — ошибки и предупреждения", () => {
   const base = "Сырники\nТеги: завтрак\nИнгредиенты:\n- Творог — 500 г - основной\n- Сахар — 2 ст. л.\nПриготовление:\n1. Смешать.";
 
-  it("без основного — ошибка с подсказкой кандидата (его строка), но сохранение недоступно", () => {
+  it("основной не отмечен — рецепт без пересчёта: предупреждение, сохранить можно", () => {
     const result = parseRecipeText(base.replace(" - основной", ""));
-    expect(result.ok).toBe(false);
-    expect(result.issues[0]).toMatchObject({ code: "no-main", severity: "error", line: 4, raw: "- Творог — 500 г" });
-    expect(result.issues[0]?.message).toContain("«Творог»");
+    expect(result.ok).toBe(true);
+    expect(result.mainIndex).toBeNull();
+    expect(result.issues).toEqual([expect.objectContaining({ code: "no-main", severity: "warning" })]);
+    expect(result.issues[0]?.message).toContain("без пересчёта");
+  });
+
+  it("граммы в скобках рядом с ложками не показываются; «на кончике ножа (примерно 1 г)» — как есть", () => {
+    const text = base.replace("- Сахар — 2 ст. л.", "- Сахар — 7 ст. л. (примерно 140 г)\n- Морковь — 280 г (280 г)\n- Соль — на кончике ножа (примерно 1 г)");
+    const notes = parseRecipeText(text).draft.ingredients.map((item) => item.note);
+    expect(notes).toEqual([null, null, null, "на кончике ножа, примерно 1 г"]);
   });
 
   it("два основных и основной-диапазон — ошибки; ингредиент без количества — ошибка со строкой", () => {
@@ -70,7 +77,8 @@ describe("разбор текста — ошибки и предупрежден
     const unparsed = parseRecipeText(base.replace("- Сахар — 2 ст. л.", "- Сахар — немного"));
     expect(unparsed.issues.find((item) => item.code === "ingredient-unparsed")).toMatchObject({ line: 5, raw: "- Сахар — немного" });
     const noAmount = parseRecipeText(base.replace("- Сахар — 2 ст. л.", "- Соль"));
-    expect(noAmount.issues.find((item) => item.code === "ingredient-no-amount")).toMatchObject({ line: 5, raw: "- Соль" });
+    expect(noAmount.ok).toBe(true);
+    expect(noAmount.issues.find((item) => item.code === "ingredient-no-amount")).toMatchObject({ severity: "warning", line: 5, raw: "- Соль" });
   });
 
   it("нет раздела, шагов, ингредиентов; неизвестный тег — предупреждение", () => {
@@ -119,9 +127,9 @@ describe("разбор текста — ошибки и предупрежден
     );
     expect(result.ok).toBe(true);
     expect(result.draft.ingredients.slice(1).map(({ name, unit, note }) => [name, unit, note])).toEqual([
-      ["Сода", "ч. л.", "примерно 3 г"],
+      ["Сода", "ч. л.", null],
       ["Соль", null, "на кончике ножа, примерно 1 г"],
-      ["Имбирь молотый", "ч. л.", "примерно 1 г"],
+      ["Имбирь молотый", "ч. л.", null],
     ]);
   });
 

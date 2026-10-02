@@ -16,7 +16,6 @@ const labels = {
 };
 const vafli = aiVafli as AiRecipe;
 const kotletyAi = aiKotlety as AiRecipe;
-const groups = (checks: { group: string }[]) => checks.map((check) => check.group);
 
 describe("ответ ИИ → черновик и «Проверьте»", () => {
   it("вафли: всё на месте, сохранить можно; пересказ — в «изменено ИИ»", () => {
@@ -26,7 +25,7 @@ describe("ответ ИИ → черновик и «Проверьте»", () =>
     expect(result.mainIndex).toBe(0);
     expect(result.draft.ingredients[3]?.quantity).toEqual({ kind: "exact", amount: fraction(1, 2) });
     expect(result.draft.ingredients[4]).toMatchObject({ name: "Соль", quantity: { kind: "none" }, note: "щепотка" });
-    expect(result.checks).toContainEqual({ group: "changed", text: "Основной ингредиент — «Творог 0,5%»: от него пересчитывается рецепт." });
+    expect(result.checks).toContainEqual({ group: "note", text: "Основной ингредиент — «Творог 0,5%»: от него пересчитывается рецепт." });
     expect(result.checks).toContainEqual({ group: "changed", text: "Раздел: Завтраки; особенности состава: Белок." });
   });
 
@@ -41,15 +40,20 @@ describe("ответ ИИ → черновик и «Проверьте»", () =>
 
   it("нужно решить: не рецепт, нет основного, два основных, диапазон у основного, нет количества и пометки, 1/0", () => {
     expect(fromAi({ ...vafli, result_type: "not_recipe" }, vafliV2, labels).ok).toBe(false);
-    const noMain = vafli.ingredients.map((item) => ({ ...item, is_main: false }));
-    expect(groups(fromAi({ ...vafli, ingredients: noMain }, vafliV2, labels).checks)).toContain("decide");
+    // Основной не отмечен — не ошибка: рецепт без пересчёта (владелец 02.10).
+    const noMain = fromAi({ ...vafli, ingredients: vafli.ingredients.map((item) => ({ ...item, is_main: false })) }, vafliV2, labels);
+    expect(noMain.ok).toBe(true);
+    expect(noMain.mainIndex).toBeNull();
+    expect(isSavable(noMain)).toBe(true);
+    expect(noMain.checks.find((check) => check.text.startsWith("Основной ингредиент не отмечен"))?.group).toBe("note");
     const twoMain = vafli.ingredients.map((item, index) => ({ ...item, is_main: index < 2 }));
     expect(fromAi({ ...vafli, ingredients: twoMain }, vafliV2, labels).ok).toBe(false);
     const rangeMain = vafli.ingredients.map((item, index) => (index === 0 ? { ...item, amount: "250–275" } : item));
     expect(fromAi({ ...vafli, ingredients: rangeMain }, vafliV2, labels).ok).toBe(false);
     const noAmount = vafli.ingredients.map((item, index) => (index === 1 ? { ...item, amount: null, note: null } : item));
     const result = fromAi({ ...vafli, ingredients: noAmount }, vafliV2, labels);
-    expect(result.checks).toContainEqual({ group: "decide", text: "У «Яйца» нет количества — допишите количество или «по вкусу»." });
+    expect(result.ok).toBe(true);
+    expect(result.checks).toContainEqual({ group: "note", text: "У «Яйца» нет количества — на сайте будет без числа." });
     const zero = vafli.ingredients.map((item, index) => (index === 1 ? { ...item, amount: "1/0" } : item));
     expect(fromAi({ ...vafli, ingredients: zero }, vafliV2, labels).ok).toBe(false);
   });
@@ -74,10 +78,22 @@ describe("ответ ИИ → черновик и «Проверьте»", () =>
     });
   });
 
+  it("ИИ отметил основной, а в тексте пометки нет — рецепт без пересчёта; есть пометка — основной остаётся", () => {
+    const unmarked = fromAi(kotletyAi, kotlety, labels);
+    expect(kotletyAi.ingredients[0]?.is_main).toBe(true);
+    expect(unmarked.mainIndex).toBeNull();
+    expect(unmarked.ok).toBe(true);
+    expect(unmarked.checks.some((check) => check.text.startsWith("Основной ингредиент не отмечен"))).toBe(true);
+    expect(unmarked.checks.some((check) => check.text.startsWith("Основной ингредиент — «"))).toBe(false);
+    const marked = fromAi(kotletyAi, kotlety.replace("Подаём с пюре.", "Подаём с пюре. Основной — фарш."), labels);
+    expect(marked.mainIndex).toBe(0);
+  });
+
   it("перед сохранением разбор перепроверяется: подменённый `ok` не поможет", () => {
     const good = fromAi(vafli, vafliV2, labels);
     expect(isSavable(good)).toBe(true);
     expect(isSavable({ ...good, mainIndex: 1 })).toBe(true);
+    expect(isSavable({ ...good, mainIndex: null })).toBe(true);
     expect(isSavable({ ...good, mainIndex: 4 })).toBe(false);
     expect(isSavable({ ...good, draft: { ...good.draft, steps: [] } })).toBe(false);
     expect(isSavable({ ...good, draft: { ...good.draft, tips: ["с".repeat(1001)] } })).toBe(false);
@@ -93,6 +109,8 @@ describe("ответ ИИ → черновик и «Проверьте»", () =>
     const { draft, mainIndex } = fromAi({ ...vafli, ingredients, steps: [long, "Испечь."] }, vafliV2, labels);
     const again = parseRecipeText(toCanonicalText(draft, mainIndex, labels));
     expect(again.issues.filter((item) => item.severity === "error")).toEqual([]);
+    const bare = fromAi({ ...vafli, ingredients: [...ingredients, { name: "Зелень", amount: null, unit: null, note: null, is_main: false }] }, vafliV2, labels);
+    expect(toCanonicalText(bare.draft, bare.mainIndex, labels)).toContain("\n- Зелень\n");
     expect(again.draft.ingredients.map((item) => item.quantity.kind)).toEqual(["range", "exact", "none"]);
     expect(again.draft.steps[0]).toBe(long);
   });

@@ -7,7 +7,7 @@ import { isKnownUnit, readUnit } from "./units";
 export type IngredientLine = { name: string; quantity: Quantity; unit: string | null; note: string | null; main: boolean };
 export type LineResult =
   | { ok: true; value: IngredientLine; unknownUnit: string | null }
-  | { ok: false; code: "ingredient-unparsed" | "ingredient-no-amount"; name: string };
+  | { ok: false; code: "ingredient-unparsed"; name: string };
 
 const NUM = String.raw`(?:\d{1,6}\s+\d{1,6}\/\d{1,6}|\d{1,6}\/\d{1,6}|\d{1,6}(?:[.,]\d{1,6})?(?:\s?[${FRACTION_GLYPHS}])?|[${FRACTION_GLYPHS}])`;
 const AMOUNT = new RegExp(String.raw`^(${NUM})(?:\s*[–—-]\s*(${NUM}))?(?![\d/])\s*(.*)$`);
@@ -45,12 +45,8 @@ export function parseIngredientLine(raw: string): LineResult {
 
 function withAmount(name: string, rest: string, notes: string[], main: boolean): LineResult {
   const note = (extra: string[]) => [...extra, ...notes].filter(Boolean).join(", ") || null;
-  if (rest === "") {
-    // Без количества — только с явной пометкой («по желанию», «по вкусу», «щепотка»…), в том числе в скобках.
-    return notes.some((item) => NO_AMOUNT.test(item))
-      ? ok({ name, quantity: { kind: "none" }, unit: null, note: note([]), main })
-      : { ok: false, code: "ingredient-no-amount", name };
-  }
+  // Без количества — можно (владелец 02.10: рецепт «свёкла, чеснок, майонез» сохраняется без пересчёта).
+  if (rest === "") return ok({ name, quantity: { kind: "none" }, unit: null, note: note([]), main });
   if (NO_AMOUNT.test(rest)) return ok({ name, quantity: { kind: "none" }, unit: null, note: note([rest.toLowerCase()]), main });
   const match = AMOUNT.exec(rest);
   const min = match?.[1] ? parseNumber(match[1]) : null;

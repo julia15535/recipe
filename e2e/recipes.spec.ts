@@ -19,6 +19,8 @@ const unique = () => Math.random().toString(36).slice(2, 7);
 const status = (page: Page) => page.locator("main [data-status]:visible").first();
 const field = (page: Page) => page.getByRole("textbox", { name: "Рецепт", exact: true });
 const kotlety = (title: string) => KOTLETY.replace("Мамины котлеты", title);
+// Основной — только с пометкой автора (владелец 02.10).
+const kotletyMain = (title: string) => kotlety(title).replace("Подаём с пюре.", "Подаём с пюре. Основной — фарш.");
 
 async function parse(page: Page, text: string) {
   await page.goto("/admin/recipes/new");
@@ -64,11 +66,11 @@ test.describe("рецепт из любого текста", () => {
 
     const title = `Мамины котлеты ${unique()}`;
     const before = await aiCalls(page);
-    await field(page).fill(kotlety(title));
+    await field(page).fill(kotletyMain(title));
     await page.getByRole("button", { name: "Разобрать" }).dblclick();
     const checks = page.getByRole("region", { name: "Проверьте" });
     await expect(checks.locator('[data-checks="changed"]')).toContainText("«полкило фарша» → Фарш — 500 г");
-    await expect(checks.locator('[data-checks="changed"]')).toContainText("Основной ингредиент — «Фарш");
+    await expect(checks.locator('[data-checks="note"]')).toContainText("Основной ингредиент — «Фарш");
     await expect(checks.locator('[data-checks="decide"]')).toHaveCount(0);
     expect(await aiCalls(page)).toBe(before + 1);
     const preview = page.getByRole("region", { name: "Так рецепт будет выглядеть на сайте" });
@@ -113,12 +115,13 @@ test.describe("рецепт из любого текста", () => {
     await page.getByRole("button", { name: "Исправить текст" }).click();
     await field(page).fill(text.replace(" - основной ингредиент", ""));
     await page.getByRole("button", { name: "Разобрать по старому формату" }).click();
-    await expect(page.getByRole("region", { name: "Что поправить" }).locator('[data-issue="no-main"]')).toContainText("Строка 5");
+    await expect(page.getByRole("region", { name: "Что поправить" }).locator('[data-issue="no-main"]')).toContainText("без пересчёта");
+    await expect(page.getByRole("button", { name: "Сохранить черновик" })).toBeEnabled();
   });
 
   test("изменить: аккуратный текст в поле → «Разобрать» → замена с тем же адресом; устаревшая вкладка не перетирает", async ({ page, context }) => {
     const title = `Котлеты ${unique()}`;
-    await parse(page, kotlety(title));
+    await parse(page, kotletyMain(title));
     await page.getByRole("button", { name: "Опубликовать" }).click();
     await page.waitForURL(/\/admin\/recipes\/[0-9a-f-]{36}$/);
     const url = page.url();
@@ -161,6 +164,9 @@ test.describe("рецепт из любого текста", () => {
     const title = `<img src=x onerror=alert(1)> ${unique()}`;
     await parse(page, kotlety(title));
     const preview = page.getByRole("region", { name: "Так рецепт будет выглядеть на сайте" });
+    // Основной не отмечен — рецепт без пересчёта: поля «своё количество» нет, сохранить можно.
+    await expect(page.getByRole("region", { name: "Проверьте" }).locator('[data-checks="note"]')).toContainText("без пересчёта");
+    await expect(preview.getByRole("textbox")).toHaveCount(0);
     await expect(preview.getByRole("heading", { level: 1 })).toHaveText(title);
     await expect(preview.locator("img")).toHaveCount(0);
     await page.getByRole("button", { name: "Сохранить черновик" }).click();

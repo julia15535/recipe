@@ -36,6 +36,20 @@
       "when": 1790945793511,
       "tag": "0004_recipe_ai",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790950647884,
+      "tag": "0005_optional_main_ingredient",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790951560242,
+      "tag": "0006_ingredient_without_amount",
+      "breakpoints": true
     }
   ]
 }

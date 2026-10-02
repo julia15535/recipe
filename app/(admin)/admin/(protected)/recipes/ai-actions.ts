@@ -90,7 +90,7 @@ export async function saveParsedRecipe(input: z.input<typeof saveInput>): Promis
     if (!stored) return { ok: false, message: "Разбор устарел — нажмите «Разобрать» ещё раз." };
     const { result, originalText } = stored;
     const sourceText = toCanonicalText(result.draft, result.mainIndex, catalogLabels(await getCatalog()));
-    if (!isSavable(result) || result.mainIndex === null || byteLength(sourceText) > LIMITS.bytes) {
+    if (!isSavable(result) || byteLength(sourceText) > LIMITS.bytes) {
       return { ok: false, message: "Сначала решите пункты «Нужно решить» и разберите заново." };
     }
     const parsed = { draft: result.draft, mainIndex: result.mainIndex };

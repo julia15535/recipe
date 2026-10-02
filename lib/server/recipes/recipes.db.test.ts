@@ -93,7 +93,31 @@ describe.skipIf(!enabled)("рецепты: БД", () => {
     expect(kept?.revision).toBe(1);
   });
 
-  it("БД не пускает рецепт без основного ингредиента (отложенный FK) и строку без количества и пометки", async () => {
+  it("основной не отмечен — рецепт сохраняется без основного; основной из чужого рецепта БД не пустит", async () => {
+    const text = simple(`Винегрет ${marker}`).replace(" - основной", "");
+    const result = parseRecipeText(text);
+    expect(result.ok && result.mainIndex === null).toBe(true);
+    const outcome = await createRecipe(result, text, "draft");
+    if (!outcome.ok) throw new Error("не сохранилось");
+    created.push(outcome.id);
+    expect((await getRecipe(outcome.id))?.view.mainId).toBeNull();
+    const other = await create(simple(`Рагу ${marker}`));
+    const foreign = (await getRecipe(other.id))?.view.mainId ?? "";
+    await expect(getDb().update(recipes).set({ mainIngredientId: foreign }).where(eq(recipes.id, outcome.id))).rejects.toThrow();
+    // Замена: без основного → с основным → снова без.
+    const withMain = simple(`Винегрет ${marker}`);
+    expect((await replaceRecipe(outcome.id, 1, parsed(withMain), withMain)).ok).toBe(true);
+    expect((await getRecipe(outcome.id))?.view.mainId).not.toBeNull();
+    expect((await replaceRecipe(outcome.id, 2, parseRecipeText(text), text)).ok).toBe(true);
+    expect((await getRecipe(outcome.id))?.view.mainId).toBeNull();
+  });
+
+  it("основной FK отдельно: несуществующий основной при верном разделе — отказ", async () => {
+    const { id } = await create(simple(`Солянка-2 ${marker}`));
+    await expect(getDb().update(recipes).set({ mainIngredientId: randomUUID() }).where(eq(recipes.id, id))).rejects.toThrow();
+  });
+
+  it("БД не пускает основной ингредиент, которого нет (отложенный FK); строка без количества и пометки — можно", async () => {
     const orphan = randomUUID();
     await expect(
       getDb().transaction(async (tx) => {
@@ -104,6 +128,9 @@ describe.skipIf(!enabled)("рецепты: БД", () => {
     const { id } = await create(simple(`Окрошка ${marker}`));
     await expect(
       getDb().insert(recipeIngredients).values({ id: randomUUID(), recipeId: id, position: 9, displayName: "Соль", quantityKind: "none" }),
+    ).resolves.toBeDefined();
+    await expect(
+      getDb().insert(recipeIngredients).values({ id: randomUUID(), recipeId: id, position: 10, displayName: "Мука", quantityKind: "exact" }),
     ).rejects.toThrow();
   });
 

@@ -7,6 +7,7 @@ import { type Blocks, type Line, splitBlocks } from "./blocks";
 import { type IngredientLine, parseIngredientLine } from "./ingredient-line";
 import { type Issue, issue } from "./issues";
 import { LIMITS, checkLimits } from "./limits";
+import { withoutWeight } from "./notes";
 import { readMeta } from "./meta";
 
 export type ParsedIngredient = IngredientLine & { line: number; raw: string };
@@ -69,15 +70,16 @@ function readIngredients(lines: Blocks["ingredients"], issues: Issue[]): ParsedI
       return [];
     }
     if (result.unknownUnit) issues.push(issue("unknown-unit", line.n, line.text, result.unknownUnit));
-    return [{ ...result.value, line: line.n, raw: line.text }];
+    if (result.value.quantity.kind === "none" && !result.value.note) issues.push(issue("ingredient-no-amount", line.n, line.text, name));
+    return [{ ...result.value, note: withoutWeight(result.value.note, result.value.quantity), line: line.n, raw: line.text }];
   });
 }
 
 function findMain(ingredients: ParsedIngredient[], issues: Issue[]): number | null {
   const marked = ingredients.flatMap((item, index) => (item.main ? [index] : []));
+  // Основной — только отмеченный автором (владелец 02.10); не отмечен — рецепт без пересчёта.
   if (marked.length === 0) {
-    const candidate = ingredients.find((item) => item.quantity.kind === "exact");
-    if (ingredients.length) issues.push(issue("no-main", candidate?.line ?? null, candidate?.raw ?? null, candidate?.name ?? ""));
+    if (ingredients.length) issues.push(issue("no-main"));
     return null;
   }
   for (const index of marked.slice(1)) issues.push(issue("many-main", ingredients[index]?.line ?? null, ingredients[index]?.raw ?? null));

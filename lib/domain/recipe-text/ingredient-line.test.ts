@@ -34,13 +34,12 @@ describe("строка ингредиента в стиле владельца",
     expect(odd.ok && odd.unknownUnit).toBe("листика");
   });
 
-  it("без количества и пометки — ошибка; непонятное количество — ошибка; диапазон наоборот — ошибка", () => {
-    expect(parseIngredientLine("Соль")).toEqual({ ok: false, code: "ingredient-no-amount", name: "Соль" });
+  it("без количества — строка без числа; непонятное количество — ошибка; диапазон наоборот — ошибка", () => {
+    // Без количества — можно: строка без числа (владелец 02.10).
+    expect(parseIngredientLine("Соль")).toMatchObject({ ok: true, value: { name: "Соль", quantity: { kind: "none" }, note: null } });
     expect(parseIngredientLine("Соль — немного").ok).toBe(false);
     expect(parseIngredientLine("Мука — 2–1 ст. л.").ok).toBe(false);
     expect(parseIngredientLine("Мука — 0 г").ok).toBe(false);
-    // Пометка в скобках без «по вкусу / по желанию …» не заменяет количество.
-    expect(parseIngredientLine("Морковь (крупная)")).toEqual({ ok: false, code: "ingredient-no-amount", name: "Морковь" });
-    expect(parseIngredientLine("Молоко (если творог сухой)").ok).toBe(false);
+    expect(parseIngredientLine("Морковь (крупная)")).toMatchObject({ ok: true, value: { name: "Морковь", note: "крупная" } });
   });
 });

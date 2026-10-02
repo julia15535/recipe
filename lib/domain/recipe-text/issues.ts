@@ -29,7 +29,7 @@ export type IssueCode =
 
 export type Issue = { code: IssueCode; severity: "error" | "warning"; line: number | null; raw: string | null; message: string };
 
-const WARNINGS = new Set<IssueCode>(["unknown-tag", "unknown-unit", "step-joined", "yield-unparsed", "yield-word"]);
+const WARNINGS = new Set<IssueCode>(["unknown-tag", "unknown-unit", "step-joined", "yield-unparsed", "yield-word", "no-main", "ingredient-no-amount"]);
 
 const SECTION_HINT = "завтрак, суп, салат, горячее, гарнир, закуска, выпечка, десерт, соус, напиток или заготовка";
 
@@ -46,11 +46,11 @@ const MESSAGES: Record<IssueCode, (subject: string) => string> = {
   "no-ingredients": () => "Нет ингредиентов. Начните список строкой «Ингредиенты:».",
   "too-many-ingredients": () => "Слишком много ингредиентов — не больше 60.",
   "ingredient-unparsed": () => "Не получилось разобрать строку. Пример: «Творог — 275 г» или «Соль — по вкусу».",
-  "ingredient-no-amount": (name) => `У «${name}» нет количества. Допишите количество или «по вкусу», «по желанию», «щепотка».`,
+  "ingredient-no-amount": (name) => `У «${name}» нет количества — на сайте будет без числа. Если нужно, допишите количество или «по вкусу».`,
   "ingredient-too-long": () => "Название или пометка ингредиента слишком длинные — сократите строку.",
   "unknown-unit": (unit) => `Единица «${unit}» оставлена как написана — при пересчёте слово не меняется.`,
-  "no-main": (name) =>
-    `Не отмечен основной ингредиент — от него пересчитывается рецепт. Допишите «— основной ингредиент» к нужной строке${name ? `, например к «${name}»` : ""}.`,
+  "no-main": () =>
+    "Основной ингредиент не отмечен — рецепт будет без пересчёта. Чтобы посетитель мог пересчитать, допишите «основной» к нужной строке.",
   "many-main": () => "Основным отмечено несколько ингредиентов — оставьте одну пометку.",
   "main-not-exact": () => "У основного ингредиента нужно точное количество — не диапазон и не «по вкусу».",
   "no-steps": () => "Нет шагов приготовления. Начните их строкой «Приготовление:».",

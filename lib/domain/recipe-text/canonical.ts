@@ -32,7 +32,8 @@ export function toCanonicalText(draft: RecipeDraft, mainIndex: number | null, la
     const value = [amount(item.quantity), item.unit ?? ""].filter(Boolean).join(" ");
     const tail = value || (item.note ?? "");
     const note = value && item.note ? ` (${item.note.replace(/[()]/g, "")})` : "";
-    lines.push(`- ${item.name} — ${tail}${note}${index === mainIndex ? " - основной ингредиент" : ""}`);
+    const main = index === mainIndex ? " - основной ингредиент" : "";
+    lines.push(tail ? `- ${item.name} — ${tail}${note}${main}` : `- ${item.name}${main}`);
   });
   lines.push("", "Приготовление:", ...draft.steps.map((step, index) => `${index + 1}. ${step}`));
   if (draft.tips.length) lines.push("", "Советы:", ...draft.tips.map((tip) => `- ${tip}`));

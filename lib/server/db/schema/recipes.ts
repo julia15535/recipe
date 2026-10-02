@@ -23,7 +23,8 @@ export const recipes = pgTable(
     // Последний вставленный «как есть» текст, из которого ИИ собрал рецепт (план recipe-ai-parse).
     originalText: text("original_text"),
     revision: integer("revision").notNull().default(1),
-    mainIngredientId: uuid("main_ingredient_id").notNull(),
+    // Основной ингредиент — якорь пересчёта; null — автор не отметил, рецепт без пересчёта (02.10).
+    mainIngredientId: uuid("main_ingredient_id"),
     primarySectionId: uuid("primary_section_id").notNull(),
     yieldNum: bigint("yield_num", { mode: "number" }),
     yieldDen: integer("yield_den"),

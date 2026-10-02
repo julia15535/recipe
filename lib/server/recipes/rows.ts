@@ -9,7 +9,7 @@ import type { Catalog } from "./catalog";
 // до вставки строк (отложенный FK `recipes_main_ingredient_fk`).
 export type RecipeRows = ReturnType<typeof buildRows>;
 
-export function buildRows(recipeId: string, draft: RecipeDraft, mainIndex: number, catalog: Catalog) {
+export function buildRows(recipeId: string, draft: RecipeDraft, mainIndex: number | null, catalog: Catalog) {
   const sectionId = (code: string) => idOf(catalog.sections, code, "раздел");
   const tagId = (code: string) => idOf(catalog.tags, code, "тег");
   const ingredients = draft.ingredients.map((item, position) => {
@@ -28,12 +28,13 @@ export function buildRows(recipeId: string, draft: RecipeDraft, mainIndex: numbe
       note: item.note,
     };
   });
-  const main = ingredients[mainIndex];
+  // Основной необязателен (владелец 02.10): нет — рецепт без пересчёта.
+  const main = mainIndex === null ? null : ingredients[mainIndex];
   const primary = draft.sections[0];
-  if (!main || !primary) throw new Error("рецепт без основного ингредиента или раздела — разбор не пропустил бы");
+  if ((mainIndex !== null && !main) || !primary) throw new Error("основной ингредиент вне списка или нет раздела — разбор не пропустил бы");
   return {
     recipe: {
-      mainIngredientId: main.id,
+      mainIngredientId: main?.id ?? null,
       primarySectionId: sectionId(primary),
       yieldNum: draft.yield?.amount.num ?? null,
       yieldDen: draft.yield?.amount.den ?? null,

@@ -46,8 +46,8 @@ export async function saveNewRecipe(input: string, publish: boolean): Promise<Sa
   await requireOwner();
   const source = text.parse(input);
   const result = parseRecipeText(source);
-  if (!result.ok || result.mainIndex === null) return { ok: false, issues: result.issues, message: null };
-  const parsed = { ...result, mainIndex: result.mainIndex };
+  if (!result.ok) return { ok: false, issues: result.issues, message: null };
+  const parsed = result;
   return safely(async () => {
     const saved = await createRecipe(parsed, source, publish === true ? "published" : "draft");
     return saved.ok ? { ok: true, id: saved.id } : FAILED;
@@ -58,11 +58,11 @@ export async function saveRecipeText(recipeId: string, revision: number, input: 
   await requireOwner();
   const source = text.parse(input);
   const result = parseRecipeText(source);
-  if (!result.ok || result.mainIndex === null) return { ok: false, issues: result.issues, message: null };
+  if (!result.ok) return { ok: false, issues: result.issues, message: null };
   const target = id.safeParse(recipeId);
   const expected = z.number().int().positive().safeParse(revision);
   if (!target.success || !expected.success) return FAILED;
-  const parsed = { ...result, mainIndex: result.mainIndex };
+  const parsed = result;
   return safely(async () => {
     const saved = await replaceRecipe(target.data, expected.data, parsed, source);
     if (saved.ok) return { ok: true, id: saved.id };

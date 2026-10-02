@@ -21,7 +21,7 @@ import { getCatalog } from "./catalog";
 import { buildRows, type RecipeRows } from "./rows";
 
 export type SaveOutcome = { ok: true; id: string; revision: number } | { ok: false; reason: "conflict" | "not-found" };
-type Parsed = Pick<ParseResult, "draft"> & { mainIndex: number };
+type Parsed = Pick<ParseResult, "draft" | "mainIndex">;
 
 /** Новый рецепт одной транзакцией; slug — транслит названия, при совпадении `-2`, `-3`… */
 export function createRecipe(
