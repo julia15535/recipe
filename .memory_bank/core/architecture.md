@@ -45,7 +45,7 @@ Vitest 4 + Playwright.
   `tag:{id}`, `catalog`), правка владельцем → `updateTag` (ADR-0013).
 - Импорт: очередь-таблица в Postgres (`FOR UPDATE SKIP LOCKED`), воркер — контейнер из того же образа;
   загрузки — потоковый Route Handler с лимитами.
-- ИИ — fetch-клиент через Vercel AI Gateway (как sup2); лимиты импорта — в Postgres, как у входа.
+- ИИ на входе — `lib/server/ai/` (fetch-клиент Vercel AI Gateway, ADR-0024); фото и голос — тем же путём.
 - Критический CVE Next/React — обновление в тот же день.
 
 **Деплой и прод:** `core/deployment.md`.

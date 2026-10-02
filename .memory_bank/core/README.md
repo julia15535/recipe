@@ -21,7 +21,7 @@
 | `ingredients.md` | ingredients | Справочник ингредиентов — иерархия, единицы, граммовые эквиваленты, КБЖУ | `../domain/recipe-model.md` | 2026-10-02 |
 | `lessons.md` | lessons | Перед планированием — уроки; что пробовали и что НЕ сработало, отброшенные подходы | `../anti-patterns.md` | 2026-10-02 |
 | `recipe-import.md` | recipe-import | Добавление рецепта — ИИ-импорт (текст, голос, фото, PDF/Word), предпросмотр | `../domain/ai-import.md` | 2026-10-02 |
-| `recipe-upload.md` | recipe-upload | Загрузка рецепта текстом в кабинете, предпросмотр, публикация | `../domain/recipe-upload.md` | 2026-10-02 |
+| `recipe-upload.md` | recipe-upload | Добавление рецепта — вставить любой текст, ИИ-разбор, проверка, публикация | `../domain/recipe-upload.md` | 2026-10-02 |
 | `rescaling.md` | rescaling | Пересчёт от основного ингредиента, порции, правила округления | `../domain/rounding-rules.md` | 2026-10-02 |
 | `search.md` | search | Поиск — «По рецепту / По ингредиенту», иерархия, уточнение категорией и тегом | `../domain/search-spec.md` | 2026-10-02 |
 | `ux.md` | ux | Экраны и mobile-first — главная, страница рецепта, работа одной рукой | `../domain/screens.md` | 2026-10-02 |

@@ -32,7 +32,7 @@ review_after: 2026-10-29
   `acme-companion` (сеть `webproxy`); детали хоста — только `_secrets/ACCESS.md` (репо публичный).
 - `recipe-web` (read-only, без capabilities) и `recipe-db` (Postgres 17) — с лимитами CPU/RAM и
   OOM-приоритетом; как создан `recipe-db` — `deploy/README.md`.
-  Секреты: `/opt/recipe/web.env` (`recipe_app` + бот входа) и `/opt/recipe/migrate.env`; новый `web.env` —
+  Секреты: `/opt/recipe/web.env` (`recipe_app`, бот входа, ключ ИИ) и `/opt/recipe/migrate.env`; новый `web.env` —
   через `recipe-deploy.sh --force`; webhook, смена токена, отзыв сессий — `deploy/README.md`.
 - До запуска сайт закрыт: `SITE_INDEXABLE=false` → `robots.txt` Disallow + `noindex`.
 

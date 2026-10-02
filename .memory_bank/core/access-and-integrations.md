@@ -19,12 +19,12 @@ review_after: 2026-10-27
 
 ## Состояние на 29.09.2026
 Подключены: GitHub (репо + Actions), GHCR, прод-хостинг с доменом и Let's Encrypt. ИИ, STT,
-Хранилище файлов — ещё нет; Telegram-бот — вход владельца в кабинет (02.10).
+Хранилище файлов — ещё нет; Telegram-бот — вход владельца (02.10); ИИ-разбор рецептов — Vercel AI Gateway (02.10).
 
 | Нужно | Для чего | Статус |
 |-------|----------|--------|
-| LLM (текст + vision) | структурирование рецепта, фото/скриншоты, нормализация единиц, перевод RU→EN | провайдер не выбран; у владельца в sup2 — Vercel AI Gateway |
-| Speech-to-Text | голосовой рецепт с телефона | не выбран |
+| LLM (текст) | разбор рецепта (ADR-0024) | Vercel AI Gateway, `openai/gpt-6-luna`; ключ общий с sup2 — `_secrets/ACCESS.md`, `web.env` `AI_GATEWAY_*`; клиент `lib/server/ai/gateway.ts` |
+| Speech-to-Text | голос с телефона | не выбран |
 | Извлечение текста | PDF (текстовый слой / OCR), DOC/DOCX, TXT | библиотеки не выбраны |
 | Telegram-бот | вход владельца (ADR-0022), позже уведомления | `@mycoruja_recipes_bot` («Книга рецептов», владелец 02.10). Webhook `POST /api/telegram/webhook` (заголовок-секрет), ответы — Bot API `sendMessage`/`editMessageText`/`answerCallbackQuery` (`lib/server/auth/telegram.ts`); включение — `scripts/telegram-webhook.mjs`. Env на сервере (`web.env`): `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_WEBHOOK_SECRET`, `OWNER_TELEGRAM_ID`; значения — `_secrets/ACCESS.md` |
 | Хостинг + домен | прод | домен `mycoruja.food`; сервер — общий зарубежный хост владельца за общим `nginx-proxy` (детали — `_secrets/ACCESS.md`) |
