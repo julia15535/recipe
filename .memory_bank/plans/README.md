@@ -37,6 +37,7 @@ draft → in_progress → completed → перенос в completed_plans/
 
 | slug | Название | status | created | updated |
 |------|----------|--------|---------|---------|
+| recipe-rounding | Округление при пересчёте рецепта по авторитетному источнику (USDA / NFSMI, King Arthur) и значок ≈ | in_progress | 2026-10-02 | 2026-10-02 |
 | recipe-ai-parse | ИИ разбирает рецепт из любого текста — вставила как есть, проверила, сохранила | in_progress | 2026-10-02 | 2026-10-02 |
 <!-- GENERATED:plans-registry END -->
 
