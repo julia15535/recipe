@@ -17,7 +17,7 @@ review_after: 2026-10-29
 ## Путь релиза
 1. PR / push в `main`, `feature/**` → GitHub Actions `.github/workflows/ci.yml`:
    `check` (lint, typecheck, test, миграции) → `image` (образ собирается **один раз**, до запуска БД — ADR-0027; на нём миграции,
-   тесты БД, e2e с фальшивым ботом, отказы) → `publish` (только `main` с новым кодом):
+   e2e с фальшивым ботом, отказы; тесты БД — на раннере против той же базы) → `publish` (только `main` с новым кодом):
    `ghcr.io/julia15535/recipe:<sha>`, затем `:stable`. «Менялся ли код» на main — от ревизии в `:stable`
    (`scripts/ci/published-revision.sh`), docs-only образ не собирают.
 2. Сервер сам забирает `:stable` каждые 5 минут (`deploy/recipe-deploy.sh` + `.timer`): точка отката

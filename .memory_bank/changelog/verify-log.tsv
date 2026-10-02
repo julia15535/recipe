@@ -63,3 +63,9 @@ date	doc	reason	claims	mismatch	fixed	note
 2026-10-02	.memory_bank/domain/owner-auth.md	code	6	0	0	
 2026-10-02	.memory_bank/core/access-and-integrations.md	code	3	0	0	
 2026-10-02	.claude/rules/ui-rules.md	code	6	1	1	
+2026-10-02	.memory_bank/core/ux.md	code	11	1	1	
+2026-10-02	.memory_bank/domain/screens.md	code	30	1	1	
+2026-10-02	.memory_bank/core/deployment.md	code	18	1	1	
+2026-10-02	.memory_bank/core/recipe-upload.md	code	14	2	2	
+2026-10-02	.memory_bank/core/catalog.md	rotation	14	1	1	
+2026-10-02	.memory_bank/domain/recipe-upload.md	code	10	2	2	
