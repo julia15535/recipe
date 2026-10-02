@@ -208,6 +208,18 @@ Popover по тапу, не Tooltip.
 **Convention:** файлы в корне и в `app/ lib/ components/ scripts/` не импортируют из исключённых папок
 (константу — продублировать с комментарием, как `OWNER_STATE` в `playwright.config.ts`).
 
+## 31. `getByRole("alert")` в e2e находит объявитель переходов Next
+**Симптом:** strict mode violation — второй `role="alert"` это пустой `#__next-route-announcer__`.
+**Convention:** `getByRole("alert").filter({ hasText: … })` (`e2e/recipes.spec.ts`).
+
+## 32. Zod: `refine` выполняется и после проваленного `regex`
+**Симптом:** `BigInt("@user")` бросил `SyntaxError` вместо понятной ошибки env.
+**Convention:** в `refine` заново проверять форму значения (`/^\d+$/.test(v) && …`, `lib/server/env-schema.ts`).
+
+## 33. Флаг `i` с `\p{Lu}` в регулярке
+**Симптом:** «Рецепт вафель…» потеряло «Рецепт»: с флагом `i` класс заглавных совпадает и со строчными.
+**Convention:** регистр — явным классом (`[Рр]ецепт`) без `i` (`lib/domain/recipe-text/parse.ts`).
+
 ---
 
 # Анти-паттерны ПАМЯТИ (уроки эксплуатации — актуальны любому проекту с Memory Bank)

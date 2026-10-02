@@ -30,10 +30,10 @@ Vitest 4 + Playwright.
 - API: `health/live`, `health/ready` (БД + `GIT_SHA` — по нему деплой сверяет релиз), `telegram/webhook`, `auth/status`.
 
 ## Слои кода
-- `lib/domain/` — будущий слой чистых функций без IO (пересчёт, округление); папки пока нет, правило
-  ESLint на импорты фреймворка/БД уже действует (`eslint.config.mjs`).
+- `lib/domain/` — чистые функции без IO (ESLint `eslint.config.mjs`): дроби, пересчёт, разбор текста рецепта
+  (`lib/domain/recipe-text/`), коды каталога.
 - `lib/server/` — `server-only`: env, БД (`lib/server/db/client.ts`), логгер с маскированием (`log.ts`), вход
-  (`lib/server/auth/`, `requireOwner()`); без него намеренно — `env-schema.ts`, схема БД и чистые модули входа.
+  (`lib/server/auth/`, `requireOwner()`), рецепты (`lib/server/recipes/`); без него намеренно — `env-schema.ts`, схема БД и чистые модули входа.
   UI в БД не ходит.
 - Env: публичное (`SITE_URL`, `SITE_INDEXABLE`) запекается при сборке; секреты (`DATABASE_URL`)
   лениво; прод без них не стартует (`instrumentation-node.ts`).
