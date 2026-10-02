@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
-import { OWNER_STATE } from "./e2e/support/telegram";
+// Сессия владельца из e2e/auth.setup.ts (тот же путь — OWNER_STATE в e2e/support/telegram.ts). Без
+// импорта из e2e/: папки нет в контексте сборки образа, а next build проверяет и этот файл.
+const OWNER_STATE = "e2e/.auth/owner.json";
 
 // e2e гоняем против собранного образа (CI: E2E_BASE_URL=http://127.0.0.1:3000). Локально без
 // E2E_BASE_URL поднимается `pnpm start` (нужен предварительный `pnpm build`).
