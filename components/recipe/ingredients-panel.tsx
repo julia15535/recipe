@@ -5,7 +5,8 @@ import { useId } from "react";
 import { AppButton } from "@/components/app-button";
 import { Input } from "@/components/base/input/input";
 import { type Fraction, fraction, mul } from "@/lib/domain/fraction";
-import { type AmountCheck, MAX_FACTOR, formatAmount, formatInput, formatQuantity } from "@/lib/domain/rescale";
+import { type AmountCheck, MAX_FACTOR, formatAmount, formatInput } from "@/lib/domain/rescale";
+import { showQuantity } from "@/lib/domain/rounding";
 import { cx } from "@/utils/cx";
 
 import type { RecipeView, ViewIngredient } from "./view";
@@ -41,14 +42,16 @@ export function IngredientsPanel({ recipe, base, factor, raw, check, onChange, o
   );
 }
 
-// Число — жирным, пометка («по желанию», «если творог сухой») — обычным текстом; короткая пометка без
-// числа не переносится.
+// Число — жирным (после пересчёта — округлено и со значком ≈, `lib/domain/rounding.ts`), пометка («по желанию»,
+// «если творог сухой») и подсказка — обычным текстом; короткая пометка без числа не переносится.
 function IngredientAmount({ item, factor }: { item: ViewIngredient; factor: Fraction }) {
-  const amount = formatQuantity(item.quantity, factor, item.unit);
+  const shown = showQuantity(item, factor);
+  const amount = shown && `${shown.approx ? "≈ " : ""}${shown.amount} ${shown.unit ?? ""}`.trim();
+  const extra = [item.note, shown?.hint].filter(Boolean).join(", ");
   return (
     <span className={cx("text-right", amount ? "" : "shrink-0 whitespace-nowrap")} data-testid="ingredient-amount">
-      {amount && <span className="font-semibold whitespace-nowrap text-primary">{`${amount} ${item.unit ?? ""}`.trim()}</span>}
-      {amount && item.note && <span className="text-tertiary">, {item.note}</span>}
+      {amount && <span className="font-semibold whitespace-nowrap text-primary">{amount}</span>}
+      {amount && extra && <span className="text-tertiary">, {extra}</span>}
       {!amount && <span className="text-tertiary">{item.note}</span>}
     </span>
   );

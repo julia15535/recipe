@@ -1,5 +1,5 @@
 // Пересчёт от основного ингредиента (ADR-0016): коэффициент = своё количество / количество в рецепте,
-// точно в дробях, без кулинарного округления (правила округления — отдельный этап, ADR-0004).
+// точно в дробях; округление для показа — `rounding.ts` (ADR-0026).
 import { type Fraction, div, fraction, mul, parseDecimal, toNumber } from "./fraction";
 import type { Quantity } from "./quantity";
 
