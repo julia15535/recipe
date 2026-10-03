@@ -3,7 +3,7 @@ tier: 1
 topic: access-and-integrations
 scope: Внешние сервисы (ИИ, STT, Telegram, хостинг) и где ключи
 tier2: ""
-updated: 2026-10-02
+updated: 2026-10-03
 importance: high
 source: manual
 status: draft
@@ -17,9 +17,9 @@ review_after: 2026-10-27
 > Реестр интеграций (anti-rediscovery): перед подключением сервиса — сверься здесь. Значения
 > ключей — только в `.memory_bank/_secrets/ACCESS.md` (вне git); в остальной памяти — указатели.
 
-## Состояние на 29.09.2026
-Подключены: GitHub (репо + Actions), GHCR, прод-хостинг с доменом и Let's Encrypt. ИИ, STT,
-Хранилище файлов — ещё нет; Telegram-бот — вход владельца (02.10); ИИ-разбор рецептов — Vercel AI Gateway (02.10).
+## Состояние на 03.10.2026
+Подключены: GitHub (Actions), GHCR, хостинг с доменом и Let's Encrypt, Telegram-бот входа, Vercel AI Gateway
+(разбор рецептов). Фото блюд — в Postgres (ADR-0028). STT и хранилища файлов нет.
 
 | Нужно | Для чего | Статус |
 |-------|----------|--------|
@@ -28,7 +28,7 @@ review_after: 2026-10-27
 | Извлечение текста | PDF (текстовый слой / OCR), DOC/DOCX, TXT | библиотеки не выбраны |
 | Telegram-бот | вход владельца (ADR-0022), позже уведомления | `@mycoruja_recipes_bot` («Книга рецептов», владелец 02.10). Webhook `POST /api/telegram/webhook` (заголовок-секрет), ответы — Bot API `sendMessage`/`editMessageText`/`answerCallbackQuery` (`lib/server/auth/telegram.ts`); включение — `scripts/telegram-webhook.mjs`. Env на сервере (`web.env`): `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_WEBHOOK_SECRET`, `OWNER_TELEGRAM_ID`; значения — `_secrets/ACCESS.md` |
 | Хостинг + домен | прод | домен `mycoruja.food`; сервер — общий зарубежный хост владельца за общим `nginx-proxy` (детали — `_secrets/ACCESS.md`) |
-| Хранилище файлов | фото блюд, исходники импорта | не выбрано |
+| Хранилище файлов | фото блюд, исходники импорта | фото — в Postgres (ADR-0028); исходники — не выбрано |
 | Git-remote | репозиторий | `github.com/julia15535/recipe` (публичный); push по SSH ключом владельца; `gh` агента — `igortsk123` (приглашён с Write, приглашение принять в браузере; fine-grained токен не открывает PR в чужих репо) |
 | GHCR | образ прода | `ghcr.io/julia15535/recipe` — публикует CI `GITHUB_TOKEN` (`.github/workflows/ci.yml`), сервер тянет анонимно (`core/deployment.md`) |
 | Codex CLI | независимый советник, read-only | доступен локально (`codex exec`) |

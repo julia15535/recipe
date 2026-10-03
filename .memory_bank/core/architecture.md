@@ -3,7 +3,7 @@ tier: 1
 topic: architecture
 scope: Стек, слои, SEO-рендер, где ИИ, деплой — перед архитектурным решением
 tier2: ""
-updated: 2026-10-02
+updated: 2026-10-03
 importance: high
 source: manual
 status: working
@@ -27,23 +27,24 @@ Vitest 4 + Playwright.
   `login/`, остальное — группа `(protected)` с пробными экранами `ui/` (ADR-0022, `domain/owner-auth.md`).
 - `proxy.ts` — next-intl для публичных путей; `/admin` — CSP с nonce и 307 на вход без cookie сессии;
   `www` → apex — `redirects()` в `next.config.ts`.
-- API: `health/live`, `health/ready` (БД + `GIT_SHA`), `telegram/webhook`, `auth/status`.
+- API: `health/live`, `health/ready` (БД + `GIT_SHA`), `telegram/webhook`, `auth/status`; фото —
+  `app/media/recipe/[photoId]/[file]/route.ts` (ADR-0028; мимо proxy — адрес с точкой).
 
 ## Слои кода
 - `lib/domain/` — чистые функции без IO (ESLint `eslint.config.mjs`): дроби, пересчёт, разбор текста рецепта
-  (`lib/domain/recipe-text/`), коды каталога.
+  (`lib/domain/recipe-text/`), коды каталога, кадр фото (`lib/domain/photo.ts`).
 - `lib/server/` — `server-only`: env, БД (`lib/server/db/client.ts`), логгер с маскированием (`log.ts`), вход
-  (`lib/server/auth/`, `requireOwner()`), рецепты (`lib/server/recipes/`); без него намеренно — `env-schema.ts`, схема БД и чистые модули входа.
+  (`lib/server/auth/`, `requireOwner()`), рецепты (`lib/server/recipes/`), фото — sharp (`lib/server/media/`); без него
+  намеренно — `env-schema.ts`, схема БД и чистые модули входа.
   UI в БД не ходит.
-- Env: публичное (`SITE_URL`, `SITE_INDEXABLE`) запекается при сборке (`SITE_INDEXABLE` ещё читают metadata
-  разделов и рецептов при запросе — ADR-0027); секреты (`DATABASE_URL`)
-  лениво; прод без них не стартует (`instrumentation-node.ts`).
+- Env: `SITE_URL`, `SITE_INDEXABLE` — при сборке (и при запросе в metadata, ADR-0027); секреты лениво, прод без
+  них не стартует (`instrumentation-node.ts`).
 - Миграции: `drizzle-kit generate` → `scripts/migrate.mjs` (advisory lock); роли —
   `deploy/recipe-roles.sql`.
 
 ## Направления для следующих планов
 - Импорт файлов: очередь-таблица в Postgres (`SKIP LOCKED`), воркер из того же образа, потоковый Route Handler.
-- ИИ на входе — `lib/server/ai/` (fetch-клиент Vercel AI Gateway, ADR-0024); фото и голос — тем же путём.
-- Критический CVE Next/React — обновление в тот же день. Кэш сайта и его сброс — ADR-0027.
+- ИИ на входе — `lib/server/ai/` (Vercel AI Gateway, ADR-0024); распознавание и голос — тем же путём.
+- Критический CVE Next/React — обновление в тот же день.
 
 **Деплой и прод:** `core/deployment.md`.

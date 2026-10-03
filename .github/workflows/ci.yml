@@ -111,6 +111,15 @@ jobs:
             --build-arg SITE_URL="$SITE_URL" \
             --build-arg GIT_SHA="$GITHUB_SHA" \
             -t recipe:ci .
+      # Фото (ADR-0028): sharp и libvips для musl должны попасть в standalone-образ — кодируем и раскодируем внутри.
+      - name: sharp в образе кодирует и раскодирует
+        run: |
+          docker run --rm --read-only --tmpfs /tmp --entrypoint node recipe:ci -e "
+            const sharp = require('sharp');
+            sharp({ create: { width: 64, height: 48, channels: 3, background: '#c33' } }).webp().toBuffer()
+              .then((b) => sharp(b).metadata())
+              .then((m) => { if (m.format !== 'webp' || m.width !== 64) process.exit(1); console.log('sharp', sharp.versions.sharp, 'vips', sharp.versions.vips); })
+              .catch((e) => { console.error(e); process.exit(1); });"
       - name: База для проверок (та же, что локально)
         run: docker compose up -d --wait db
       - name: Миграции внутри образа (дважды) и параллельный запуск
@@ -120,10 +129,12 @@ jobs:
           $MIGRATE_COMMAND
           $MIGRATE_COMMAND
           pnpm test:db
-      - name: Запуск образа как в проде (read-only, без прав)
+      # Лимиты — как у recipe-web на проде (deploy/recipe-deploy.sh): обработка фото должна в них укладываться.
+      - name: Запуск образа как в проде (read-only, без прав, лимиты прода)
         run: |
           docker run -d --name web --network host \
-            --read-only --tmpfs /tmp --tmpfs /app/.next/cache:uid=10001,gid=10001 \
+            --cpus=.25 --memory=384m --memory-swap=384m --pids-limit=128 \
+            --read-only --tmpfs /tmp:size=64m --tmpfs /app/.next/cache:size=128m,uid=10001,gid=10001 \
             --cap-drop=ALL --security-opt no-new-privileges \
             -e DATABASE_URL -e SITE_URL -e GIT_SHA="$GITHUB_SHA" \
             -e TELEGRAM_BOT_TOKEN -e TELEGRAM_BOT_USERNAME -e TELEGRAM_WEBHOOK_SECRET \
@@ -140,6 +151,10 @@ jobs:
           E2E_BASE_URL: http://127.0.0.1:3000
           E2E_EXPECT_SHA: ${{ github.sha }}
         run: pnpm e2e
+      - name: Пик памяти сайта за e2e (лимит прода — 384 МБ)
+        if: always()
+        run: |
+          docker exec web cat /sys/fs/cgroup/memory.peak 2>/dev/null | awk '{ printf "пик памяти: %.0f МБ\n", $1 / 1048576 }' || true
       - name: "Отказы: без БД live=200 и ready=503; без DATABASE_URL образ не стартует молча"
         run: |
           docker compose stop db

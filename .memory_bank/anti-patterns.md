@@ -3,7 +3,7 @@ tier: 2
 topic: anti-patterns
 scope: Каталог повторяющихся ошибок — чеклист при code-review
 tier1: core/lessons.md
-updated: 2026-10-02
+updated: 2026-10-03
 importance: med
 source: manual
 status: working
@@ -262,6 +262,22 @@ Popover по тапу, не Tooltip.
 (`TELEGRAM.enabled`, `e2e/support/telegram.ts`), сборка с живой БД не ловит обращение к базе при сборке.
 **Convention:** полный прогон как в CI — экспортировать фальшивые значения из блока `env:` `.github/workflows/ci.yml`,
 `pnpm build` с `DATABASE_URL` на закрытый порт (сборка без БД), `pnpm start`, `pnpm e2e`; в выводе — 0 skipped.
+
+## 42. `sharp(…).extract(…).stats()` считает по всему изображению
+**Симптом:** тест цвета углов фото видел «000» везде — `stats()` берёт вход, а не результат `extract`.
+**Convention:** сначала вырезать в буфер (`extract(…).toBuffer()`), потом `stats()` (`lib/server/media/process.test.ts`).
+
+## 43. Запрос API-клиентом Playwright не несёт cookie входа по http
+**Симптом:** e2e на `http://127.0.0.1`: браузер владельца видит фото черновика, а `page.request.get` — 404: cookie
+`__Host-owner_session` — `Secure`, API-клиент Playwright по http её не отправляет (Chromium для 127.0.0.1 — отправляет).
+**Convention:** проверки «от имени владельца» — `fetch` внутри страницы (`ownerFetch` в `e2e/photos.spec.ts`);
+проверка «404/no-store» без проверки статуса 200 у владельца — пустая.
+
+## 44. Общий прокси режет тело запроса > 1 МБ
+**Симптом:** загрузка фото с телефона (3–10 МБ) получила бы 413 от nginx-proxy раньше приложения (замер 03.10:
+900 КБ → 405, 1100 КБ → 413). Прокси общий для соседних сайтов — не трогаем.
+**Convention:** большие файлы уменьшать в браузере до < 850 КБ (`components/media/shrink-image.ts`); e2e проверяет размер
+всего запроса Server Action (`e2e/photos.spec.ts`).
 
 ---
 

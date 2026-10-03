@@ -34,6 +34,7 @@ export function demoToView(recipe: DemoRecipe): RecipeView {
     mainId: ingredients[recipe.main]?.id ?? null,
     steps: recipe.steps.map((text, index) => ({ id: `${recipe.slug}-step-${index}`, text })),
     tips: [],
+    photo: null,
     tone: recipe.tone,
   };
 }

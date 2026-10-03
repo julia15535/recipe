@@ -51,6 +51,10 @@ SOFTWARE.
 - `lucide-react` — ISC (иконки)
 - `@tailwindcss/typography`, `tailwindcss-animate`, `tailwind-merge` (его использует `utils/cx.ts`) — MIT
 - `uqr` (QR-код ссылки на бота на странице входа) — MIT (UnJS)
+- `react-easy-crop` (окно кадрирования фото блюда) — MIT (Valentin Hervieu)
+- `sharp` (обработка фото на сервере) — Apache-2.0 (Lovell Fuller); в образ попадают готовые сборки
+  `@img/sharp-linuxmusl-*` и `@img/sharp-libvips-linuxmusl-*` — libvips под LGPL-3.0-or-later, подключается
+  динамически, без изменений; исходники — https://github.com/libvips/libvips, лицензии сборок — в пакетах `@img/*`.
 
 ## Шрифты
 - Prata (заголовки) и Manrope (текст) — SIL Open Font License 1.1; подключаются через `next/font/google`,

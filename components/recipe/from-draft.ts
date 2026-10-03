@@ -23,5 +23,6 @@ export function draftToView({ draft, mainIndex }: ParseResult, labels: CatalogLa
     mainId: mainIndex === null ? null : (ingredients[mainIndex]?.id ?? null),
     steps: draft.steps.map((text, index) => ({ id: `step-${index}`, text })),
     tips: draft.tips.map((text, index) => ({ id: `tip-${index}`, text })),
+    photo: null,
   };
 }

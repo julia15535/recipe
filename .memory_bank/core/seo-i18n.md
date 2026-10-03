@@ -3,7 +3,7 @@ tier: 1
 topic: seo-i18n
 scope: SEO публичных страниц, RU + EN, URL-схема, SEO-футер
 tier2: ""
-updated: 2026-10-02
+updated: 2026-10-03
 importance: med
 source: _intake/_processed/brief/technical_spec_recipe_book.md
 status: draft
@@ -34,7 +34,7 @@ JSON-LD Recipe · хлебные крошки · индексируемые ра
   `www` → основной домен 301 (`next.config.ts`).
 - canonical и hreflang — один источник: metadata страницы (`app/(public)/[locale]/_components/page-metadata.ts`
   → `lib/i18n/alternates.ts`), абсолютные от `SITE_URL`; hreflang — только живые языки (`LIVE_LOCALES`, сейчас
-  ru; x-default — когда их больше одного); Open Graph — название и описание; `Link`-заголовки next-intl выключены.
+  ru; x-default — когда их больше одного); Open Graph — название, описание и кадр владельца `og.jpg` 1200×630 (ADR-0028); `Link`-заголовки next-intl выключены.
 - Поисковикам закрыто (владелец 02.10: «поисковикам ничего не давай пока что, позже сделаем»):
   `SITE_INDEXABLE=false` → `app/robots.ts` Disallow + `noindex` на всех страницах. Значение и запекается при сборке
   (robots, layout), и читается при запросе (metadata разделов и рецептов) — открывать в CI И в `web.env`.

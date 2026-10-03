@@ -6,6 +6,7 @@ import { Suspense } from "react";
 
 import { RecipeBody } from "@/components/recipe/recipe-body";
 import { RecipeIntro } from "@/components/recipe/recipe-intro";
+import { photoUrl } from "@/lib/domain/photo";
 import { cachedCatalog, cachedRecipe } from "@/lib/server/recipes/public-cache";
 
 import { pageMetadata } from "../../_components/page-metadata";
@@ -22,7 +23,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   await io();
   const recipe = await cachedRecipe(locale, slug);
   if (!recipe) return { robots: { index: false, follow: false } };
-  return pageMetadata({ locale, path: `/recipe/${slug}`, title: recipe.view.title, description: recipe.view.description });
+  const { photo, title, description } = recipe.view;
+  return pageMetadata({ locale, path: `/recipe/${slug}`, title, description, image: photo ? photoUrl(photo.id, "og.jpg") : null });
 }
 
 export default async function RecipePage({ params }: Props) {

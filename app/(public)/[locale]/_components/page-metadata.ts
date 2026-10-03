@@ -2,18 +2,19 @@ import "server-only";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
+import { OG } from "@/lib/domain/photo";
 import { localizedAlternates } from "@/lib/i18n/alternates";
 import { getSiteConfig } from "@/lib/server/env";
 import type { Locale } from "@/lib/server/recipes/public";
 
-type Input = { locale: Locale; path: string; title?: string; description?: string | null; noindex?: boolean };
+type Input = { locale: Locale; path: string; title?: string; description?: string | null; noindex?: boolean; image?: string | null };
 
 /**
  * Metadata публичной страницы: title, description, canonical, hreflang (только живые языки), Open Graph для
  * превью ссылок в мессенджерах. robots страницы заменяет robots layout целиком, поэтому пока сайт закрыт
  * (SITE_INDEXABLE ≠ true) — закрыто всё; после открытия noindex остаётся у поиска и пустых разделов.
  */
-export async function pageMetadata({ locale, path, title, description, noindex = false }: Input): Promise<Metadata> {
+export async function pageMetadata({ locale, path, title, description, noindex = false, image = null }: Input): Promise<Metadata> {
   const t = await getTranslations("Meta");
   const { indexable } = getSiteConfig();
   const text = description ?? t("description");
@@ -28,6 +29,8 @@ export async function pageMetadata({ locale, path, title, description, noindex =
       url: `/${locale}${path === "/" ? "" : path}`,
       title: title ?? t("siteName"),
       description: text,
+      // Превью ссылки — кадр владельца 1200×630 (ADR-0028); путь абсолютным делает metadataBase.
+      ...(image ? { images: [{ url: image, width: OG.width, height: OG.height, alt: title ?? t("siteName") }] } : {}),
     },
     robots: indexable && !noindex ? { index: true, follow: true } : { index: false, follow: indexable },
   };

@@ -1,6 +1,7 @@
 // Модель показа рецепта — одна для предпросмотра в кабинете, сохранённого рецепта и (адаптером)
 // прототипов `/admin/ui`: дроби — точные, у строк — стабильные id, ссылки и подписи — готовые.
 import type { Fraction } from "@/lib/domain/fraction";
+import type { PhotoRef } from "@/lib/domain/photo";
 import type { Quantity } from "@/lib/domain/quantity";
 import type { WordForms } from "@/lib/domain/rescale";
 
@@ -19,7 +20,9 @@ export type RecipeView = {
   steps: { id: string; text: string }[];
   /** Советы автора — отдельным блоком после шагов. */
   tips: { id: string; text: string }[];
-  /** Только прототипы: цветная заглушка фото. У настоящих рецептов фото пока нет. */
+  /** Фото блюда (ADR-0028): кадр 4:3, готовые ширины; null — фото нет. */
+  photo: PhotoRef | null;
+  /** Только прототипы: цветная заглушка фото. */
   tone?: string;
 };
 

@@ -2,12 +2,13 @@ import { Clock } from "lucide-react";
 import NextLink from "next/link";
 
 import { CompositionTags } from "@/components/recipe/composition-tags";
+import { RecipePhoto } from "@/components/recipe/recipe-photo";
 import { cx } from "@/utils/cx";
 
 import type { RecipeView } from "./view";
 
 // Шапка рецепта: разделы спокойной строкой (ADR-0018; ссылка — если есть страница раздела), название,
-// описание, строка «время + теги состава своим цветом» (ADR-0021); фото пока нет — у прототипов заглушка.
+// описание, строка «время + теги состава своим цветом» (ADR-0021); фото блюда 4:3 (ADR-0028); у прототипов — цветная заглушка.
 export function RecipeIntro({ recipe }: { recipe: RecipeView }) {
   return (
     <div className="flex flex-col gap-3">
@@ -45,7 +46,11 @@ export function RecipeIntro({ recipe }: { recipe: RecipeView }) {
         )}
         <CompositionTags tags={recipe.tags} label="Особенности состава" />
       </div>
-      {recipe.tone && <div className={cx("mt-2 aspect-[3/2] rounded-2xl bg-linear-to-br lg:aspect-[16/9]", recipe.tone)} aria-hidden />}
+      {recipe.photo ? (
+        <RecipePhoto photo={recipe.photo} alt={recipe.title} sizes="(min-width: 768px) 736px, calc(100vw - 32px)" priority className="mt-2 rounded-2xl" />
+      ) : (
+        recipe.tone && <div className={cx("mt-2 aspect-[4/3] rounded-2xl bg-linear-to-br", recipe.tone)} aria-hidden />
+      )}
     </div>
   );
 }

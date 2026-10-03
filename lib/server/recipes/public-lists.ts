@@ -1,15 +1,24 @@
 import "server-only";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
+import type { PhotoRef } from "@/lib/domain/photo";
 import { getDb } from "@/lib/server/db/client";
 import { guarded } from "@/lib/server/db/errors";
 import * as t from "@/lib/server/db/schema";
+import { photoRefs } from "@/lib/server/media/photo-reads";
 
 import { type Locale, published } from "./public";
 
 // Списки опубликованных рецептов для сайта (ADR-0027): карточки (главная, раздел) и компактный индекс поиска.
 // Агрегированными запросами — без запроса на каждую карточку; черновики не попадают (`published`).
-export type PublicCard = { id: string; slug: string; title: string; time: string | null; section: { code: string; label: string } };
+export type PublicCard = {
+  id: string;
+  slug: string;
+  title: string;
+  time: string | null;
+  section: { code: string; label: string };
+  photo: PhotoRef | null;
+};
 export type SearchItem = Omit<PublicCard, "id"> & { ingredients: string[]; sections: string[]; tagCodes: string[] };
 
 /** Карточки: новые сверху (по дате первой публикации), опционально — одного раздела (и где он не основной). */
@@ -35,7 +44,8 @@ export function readCards(locale: Locale, options: { sectionCode?: string; limit
       .where(and(published, inSection))
       .orderBy(desc(t.recipes.publishedAt), desc(t.recipes.id));
     const rows = options.limit ? await query.limit(options.limit) : await query;
-    return rows.map(({ code, label, ...card }) => ({ ...card, section: { code, label } }));
+    const photos = await photoRefs(getDb(), rows.map((row) => row.id));
+    return rows.map(({ code, label, ...card }) => ({ ...card, section: { code, label }, photo: photos.get(card.id) ?? null }));
   });
 }
 

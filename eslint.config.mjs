@@ -50,6 +50,12 @@ const eslintConfig = defineConfig([
     rules: { "@next/next/no-img-element": "off" },
   },
   {
+    // Фото блюда (ADR-0028): готовые ширины WebP делаются при загрузке и отдаются /media с проверкой доступа —
+    // оптимизатор next/image не нужен (он бы пережимал их ещё раз на 0,25 CPU). Только эти файлы.
+    files: ["components/recipe/recipe-photo.tsx"],
+    rules: { "@next/next/no-img-element": "off" },
+  },
+  {
     // CLI-скрипты и тестовая обвязка пишут в консоль осознанно.
     files: ["scripts/**/*.mjs", "e2e/**/*.ts", "*.config.*"],
     rules: { "no-console": "off" },

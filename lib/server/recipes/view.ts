@@ -6,6 +6,7 @@ import { fraction } from "@/lib/domain/fraction";
 import type { Quantity } from "@/lib/domain/quantity";
 import type { WordForms } from "@/lib/domain/rescale";
 import type { Executor } from "@/lib/server/db/client";
+import { photoRefs } from "@/lib/server/media/photo-reads";
 import * as t from "@/lib/server/db/schema";
 
 // Сборка модели показа рецепта из строк БД — общая для кабинета и сайта. Статус здесь не проверяется:
@@ -15,7 +16,7 @@ type Head = { recipe: typeof t.recipes.$inferSelect; text: typeof t.recipeLocali
 export async function buildView(db: Executor, { recipe, text }: Head, sectionHref: ((slug: string) => string) | null): Promise<RecipeView> {
   const id = recipe.id;
   const locale = text.locale;
-  const [sections, tags, ingredients, steps, tips] = await Promise.all([
+  const [sections, tags, ingredients, steps, tips, photos] = await Promise.all([
     db
       .select({ code: t.sections.code, label: t.sectionLocalizations.label, slug: t.sectionLocalizations.slug })
       .from(t.recipeSections)
@@ -33,6 +34,7 @@ export async function buildView(db: Executor, { recipe, text }: Head, sectionHre
     db.select().from(t.recipeIngredients).where(eq(t.recipeIngredients.recipeId, id)).orderBy(asc(t.recipeIngredients.position)),
     db.select().from(t.recipeSteps).where(eq(t.recipeSteps.recipeId, id)).orderBy(asc(t.recipeSteps.position)),
     db.select().from(t.recipeTips).where(eq(t.recipeTips.recipeId, id)).orderBy(asc(t.recipeTips.position)),
+    photoRefs(db, [id]),
   ]);
   return {
     title: text.title,
@@ -45,6 +47,7 @@ export async function buildView(db: Executor, { recipe, text }: Head, sectionHre
     mainId: recipe.mainIngredientId,
     steps: steps.map((row) => ({ id: row.id, text: row.text })),
     tips: tips.map((row) => ({ id: row.id, text: row.text })),
+    photo: photos.get(id) ?? null,
   };
 }
 
