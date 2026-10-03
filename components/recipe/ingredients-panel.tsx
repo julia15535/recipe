@@ -82,7 +82,7 @@ function MainIngredient({ item, base, raw, check, onChange, onReset, lang }: Mai
     empty: t("empty"),
     format: t("format"),
     zero: t("zero"),
-    tooBig: t("tooBig", { amount: withUnit(formatAmount(limit, lang), item.unit, lang, toNumber(limit), item.unitForms) }),
+    tooBig: t("tooBig", { amount: withUnit(formatAmount(limit, lang, item.amountStyle), item.unit, lang, toNumber(limit), item.unitForms) }),
   };
   const unit = unitLabel(item.unit, lang, toNumber(base), item.unitForms);
   return (
@@ -110,7 +110,7 @@ function MainIngredient({ item, base, raw, check, onChange, onReset, lang }: Mai
       </p>
       {raw !== formatInput(base, lang) && (
         <AppButton color="tertiary" onPress={onReset} className="self-start">
-          {t("reset", { amount: withUnit(formatAmount(base, lang), item.unit, lang, toNumber(base), item.unitForms) })}
+          {t("reset", { amount: withUnit(formatAmount(base, lang, item.amountStyle), item.unit, lang, toNumber(base), item.unitForms) })}
         </AppButton>
       )}
     </div>

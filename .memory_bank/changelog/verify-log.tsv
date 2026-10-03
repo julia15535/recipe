@@ -98,3 +98,6 @@ date	doc	reason	claims	mismatch	fixed	note
 2026-10-03	core/search.md	drift	20	1	1	
 2026-10-03	domain/owner-auth.md	drift	60	2	2	
 2026-10-03	domain/recipe-model.md	drift	30	4	4	
+2026-10-03	core/rescaling.md	code	10	1	1	
+2026-10-03	domain/screens.md	code	8	0	0	
+2026-10-03	domain/recipe-upload.md	code	13	1	1	

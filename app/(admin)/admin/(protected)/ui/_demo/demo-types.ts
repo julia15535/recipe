@@ -8,7 +8,8 @@ import type { CompositionTagId, SectionId } from "./demo-catalog";
 // только точное число (проверка — demo-recipes.test.ts). В будущей БД — десятичные числа, не float.
 export type DemoQuantity = { kind: "exact"; value: number } | { kind: "range"; min: number; max: number } | { kind: "none" };
 
-export type DemoIngredient = { name: string; quantity: DemoQuantity; unit?: string; note?: string };
+/** `style` — запись числа у автора («1/2» — fraction), как на сайте (ADR-0032); нет — десятичная. */
+export type DemoIngredient = { name: string; quantity: DemoQuantity; unit?: string; note?: string; style?: "fraction" | "decimal" };
 
 // Выход: число и изделие с формами слова («вафля / вафли / вафель»); по умолчанию — порции. Показ — «~ N»
 // (владелец 01.10: «~ 4 порции»). Необязателен: у вафель «абстрактно, зависит от граммов на вафлю» (02.10).

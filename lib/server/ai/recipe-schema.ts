@@ -8,7 +8,9 @@ import type { AiRecipe } from "@/lib/domain/recipe-text/ai-recipe";
 // проверки у нас. Истинность содержимого проверяет `fromAi`.
 const str = (max: number) => ({ type: "string", maxLength: max });
 const nullable = (max: number) => ({ type: ["string", "null"], maxLength: max });
-const AMOUNT = "^[0-9]{1,6}([.,][0-9]{1,6})?( [0-9]{1,6}/[0-9]{1,6}|/[0-9]{1,6})?( ?[–—-] ?[0-9]{1,6}([.,][0-9]{1,6})?(/[0-9]{1,6})?)?$";
+// Число — целое, десятичное, дробь «1/2» или «1 1/2»; диапазон — два таких числа (и «1–1 1/2»).
+const NUMBER = "[0-9]{1,6}([.,][0-9]{1,6})?( [0-9]{1,6}/[0-9]{1,6}|/[0-9]{1,6})?";
+const AMOUNT = `^${NUMBER}( ?[–—-] ?${NUMBER})?$`;
 
 export const RECIPE_JSON_SCHEMA = {
   type: "object",

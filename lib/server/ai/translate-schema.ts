@@ -69,7 +69,16 @@ const base = {
   steps: z.array(row(2000)).max(60),
   tips: z.array(row(1000)).max(60),
 };
-const ingredient = { id: z.string().max(80), name: text(200), note: text(300).nullable(), quantity: quantitySchema, unit: z.string().max(30).nullable(), kind: z.enum(KINDS) };
+// amountStyle необязателен: старые снимки и задания без него читаются (десятичная, ADR-0032); без поля в схеме zod его отбросил бы.
+const ingredient = {
+  id: z.string().max(80),
+  name: text(200),
+  note: text(300).nullable(),
+  quantity: quantitySchema,
+  unit: z.string().max(30).nullable(),
+  kind: z.enum(KINDS),
+  amountStyle: z.enum(["fraction", "decimal"]).optional(),
+};
 
 /** Вход задания — снимок русского рецепта. */
 export const sourceRecipeSchema = z.object({

@@ -32,7 +32,15 @@ export async function sourceSnapshot(tx: Executor, recipeId: string): Promise<{ 
     primarySectionCode: view.sections[0]?.code ?? "",
     tagCodes: view.tags.map((tag) => tag.id),
     mainId: view.mainId,
-    ingredients: view.ingredients.map((row) => ({ id: row.id, name: row.name, note: row.note, quantity: row.quantity, unit: row.unit, kind: kindOf(row) })),
+    ingredients: view.ingredients.map((row) => ({
+      id: row.id,
+      name: row.name,
+      note: row.note,
+      quantity: row.quantity,
+      unit: row.unit,
+      kind: kindOf(row),
+      ...(row.amountStyle ? { amountStyle: row.amountStyle } : {}),
+    })),
     steps: view.steps,
     tips: view.tips,
   };

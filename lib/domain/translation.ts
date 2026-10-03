@@ -47,6 +47,7 @@ export function composeTranslation(source: SourceRecipe, ai: AiTranslation, mask
       quantity: row.quantity,
       unit: row.unit,
       kind: row.kind,
+      ...(row.amountStyle ? { amountStyle: row.amountStyle } : {}),
       name: back(`ingredients.${row.id}.name`, out?.name ?? "", MAX.name) ?? "",
       note: row.note === null ? null : back(`ingredients.${row.id}.note`, out?.note ?? "", MAX.note),
       unitForms,

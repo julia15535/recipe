@@ -2,8 +2,8 @@ import http from "node:http";
 import { readFileSync } from "node:fs";
 
 // Заглушка Vercel AI Gateway для e2e: на «Разобрать» отвечает готовым разбором котлет (название — первая
-// фраза присланного текста), на «СБОЙ-ИИ» — 500, на «НЕ-РЕЦЕПТ» — not_recipe. GET /__ai-calls — сколько
-// было запросов (двойной клик должен дать один).
+// фраза присланного текста; «Молоко — 0,5» в тексте — молоко «0,5», иначе «1/2»: запись автора, ADR-0032), на
+// «СБОЙ-ИИ» — 500, на «НЕ-РЕЦЕПТ» — not_recipe. GET /__ai-calls — сколько было запросов (двойной клик — один).
 export const AI_STUB_PORT = Number(process.env.E2E_AI_STUB_PORT ?? 3998);
 const kotlety = JSON.parse(readFileSync("lib/domain/recipe-text/fixtures/ai-kotlety.json", "utf8")) as Record<string, unknown>;
 
@@ -33,7 +33,7 @@ export function startAiStub(): Promise<() => Promise<void>> {
       const title = (text.split(/[.\n]/)[0] ?? "").trim();
       const recipe = text.includes("НЕ-РЕЦЕПТ")
         ? { ...kotlety, result_type: "not_recipe", title: "", sections: [], tags: [], ingredients: [], steps: [], tips: [], changes: [], doubts: [] }
-        : { ...kotlety, title, tips: ["Фарш лучше брать охлаждённый."] };
+        : { ...kotlety, title, tips: ["Фарш лучше брать охлаждённый."], ingredients: withMilk(text) };
       res.setHeader("content-type", "application/json");
       res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(recipe) }, finish_reason: "stop" }], usage: { cost: 0 } }));
     });
@@ -45,6 +45,9 @@ export function startAiStub(): Promise<() => Promise<void>> {
 }
 
 type Row = { id: string; text: string };
+type AiRow = { name: string; amount: string | null };
+const withMilk = (text: string) =>
+  (kotlety.ingredients as AiRow[]).map((row) => (row.name === "Молоко" && text.includes("Молоко — 0,5") ? { ...row, amount: "0,5" } : row));
 type Input = { title: string; description: string | null; time: string | null; yield: { word: string } | null; ingredients: { id: string; name: string; note: string | null; unit: string | null }[]; steps: Row[]; tips: Row[] };
 const KNOWN_UNITS = new Set(["г", "кг", "мл", "л", "ч. л.", "ст. л.", "стак.", "щеп.", "зуб.", "пуч.", "шт.", null]);
 

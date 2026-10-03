@@ -7,6 +7,9 @@ import type { AiDraft } from "../../../domain/recipe-text/from-ai";
 
 import { QUANTITY_KINDS, recipes } from "./recipes";
 
+/** Запись числа у автора (ADR-0032): «1/2» — fraction, «0,5» — decimal; NULL — целое, без количества или старая строка. */
+export const AMOUNT_STYLES = ["fraction", "decimal"] as const;
+
 const recipeRef = () =>
   uuid("recipe_id")
     .notNull()
@@ -26,6 +29,7 @@ export const recipeIngredients = pgTable(
     amountMaxDen: integer("amount_max_den"),
     unit: text("unit"),
     note: text("note"),
+    amountStyle: text("amount_style", { enum: AMOUNT_STYLES }),
   },
   (t) => [
     unique("recipe_ingredients_position_unique").on(t.recipeId, t.position),
@@ -34,6 +38,10 @@ export const recipeIngredients = pgTable(
     check("recipe_ingredients_name_check", sql`length(${t.displayName}) between 1 and 200`),
     check("recipe_ingredients_unit_check", sql`${t.unit} is null or length(${t.unit}) between 1 and 30`),
     check("recipe_ingredients_note_check", sql`${t.note} is null or length(${t.note}) between 1 and 300`),
+    check(
+      "recipe_ingredients_amount_style_check",
+      sql`${t.amountStyle} is null or (${t.quantityKind} in ('exact', 'range') and ${t.amountStyle} in ('fraction', 'decimal'))`,
+    ),
     check(
       "recipe_ingredients_amount_bounds_check",
       sql`coalesce(${t.amountNum}, 1) between 1 and 1000000000000000 and coalesce(${t.amountDen}, 1) between 1 and 1000000

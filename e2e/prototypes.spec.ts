@@ -182,10 +182,11 @@ test.describe("первый рецепт владельца — вафли из 
     await expect(page.locator('[data-testid="servings"]')).toHaveCount(0);
     await expect(page.getByText("Несладкие творожные вафли")).toHaveCount(0);
     const amount = (name: string) => ingredientRow(page, name).getByTestId("ingredient-amount");
-    await expect(amount("Разрыхлитель")).toHaveText("0,5 ч. л.");
+    // Разрыхлитель и масло — дробью, как у владельца («½»), и после пересчёта (ADR-0032); у остальных демо-строк вид не задан.
+    await expect(amount("Разрыхлитель")).toHaveText("1/2 ч. л.");
     await expect(amount("Соль")).toHaveText("щепотка");
     await expect(amount("Чёрный перец")).toHaveText("по желанию");
-    await expect(amount("Растительное масло")).toHaveText("0,5 ст. л.");
+    await expect(amount("Растительное масло")).toHaveText("1/2 ст. л.");
     await expect(amount("Молоко")).toHaveText("1 ст. л., если творог сухой");
     await expectNoAxeViolations(page);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
@@ -195,8 +196,8 @@ test.describe("первый рецепт владельца — вафли из 
     await input.fill("300");
     await expect(amount("Яйца")).toHaveText("≈ 2 шт.");
     await expect(amount("Цельнозерновая мука")).toHaveText("≈ 55 г");
-    await expect(amount("Разрыхлитель")).toHaveText("≈ 0,5 ч. л.");
-    await expect(amount("Растительное масло")).toHaveText("≈ 0,5 ст. л.");
+    await expect(amount("Разрыхлитель")).toHaveText("≈ 1/2 ч. л.");
+    await expect(amount("Растительное масло")).toHaveText("≈ 1/2 ст. л.");
     await expect(amount("Молоко")).toHaveText("≈ 1 ст. л., если творог сухой");
     await expect(amount("Соль")).toHaveText("щепотка");
 
@@ -211,8 +212,8 @@ test.describe("первый рецепт владельца — вафли из 
 
     await input.fill("137,5");
     await expect(amount("Яйца")).toHaveText("≈ 1 шт.");
-    await expect(amount("Разрыхлитель")).toHaveText("≈ 0,25 ч. л.");
-    await expect(amount("Растительное масло")).toHaveText("≈ 0,75 ч. л.");
+    await expect(amount("Разрыхлитель")).toHaveText("≈ 1/4 ч. л.");
+    await expect(amount("Растительное масло")).toHaveText("≈ 3/4 ч. л.");
     await expect(amount("Молоко")).toHaveText("≈ 0,5 ст. л., если творог сухой");
 
     // Меньше 1 яйца — граммами с подсказкой (King Arthur: яйцо ≈ 50 г).
@@ -221,7 +222,7 @@ test.describe("первый рецепт владельца — вафли из 
 
     await page.getByRole("button", { name: /Как в рецепте/ }).click();
     await expect(amount("Яйца")).toHaveText("2 шт.");
-    await expect(amount("Разрыхлитель")).toHaveText("0,5 ч. л.");
+    await expect(amount("Разрыхлитель")).toHaveText("1/2 ч. л.");
   });
 
   test("основной ингредиент — название слева, как у остальных, поле рядом в одной строке", async ({ page }) => {

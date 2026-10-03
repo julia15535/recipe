@@ -122,3 +122,49 @@ describe("округление по-английски и стакан 250 мл"
     expect(shown("Молоко", 1, "стак.", f(0.1))).toBe("≈ 1,5 ст. л.");
   });
 });
+
+describe("запись как у автора (ADR-0032): дробь остаётся дробью, десятичная — десятичной", () => {
+  const styled = (name: string, amount: Quantity, unit: string | null, style: "fraction" | "decimal" | undefined, factor = fraction(1), lang: "ru" | "en" = "ru") =>
+    words(showQuantity({ name, quantity: amount, unit, note: null, ...(style ? { amountStyle: style } : {}) }, factor, { lang }));
+  const half = exact(0.5);
+
+  it("как в рецепте: «1/2» и «0,5» — как написаны; по-английски десятичная с точкой", () => {
+    expect(styled("Разрыхлитель", half, "ч. л.", "fraction")).toBe("1/2 ч. л.");
+    expect(styled("Масло", half, "ст. л.", "decimal")).toBe("0,5 ст. л.");
+    expect(styled("Мука", exact(1.5), "стак.", "fraction")).toBe("1 1/2 стак.");
+    expect(styled("Сахар", { kind: "exact", amount: fraction(1, 3) }, "стак.", "fraction")).toBe("1/3 стак.");
+    expect(styled("Сода", { kind: "range", min: fraction(1, 2), max: fraction(1) }, "ч. л.", "fraction")).toBe("1/2–1 ч. л.");
+    expect(styled("Разрыхлитель", half, "ч. л.", "fraction", fraction(1), "en")).toBe("1/2 ч. л.");
+    expect(styled("Масло", half, "ст. л.", "decimal", fraction(1), "en")).toBe("0.5 ст. л.");
+    // Без вида (старые рецепты, целые) — как раньше, десятичной.
+    expect(styled("Масло", half, "ст. л.", undefined)).toBe("0,5 ст. л.");
+  });
+
+  it("после пересчёта: ×0,5 → «1/4» и «0,25»; ×3 → «1 1/2» и «1,5»; целое — десятичной", () => {
+    expect(styled("Разрыхлитель", half, "ч. л.", "fraction", fraction(1, 2))).toBe("≈ 1/4 ч. л.");
+    expect(styled("Разрыхлитель", half, "ч. л.", "decimal", fraction(1, 2))).toBe("≈ 0,25 ч. л.");
+    expect(styled("Разрыхлитель", half, "ч. л.", "fraction", fraction(3))).toBe("≈ 1 1/2 ч. л.");
+    expect(styled("Разрыхлитель", half, "ч. л.", "decimal", fraction(3))).toBe("≈ 1,5 ч. л.");
+    expect(styled("Мука", exact(2), "ст. л.", undefined, fraction(3, 4))).toBe("≈ 1,5 ст. л.");
+    expect(styled("Сода", { kind: "range", min: fraction(1, 2), max: fraction(1) }, "ч. л.", "fraction", fraction(1, 2))).toBe("≈ 1/4–1/2 ч. л.");
+  });
+
+  it("смена меры и шага: ст. л. → ч. л., стакан → ст. л., штучное до десятых — десятичной; трети округляются", () => {
+    expect(styled("Соус", exact(1), "ст. л.", "fraction", fraction(1, 4))).toBe("≈ 3/4 ч. л.");
+    expect(styled("Молоко", { kind: "exact", amount: fraction(1, 2) }, "стак.", "fraction", fraction(1, 10))).toBe("≈ 2 1/2 ч. л.");
+    expect(styled("Молоко", { kind: "exact", amount: fraction(1, 2) }, "стак.", "fraction", fraction(9, 50))).toBe("≈ 1 1/2 ст. л.");
+    expect(styled("Масло", half, "ст. л.", "decimal", fraction(1, 2))).toBe("≈ 0,75 ч. л.");
+    expect(styled("Лук", half, "шт.", "fraction", fraction(7, 5))).toBe("≈ 0,7 шт.");
+    expect(styled("Лук", half, "шт.", "fraction", fraction(3))).toBe("≈ 1 1/2 шт.");
+    const third = { kind: "exact" as const, amount: fraction(1, 3) };
+    expect(styled("Соль", third, "ч. л.", "fraction", fraction(101, 100))).toBe("≈ 1/4 ч. л.");
+    expect(styled("Соль", third, "ч. л.", "fraction", fraction(2))).toBe("≈ 3/4 ч. л.");
+  });
+
+  it("диапазон не смешивает запись: конец, который дробью не записать, — оба десятичной", () => {
+    const range = (min: number, max: number) => ({ kind: "range" as const, min: f(min), max: f(max) });
+    expect(styled("Лук", range(0.5, 1), "шт.", "fraction", fraction(7, 5))).toBe("≈ 0,7–1,5 шт.");
+    expect(styled("Мясо", range(0.5, 0.75), "кг", "fraction", fraction(5, 2))).toBe("≈ 1,25–1,88 кг");
+    expect(styled("Мясо", range(0.5, 1), "кг", "fraction", fraction(5, 2))).toBe("≈ 1 1/4–2 1/2 кг");
+  });
+});

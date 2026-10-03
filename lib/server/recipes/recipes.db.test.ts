@@ -60,6 +60,20 @@ describe.skipIf(!enabled)("рецепты: БД", () => {
     expect((await listRecipes()).some((item) => item.id === soup.id && item.status === "draft")).toBe(true);
   });
 
+  it("запись числа автора (ADR-0032): «1/2» — дробь, «0,5» — десятичная, целое — без вида; CHECK не пускает чужое", async () => {
+    const text = `Каша ${marker}\nТеги: завтрак\nИнгредиенты:\n- Крупа — 100 г - основной\n- Соль — 1/2 ч. л.\n- Масло — 0,5 ст. л.\n- Сахар — 1/2–1 ч. л.\nПриготовление:\n1. Варить.`;
+    const { id } = await create(text);
+    const view = (await getRecipe(id))?.view;
+    expect(view?.ingredients.map((item) => item.amountStyle)).toEqual([undefined, "fraction", "decimal", "fraction"]);
+    const rows = await getDb().select({ id: recipeIngredients.id, style: recipeIngredients.amountStyle }).from(recipeIngredients).where(eq(recipeIngredients.recipeId, id));
+    expect(rows.map((row) => row.style).sort()).toEqual(["decimal", "fraction", "fraction", null].sort());
+    const salt = view?.ingredients[1]?.id ?? "";
+    await expect(getDb().execute(sql`update recipe_ingredients set amount_style = 'roman' where id = ${salt}`)).rejects.toThrow();
+    await expect(
+      getDb().execute(sql`update recipe_ingredients set quantity_kind = 'none', amount_num = null, amount_den = null where id = ${salt}`),
+    ).rejects.toThrow();
+  });
+
   it("одинаковое название → адрес с `-2`; при замене текста адрес не меняется, revision растёт", async () => {
     const first = await create(simple(`Борщ ${marker}`));
     const second = await create(simple(`Борщ ${marker}`));

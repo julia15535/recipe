@@ -48,6 +48,15 @@ export function parseDecimal(text: string): Fraction | null {
   return fraction(BigInt(`${match[1]}${decimals}`), 10n ** BigInt(decimals.length));
 }
 
+/** Вид записи числа у автора (владелец 03.10, ADR-0032): «1/2», «½» — дробь, «0,5» — десятичная. */
+export type AmountStyle = "fraction" | "decimal";
+
+/** Вид по тексту количества («1/2–1», «0,5», «2»): целое вида не задаёт; дробь вместе с десятичной — десятичная. */
+export function amountStyleOf(text: string): AmountStyle | undefined {
+  if (/\d[.,]\d/.test(text)) return "decimal";
+  return new RegExp(`/|[${FRACTION_GLYPHS}]`).test(text) ? "fraction" : undefined;
+}
+
 /** Число из рецепта: «2», «0,5», «½», «1½», «1/2», «1 1/2». */
 export function parseNumber(text: string): Fraction | null {
   const value = text.trim();

@@ -40,7 +40,11 @@ test("опубликовать → перевод на /en; правка → «�
   const main = page.getByRole("textbox", { name: /EN Фарш/ });
   await expect(main).toHaveValue("500");
   await expect(page.getByText("g", { exact: true }).first()).toBeVisible();
+  // Запись автора (ADR-0032): «1/2 стакана» — дробью и по-английски, после пересчёта ×2 — «≈ 1».
+  const milk = page.getByRole("listitem").filter({ hasText: "EN Молоко" }).getByTestId("ingredient-amount");
+  await expect(milk).toHaveText(/^1\/2 cup/);
   await main.fill("1000");
+  await expect(milk).toHaveText(/^≈ 1 cup/);
   await expect(page.getByRole("listitem").filter({ hasText: "EN Лук" })).toContainText("≈ 2");
   await expect(page.getByTestId("servings")).toContainText("24 servings");
   const russian = await page.getByRole("banner").getByRole("link", { name: "Русский" }).getAttribute("href");
@@ -56,17 +60,30 @@ test("опубликовать → перевод на /en; правка → «�
   await expect(page.getByRole("link", { name: new RegExp(`EN ${title}`) })).toBeVisible();
   await page.goto(russian ?? "/ru");
   await expect(page.getByRole("banner").getByRole("link", { name: "English" })).toHaveAttribute("href", english);
+  // По-русски из базы: «1/2 стак.» дробью; ×0,5 — «≈ 1/4 стак.», запись строки сохраняется (ADR-0032).
+  const milkRu = page.getByRole("listitem").filter({ hasText: "Молоко" }).getByTestId("ingredient-amount");
+  await expect(milkRu).toHaveText(/^1\/2 стак/);
+  await page.getByRole("textbox", { name: /Фарш/ }).fill("250");
+  await expect(milkRu).toHaveText(/^≈ 1\/4 стак/);
 
   // Правка русского — английский прежний, в кабинете «устарела».
   await page.goto(`${cabinet}/edit`);
   const field = page.getByRole("textbox", { name: "Рецепт", exact: true });
-  await field.fill((await field.inputValue()).replace(title, `${title} с сыром`));
+  const edited = (await field.inputValue()).replace(title, `${title} с сыром`);
+  expect(edited).toContain("Молоко — 1/2 стак.");
+  await field.fill(edited.replace("Молоко — 1/2", "Молоко — 0,5"));
   await page.getByRole("button", { name: "Разобрать" }).click();
   await page.getByRole("button", { name: "Сохранить" }).click();
   await page.waitForURL(cabinet);
   await expect(translation(page)).toHaveAttribute("data-translation", "outdated");
+  // По-русски — уже «0,5», как переписала автор; английский — прежний снимок с «1/2».
+  await page.goto(russian ?? "/ru");
+  await expect(milkRu).toHaveText(/^0,5 стак/);
+  await page.getByRole("textbox", { name: /Фарш/ }).fill("250");
+  await expect(milkRu).toHaveText(/^≈ 0,25 стак/);
   await page.goto(english);
   await expect(h1(page)).toHaveText(`EN ${title}`);
+  await expect(milk).toHaveText(/^1\/2 cup/);
 
   // «Перевести заново» — тот же адрес, новый текст.
   await page.goto(cabinet);
@@ -74,6 +91,7 @@ test("опубликовать → перевод на /en; правка → «�
   await expect(translation(page)).toHaveAttribute("data-translation", "ready", { timeout: 60_000 });
   await page.goto(english);
   await expect(h1(page)).toHaveText(`EN ${title} с сыром`);
+  await expect(milk).toHaveText(/^0\.5 cup/);
 
   // Снять с публикации — нет и на английском.
   await page.goto(cabinet);

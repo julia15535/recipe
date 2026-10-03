@@ -157,6 +157,24 @@ describe.skipIf(!enabled)("перевод: БД", () => {
     expect((await readSearchIndex("en")).find((item) => item.slug === slug)).toMatchObject({ tag: { id: "fiber" }, tagCodes: ["fiber", "protein"] });
   });
 
+  it("запись числа автора (ADR-0032) переходит в снимок; старый снимок без неё читается — десятичная", async () => {
+    const source = text(`Узвар ${marker}`).replace("- Соль — 1 ч. л.", "- Соль — 1/2 ч. л.\n- Сахар — 0,5 ст. л.");
+    const parsed = parseRecipeText(source);
+    if (!parsed.ok) throw new Error(JSON.stringify(parsed.issues));
+    const saved = await createRecipe(parsed, source, "published");
+    if (!saved.ok) throw new Error("не сохранилось");
+    created.push(saved.id);
+    await translate(saved.id, false);
+    const { slug } = await translationState(saved.id);
+    const styles = async () => (await readPublicRecipe("en", slug ?? ""))?.view.ingredients.map((row) => row.amountStyle);
+    expect(await styles()).toEqual([undefined, "fraction", "decimal"]);
+    // Снимок, сделанный до ADR-0032, — без поля: страница не падает, строки — без вида.
+    await getDb().execute(
+      sql`update recipe_translations set body = jsonb_set(body, '{ingredients}', (select jsonb_agg(i - 'amountStyle') from jsonb_array_elements(body -> 'ingredients') i)) where recipe_id = ${saved.id}`,
+    );
+    expect(await styles()).toEqual([undefined, undefined, undefined]);
+  });
+
   it("снят с публикации — нет и на английском; удаление рецепта убирает перевод и задания", async () => {
     const id = await published(`Компот ${marker}`);
     await translate(id, false);

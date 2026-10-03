@@ -22,6 +22,7 @@ export function demoToView(recipe: DemoRecipe): RecipeView {
     quantity: quantity(item.quantity),
     unit: item.unit ?? null,
     note: item.note ?? null,
+    ...(item.style ? { amountStyle: item.style } : {}),
   }));
   return {
     title: recipe.title,

@@ -1,6 +1,6 @@
 // Пересчёт от основного ингредиента (ADR-0016): коэффициент = своё количество / количество в рецепте,
 // точно в дробях; округление для показа — `rounding.ts` (ADR-0026).
-import { type Fraction, div, fraction, mul, parseDecimal, toNumber } from "./fraction";
+import { type AmountStyle, type Fraction, div, fraction, mul, parseDecimal, toNumber } from "./fraction";
 import { type Lang, perLang } from "./lang";
 import type { Quantity } from "./quantity";
 
@@ -31,22 +31,38 @@ const PLURAL = perLang((locale) => new Intl.PluralRules(locale));
 
 const multipleOf = (value: number, part: number) => Math.abs(value / part - Math.round(value / part)) < 1e-9;
 
+/** Дробью, как пишет автор: «1/2», «1 1/2», «2/3»; целое — числом. */
+function asFraction(value: Fraction, lang: Lang): string {
+  const whole = Math.floor(value.num / value.den);
+  const rest = value.num - whole * value.den;
+  if (rest === 0) return NUMBER(lang).format(whole);
+  return whole ? `${NUMBER(lang).format(whole)} ${rest}/${value.den}` : `${rest}/${value.den}`;
+}
+
 /**
- * Количество десятичной записью (владелец 03.10: «1,5 ст. л.», не «1½»): половины и четверти — точно («0,25»,
- * «1,75»), трети — до десятых («0,3», «1,3»), остальное — до десятых, меньше единицы — две значащие цифры.
+ * Количество в записи автора (ADR-0032): дробь — дробью («1/2», «1 1/2»); десятичная и без вида — десятичной
+ * (ADR-0030): половины и четверти — точно («0,25», «1,75»), трети — до десятых («0,3»), остальное — до десятых,
+ * меньше единицы — две значащие цифры.
  */
-export function formatAmount(value: Fraction, lang: Lang = "ru"): string {
+export function formatAmount(value: Fraction, lang: Lang = "ru", style?: AmountStyle): string {
+  if (style === "fraction") return asFraction(value, lang);
   const number = toNumber(value);
   if (multipleOf(number, 0.25)) return QUARTER(lang).format(number);
   if (multipleOf(number, 1 / 3)) return NUMBER(lang).format(number);
   return number > 0 && number < 1 ? SMALL(lang).format(number) : NUMBER(lang).format(number);
 }
 
+/** Округлённое значение (шаги ¼ и ½) в записи строки: дробью, если это четверти, иначе — десятичной. */
+export function formatRounded(value: number, lang: Lang = "ru", style?: AmountStyle): string {
+  if (style === "fraction" && multipleOf(value, 0.25)) return asFraction(fraction(Math.round(value * 4), 4), lang);
+  return QUARTER(lang).format(value);
+}
+
 /** Количество строки × коэффициент; диапазон — оба конца; без количества — null. */
-export function formatQuantity(quantity: Quantity, factor: Fraction, lang: Lang = "ru"): string | null {
-  if (quantity.kind === "exact") return formatAmount(mul(quantity.amount, factor), lang);
+export function formatQuantity(quantity: Quantity, factor: Fraction, lang: Lang = "ru", style?: AmountStyle): string | null {
+  if (quantity.kind === "exact") return formatAmount(mul(quantity.amount, factor), lang, style);
   if (quantity.kind === "range") {
-    const [min, max] = [formatAmount(mul(quantity.min, factor), lang), formatAmount(mul(quantity.max, factor), lang)];
+    const [min, max] = [formatAmount(mul(quantity.min, factor), lang, style), formatAmount(mul(quantity.max, factor), lang, style)];
     return min === max ? min : `${min}–${max}`;
   }
   return null;

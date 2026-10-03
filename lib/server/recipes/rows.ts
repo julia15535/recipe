@@ -26,6 +26,7 @@ export function buildRows(recipeId: string, draft: RecipeDraft, mainIndex: numbe
       amountMaxDen: quantity.kind === "range" ? quantity.max.den : null,
       unit: item.unit,
       note: item.note,
+      amountStyle: item.amountStyle ?? null,
     };
   });
   // Основной необязателен (владелец 02.10): нет — рецепт без пересчёта.

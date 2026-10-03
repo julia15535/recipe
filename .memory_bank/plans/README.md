@@ -37,7 +37,7 @@ draft → in_progress → completed → перенос в completed_plans/
 
 | slug | Название | status | created | updated |
 |------|----------|--------|---------|---------|
-| _(нет активных планов)_ | | | | |
+| header-logo | Логотип в шапке — подпись «Юлианы» (Great Vibes) и своя иконка во вкладке браузера | draft | 2026-10-03 | 2026-10-03 |
 <!-- GENERATED:plans-registry END -->
 
 > Шаблон нового плана — `_template.md`. Реестр регенерирует аудит — руками не правим.

@@ -14,7 +14,7 @@ review_after: 2026-12-27
 
 # Модель данных — Tier 1 сводка
 
-Схема рецептов есть (ADR-0023, `lib/server/db/schema/{recipes,recipe-rows,catalog,photos,translations}.ts`, миграции 0002–0008):
+Схема рецептов есть (ADR-0023, `lib/server/db/schema/{recipes,recipe-rows,catalog,photos,translations}.ts`, миграции 0002–0009):
 рецепт + локализации, разделы/теги, ингредиенты (дроби), шаги, советы, фото блюда (ADR-0028: `recipe_photos` 1:1 +
 файлы `bytea`), перевод EN (ADR-0029: `recipe_localizations(en)` + снимок `recipe_translations`, очередь
 `recipe_translation_jobs`, `recipes.content_revision`). Справочника ингредиентов и КБЖУ нет — ниже логическая модель.

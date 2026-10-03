@@ -4,13 +4,15 @@
 // сколько шагов и советов у автора (там, где он сам их пронумеровал или выделил): ничего не потеряно и не слито.
 import { expect } from "vitest";
 
-type Seen = { steps: string[]; tips: string[]; notes: string[] };
+/** `styles` — запись числа у автора по строкам (ADR-0032): fraction / decimal / «-» (целое, без числа). */
+type Seen = { steps: string[]; tips: string[]; notes: string[]; styles: string[] };
 type Expected = "text" | "not_recipe" | { rows: readonly string[]; steps?: number; tips?: number; check?: (seen: Seen) => void };
 
 export const EXPECTED: Record<string, Expected> = {
   "01-vafli.txt": {
     rows: ["творог|275|г", "яйц|2|шт.", "цельнозерновая мука|50|г", "разрыхлитель|1/2|ч. л.", "соль|-|*", "черный перец|-|*", "растительное масло|1/2|ст. л.", "молоко|1|ст. л."],
     steps: 5,
+    check: ({ styles }) => expect(styles).toEqual(["-", "-", "-", "fraction", "-", "-", "fraction", "-"]),
   },
   "02-kotlety-abzac.txt": "text",
   "03-keks-shagi-tire.txt": {
@@ -68,4 +70,10 @@ export const EXPECTED: Record<string, Expected> = {
     },
   },
   "15-nuzhno-v-stroku.txt": { rows: ["овсяные хлопья|40|г", "яйц|2|шт.", "молоко|50|мл", "соль|-|*"] },
+  // Запись автора (ADR-0032): «1 1/2», «1/2», «½» — дробью; «1,5», «0,25» — десятичной; ИИ не переводит одно в другое.
+  "16-drobi-i-desyatichnye.txt": {
+    rows: ["молоко|500|мл", "мука|3/2|стак.", "сахар|3/2|ст. л.", "соль|1/2|ч. л.", "сода|1/4|ч. л.", "яйц|2|шт.", "масло растительное/растительное масло|1/2|ст. л."],
+    steps: 3,
+    check: ({ styles }) => expect(styles).toEqual(["-", "fraction", "decimal", "fraction", "decimal", "-", "fraction"]),
+  },
 };

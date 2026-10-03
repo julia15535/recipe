@@ -68,3 +68,22 @@ describe("пересчёт от основного ингредиента", () =
     expect(parseAmount(formatInput(f(1500)), f(1500))).toEqual({ ok: true, value: f(1500) });
   });
 });
+
+describe("запись числа как у автора (ADR-0032)", () => {
+  it("вид по тексту: «1/2», «½», «1 1/2» — дробь; «0,5», «1.5» — десятичная; целое — без вида; смесь — десятичная", async () => {
+    const { amountStyleOf } = await import("./fraction");
+    expect(["1/2", "½", "1½", "1 1/2", "1/2–1"].map(amountStyleOf)).toEqual(Array(5).fill("fraction"));
+    expect(["0,5", "1.5", "1,0", "0,5–1"].map(amountStyleOf)).toEqual(Array(4).fill("decimal"));
+    expect(["2", "70–80", ""].map(amountStyleOf)).toEqual([undefined, undefined, undefined]);
+    expect(amountStyleOf("0,5–1/2")).toBe("decimal");
+  });
+
+  it("показ: дробь — «1/2», «1 1/2», «2/3», целое числом с разбивкой; десятичная — как раньше", () => {
+    expect(formatAmount(f(1, 2), "ru", "fraction")).toBe("1/2");
+    expect(formatAmount(f(3, 2), "ru", "fraction")).toBe("1 1/2");
+    expect(formatAmount(f(2, 3), "en", "fraction")).toBe("2/3");
+    expect(formatAmount(f(1500), "ru", "fraction").replace(/\s/g, " ")).toBe("1 500");
+    expect(formatAmount(f(1, 2), "ru", "decimal")).toBe("0,5");
+    expect(formatQuantity({ kind: "range", min: f(1, 2), max: f(1) }, f(1), "ru", "fraction")).toBe("1/2–1");
+  });
+});

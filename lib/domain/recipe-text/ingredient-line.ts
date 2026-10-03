@@ -1,10 +1,11 @@
 // Одна строка блока «Ингредиенты» в стиле владельца: «Творог 0,5% — 275 г - основной ингредиент»,
 // «Разрыхлитель — ½–1 ч. л.», «Чёрный перец / травы — (по желанию)», «молоко 1ст л (если творог сухой)».
-import { FRACTION_GLYPHS, compare, parseNumber } from "../fraction";
+import { type AmountStyle, FRACTION_GLYPHS, amountStyleOf, compare, parseNumber } from "../fraction";
 import type { Quantity } from "../quantity";
 import { isKnownUnit, readUnit } from "./units";
 
-export type IngredientLine = { name: string; quantity: Quantity; unit: string | null; note: string | null; main: boolean };
+/** `amountStyle` — как автор записала число: «1/2» или «0,5» (ADR-0032); у целого и без количества — нет. */
+export type IngredientLine = { name: string; quantity: Quantity; unit: string | null; note: string | null; main: boolean; amountStyle?: AmountStyle };
 export type LineResult =
   | { ok: true; value: IngredientLine; unknownUnit: string | null }
   | { ok: false; code: "ingredient-unparsed"; name: string };
@@ -56,7 +57,9 @@ function withAmount(name: string, rest: string, notes: string[], main: boolean):
   }
   const unit = readUnit(match[3] ?? "");
   const quantity: Quantity = max && compare(min, max) !== 0 ? { kind: "range", min, max } : { kind: "exact", amount: min };
-  return { ok: true, value: { name, quantity, unit: unit.unit, note: note([unit.extra]), main }, unknownUnit: unit.known ? null : unit.unit };
+  const style = amountStyleOf(`${match[1]} ${match[2] ?? ""}`);
+  const value = { name, quantity, unit: unit.unit, note: note([unit.extra]), main, ...(style ? { amountStyle: style } : {}) };
+  return { ok: true, value, unknownUnit: unit.known ? null : unit.unit };
 }
 
 const ok = (value: IngredientLine): LineResult => ({ ok: true, value, unknownUnit: null });

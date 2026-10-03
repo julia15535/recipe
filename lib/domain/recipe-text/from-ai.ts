@@ -1,6 +1,6 @@
 // Ответ ИИ → черновик рецепта (тот же `RecipeDraft`, что у текстового разбора) + пункты «Проверьте».
 // Чистая функция: числа и единицы разбираются нашим кодом, пределы — как у текста и БД.
-import { compare, type Fraction, parseNumber } from "../fraction";
+import { amountStyleOf, compare, type Fraction, parseNumber } from "../fraction";
 import type { Quantity } from "../quantity";
 import { SERVINGS, type WordForms } from "../rescale";
 import { repeatNotes, sourceNote } from "./ai-checks";
@@ -92,7 +92,10 @@ function ingredient(item: AiIngredient, index: number, decide: (text: string) =>
   const raw = `${name} — ${item.amount ?? ""} ${unitText ?? ""}`.trim();
   const finalQuantity = quantity ?? { kind: "none" as const };
   const finalNote = withoutWeight(note, finalQuantity);
-  return [{ name, quantity: finalQuantity, unit: unitText?.slice(0, LIMITS.unit) ?? null, note: finalNote, main: item.is_main, line: index + 1, raw }];
+  // Запись числа — как у автора (ADR-0032): ИИ отдаёт «0,5» или «1/2», как написано.
+  const style = quantity && quantity.kind !== "none" && item.amount ? amountStyleOf(item.amount) : undefined;
+  const row = { name, quantity: finalQuantity, unit: unitText?.slice(0, LIMITS.unit) ?? null, note: finalNote, main: item.is_main, line: index + 1, raw };
+  return [style ? { ...row, amountStyle: style } : row];
 }
 
 function quantityOf(amount: string): Quantity | null {

@@ -11,6 +11,7 @@ export function draftToView({ draft, mainIndex }: ParseResult, labels: CatalogLa
     quantity: item.quantity,
     unit: item.unit,
     note: item.note,
+    ...(item.amountStyle ? { amountStyle: item.amountStyle } : {}),
   }));
   return {
     title: draft.title || "Без названия",

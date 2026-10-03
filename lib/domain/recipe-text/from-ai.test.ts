@@ -128,3 +128,26 @@ describe("ответ ИИ → черновик и «Проверьте»", () =>
     expect(again.draft.sections).toEqual(["breakfast"]);
   });
 });
+
+describe("запись числа автора (ADR-0032)", () => {
+  it("ИИ: «1/2» — дробь, «0,5» — десятичная, целое — без вида", () => {
+    const rows = [
+      { name: "Разрыхлитель", amount: "1/2", unit: "ч. л.", note: null, is_main: false },
+      { name: "Масло", amount: "0,5", unit: "ст. л.", note: null, is_main: false },
+      { name: "Мука", amount: "200", unit: "г", note: null, is_main: true },
+    ];
+    const { draft } = fromAi({ ...vafli, ingredients: rows }, vafliV2, labels);
+    expect(draft.ingredients.map((item) => item.amountStyle)).toEqual(["fraction", "decimal", undefined]);
+  });
+
+  it("«Изменить» → «Разобрать» сохраняет запись каждой строки", () => {
+    const text = "Тест\nТеги: завтрак\nИнгредиенты:\n- Мука — 200 г - основной\n- Разрыхлитель — 1/2 ч. л.\n- Масло — 0,5 ст. л.\n- Сахар — 1 1/2 ст. л.\nПриготовление:\n1. Смешать.";
+    const first = parseRecipeText(text);
+    const canonical = toCanonicalText(first.draft, first.mainIndex, labels);
+    expect(canonical).toContain("- Разрыхлитель — 1/2 ч. л.");
+    expect(canonical).toContain("- Масло — 0,5 ст. л.");
+    expect(canonical).toContain("- Сахар — 1 1/2 ст. л.");
+    const again = parseRecipeText(canonical);
+    expect(again.draft.ingredients.map((item) => item.amountStyle)).toEqual([undefined, "fraction", "decimal", "fraction"]);
+  });
+});

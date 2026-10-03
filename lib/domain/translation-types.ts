@@ -1,12 +1,13 @@
 // Типы перевода рецепта (ADR-0029): вход задания (снимок русского), ответ ИИ (только тексты), готовый снимок.
-import type { Fraction } from "./fraction";
+import type { AmountStyle, Fraction } from "./fraction";
 import type { Quantity } from "./quantity";
 import type { Kind } from "./rounding";
 
 export const TRANSLATION_SCHEMA_VERSION = 1;
 
 type Row = { id: string; text: string };
-export type SourceIngredient = { id: string; name: string; note: string | null; quantity: Quantity; unit: string | null; kind: Kind };
+/** `amountStyle` — запись числа у автора (ADR-0032); в старых снимках его нет — десятичная. */
+export type SourceIngredient = { id: string; name: string; note: string | null; quantity: Quantity; unit: string | null; kind: Kind; amountStyle?: AmountStyle };
 /** Русский рецепт на момент постановки перевода (вход задания). */
 export type SourceRecipe = {
   schemaVersion: number;

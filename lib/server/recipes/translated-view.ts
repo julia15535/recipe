@@ -26,7 +26,16 @@ export async function translatedView(db: Executor, { recipe, text, body }: Trans
       return section ? [{ code, label: section.label, href: sectionPath("en", section.slug) }] : [];
     }),
     tags: body.tagCodes.flatMap((code) => (catalog.tags.has(code) ? [{ id: code, label: catalog.tags.get(code) ?? code }] : [])),
-    ingredients: body.ingredients.map(({ id, name, note, quantity, unit, kind, unitForms }) => ({ id, name, note, quantity, unit, kind, unitForms })),
+    ingredients: body.ingredients.map(({ id, name, note, quantity, unit, kind, unitForms, amountStyle }) => ({
+      id,
+      name,
+      note,
+      quantity,
+      unit,
+      kind,
+      unitForms,
+      ...(amountStyle ? { amountStyle } : {}),
+    })),
     mainId: body.mainId,
     steps: body.steps,
     tips: body.tips,

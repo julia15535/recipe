@@ -1,0 +1,2 @@
+ALTER TABLE "recipe_ingredients" ADD COLUMN "amount_style" text;--> statement-breakpoint
+ALTER TABLE "recipe_ingredients" ADD CONSTRAINT "recipe_ingredients_amount_style_check" CHECK ("recipe_ingredients"."amount_style" is null or ("recipe_ingredients"."quantity_kind" in ('exact', 'range') and "recipe_ingredients"."amount_style" in ('fraction', 'decimal')));
