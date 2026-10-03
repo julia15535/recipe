@@ -79,3 +79,12 @@ date	doc	reason	claims	mismatch	fixed	note
 2026-10-03	.memory_bank/core/seo-i18n.md	code	4	1	1	
 2026-10-03	.memory_bank/core/ux.md	code	1	0	0	
 2026-10-03	.memory_bank/anti-patterns.md	code	8	0	0	
+2026-10-03	.memory_bank/decisions/adr-0001-0050.md	code	25	2	2	
+2026-10-03	.memory_bank/core/seo-i18n.md	code	22	0	0	
+2026-10-03	.memory_bank/core/data-models.md	code	15	1	1	
+2026-10-03	.memory_bank/domain/recipe-model.md	code	12	3	3	
+2026-10-03	.memory_bank/core/recipe-upload.md	code	17	1	1	
+2026-10-03	.memory_bank/domain/screens.md	code	11	0	0	
+2026-10-03	.memory_bank/core/architecture.md	rotation	21	0	0	
+2026-10-03	.claude/rules/ui-rules.md	code	7	0	0	
+2026-10-03	.memory_bank/anti-patterns.md	code	7	0	0	

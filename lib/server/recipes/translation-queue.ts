@@ -9,7 +9,7 @@ import * as t from "@/lib/server/db/schema";
 // в кабинете. Запись заданий — `translation-jobs.ts`.
 import { MAX_ATTEMPTS } from "./translation-jobs";
 
-/** Задания для подборщика: ждущие дольше 30 с и с истёкшей арендой; готовые, у которых не сброшен кэш сайта. */
+/** Задания для подборщика: ждущие дольше 5 с и с истёкшей арендой; готовые, у которых не сброшен кэш сайта. */
 export function pendingWork(): Promise<{ run: string[]; revalidate: string[] }> {
   return guarded("перевод", async () => {
     const db = getDb();

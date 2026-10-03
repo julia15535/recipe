@@ -8,7 +8,7 @@ importance: med
 source: _intake/_processed/brief/technical_spec_recipe_book.md
 status: draft
 source_of_truth: supporting
-last_verified: 2026-10-02
+last_verified: 2026-10-03
 review_after: 2026-12-27
 ---
 
@@ -30,7 +30,7 @@ JSON-LD Recipe · хлебные крошки · индексируемые ра
   `NEXT_LOCALE` (на год; пишет и `components/i18n/locale-cookie.tsx` — кнопка RU/EN переходит без перезагрузки),
   ответ `no-store` + `Vary` (`proxy.ts`, ADR-0029). `www` → основной домен 301 (`next.config.ts`).
 - Английская версия (ADR-0029): ИИ переводит рецепт после публикации, на `/en` — только переведённые; адреса разделов и
-  рецептов по-английски свои; кнопка языка ведёт на ту же страницу (рецепт без перевода — на `/en`).
+  рецептов по-английски свои; кнопка языка — на ту же страницу (рецепт без перевода — на `/en`, поиск — без запроса).
 - canonical и hreflang — один источник: metadata (`app/(public)/[locale]/_components/page-metadata.ts` →
   `lib/i18n/alternates.ts`): пары адресов языков, у рецепта без перевода — только ru, x-default — только у главной;
   Open Graph — название и описание (`ru_RU` / `en_GB`); у рецепта с фото — кадр `og.jpg` (ADR-0028).
