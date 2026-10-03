@@ -47,6 +47,38 @@ async function publish(page: Page, title: string): Promise<string> {
   return page.url();
 }
 
+// Логотип (ADR-0033): подпись Great Vibes под названием (центр ниже названия), внутри ссылки (рамка фокуса — вокруг
+// обеих строк) и экрана; справа — не ближе 4 px к лупе, снизу — не ближе 2 px к краю строки шапки (на компьютере —
+// к ленте каталога; рамка повёрнутой подписи больше самих букв); шрифт загружен с нашего сайта.
+async function expectSignature(page: Page) {
+  await page.evaluate(() => document.fonts.ready);
+  const box = (selector: string) =>
+    page.evaluate((s) => {
+      const el = [...document.querySelectorAll(s)].find((e) => (e as HTMLElement).offsetParent !== null);
+      const r = el?.getBoundingClientRect();
+      return r ? { x: r.x, y: r.y, right: r.right, bottom: r.bottom, height: r.height } : null;
+    }, selector);
+  const [title, sign, link, search, banner] = [
+    await box("[data-logo-title]"),
+    await box("[data-logo-signature]"),
+    await box("header a:has([data-logo-title])"),
+    await box('header a[href$="/search"]'),
+    await box("header"),
+  ];
+  if (!title || !sign || !link || !search || !banner) throw new Error("нет названия, подписи, ссылки, лупы или шапки");
+  expect(sign.y + sign.height / 2).toBeGreaterThan(title.bottom);
+  expect(sign.x).toBeGreaterThanOrEqual(0);
+  expect(sign.y).toBeGreaterThanOrEqual(banner.y);
+  expect(sign.bottom).toBeLessThanOrEqual(link.bottom + 1);
+  expect(link.height).toBeGreaterThanOrEqual(44);
+  expect(sign.right + 4).toBeLessThanOrEqual(search.x);
+  const ribbon = await box("header nav[aria-label]");
+  expect(sign.bottom + 2).toBeLessThanOrEqual(ribbon ? ribbon.y : banner.bottom);
+  const variable = await page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--site-header-height")) * 16);
+  expect(Math.abs(banner.height - variable)).toBeLessThanOrEqual(1);
+  expect(await page.evaluate(() => document.fonts.check("32px 'Great Vibes'", "Юлианы Yuliana"))).toBe(true);
+}
+
 test.describe("публичный сайт", () => {
   test("опубликовать → сразу везде; изменить → сразу обновлено; снять → исчез, адрес — 404", async ({ page }) => {
     test.skip(!TELEGRAM.enabled, "нет входа владельца — свой рецепт не опубликовать");
@@ -194,11 +226,36 @@ test.describe("публичный сайт", () => {
       expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
       const banner = page.getByRole("banner");
       const [name, search] = [
-        await banner.getByRole("link", { name: /^(Книга рецептов|Recipe Book)$/ }).boundingBox(),
+        await banner.getByRole("link", { name: /^(Книга рецептов Юлианы|Recipe Book Yuliana's)$/ }).boundingBox(),
         await banner.getByRole("link", { name: /^(Поиск|Search)$/ }).boundingBox(),
       ];
       if (!name || !search) throw new Error("нет названия или лупы");
       expect(name.x + name.width).toBeLessThanOrEqual(search.x);
+      await expectSignature(page);
+    }
+  });
+
+  test("логотип: подпись автора под названием, не касается кнопок и ленты; RU и EN на 320, 375 и 1280 px, axe", async ({ page }) => {
+    for (const width of [320, 375, 1280]) {
+      await page.setViewportSize({ width, height: 800 });
+      for (const path of ["/ru", "/en"]) {
+        await page.goto(path, { waitUntil: "networkidle" });
+        await expectSignature(page);
+        const result = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
+        expect(result.violations.map((v) => `${v.id}: ${v.nodes.length}`), `${path} ${width}`).toEqual([]);
+      }
+    }
+    await expect(page.locator("[data-logo-signature]")).toHaveText("Yuliana's");
+  });
+
+  test("иконка во вкладке: свой рисунок (SVG) и запасные ICO и значок для телефона", async ({ page, request }) => {
+    await page.goto("/ru");
+    await expect(page.locator('head link[rel="icon"][type="image/svg+xml"]')).toHaveCount(1);
+    await expect(page.locator('head link[rel="apple-touch-icon"]')).toHaveCount(1);
+    for (const [path, type] of [["/icon.svg", "image/svg+xml"], ["/favicon.ico", "image/x-icon"], ["/apple-icon.png", "image/png"]] as const) {
+      const response = await request.get(path);
+      expect(response.status(), path).toBe(200);
+      expect(response.headers()["content-type"], path).toContain(type);
     }
   });
 

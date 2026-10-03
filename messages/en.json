@@ -4,6 +4,7 @@
     "description": "Home recipes: search by name and ingredients, scale to the amount you have."
   },
   "Site": {
+    "signature": "Yuliana's",
     "search": "Search",
     "catalog": "Catalogue",
     "close": "Close",

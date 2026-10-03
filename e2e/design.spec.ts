@@ -52,11 +52,18 @@ test.describe("дизайн-система", () => {
     await page.evaluate(() => document.fonts.ready);
     const fonts = await page.evaluate(() => {
       const h1 = getComputedStyle(document.querySelector("h1") as Element);
-      return { heading: h1.fontFamily, synthesis: h1.fontSynthesis, body: getComputedStyle(document.body).fontFamily };
+      const sign = document.querySelector("[data-logo-signature]");
+      return {
+        heading: h1.fontFamily,
+        synthesis: h1.fontSynthesis,
+        body: getComputedStyle(document.body).fontFamily,
+        signature: sign ? getComputedStyle(sign).fontFamily : "",
+      };
     });
     expect(fonts.heading).toMatch(/Prata/);
     expect(fonts.synthesis).toBe("none");
     expect(fonts.body).toMatch(/Manrope/);
+    expect(fonts.signature).toMatch(/Great Vibes/);
     expect(external).toEqual([]);
   });
 });

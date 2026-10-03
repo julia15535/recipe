@@ -57,5 +57,5 @@ SOFTWARE.
   динамически, без изменений; исходники — https://github.com/libvips/libvips, лицензии сборок — в пакетах `@img/*`.
 
 ## Шрифты
-- Prata (заголовки) и Manrope (текст) — SIL Open Font License 1.1; подключаются через `next/font/google`,
+- Prata (заголовки), Manrope (текст) и Great Vibes (подпись в логотипе) — SIL Open Font License 1.1; подключаются через `next/font/google`,
   файлы шрифтов отдаются с сайта проекта (`styles/fonts.ts`).

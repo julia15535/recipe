@@ -22,6 +22,7 @@ export async function PublicHeader({ locale, sections, current, alternate }: Pro
   return (
     <SiteHeader
       siteName={meta("siteName")}
+      signature={{ text: site("signature"), locale }}
       homeHref={`/${locale}`}
       searchHref={`/${locale}/search`}
       searchLabel={site("search")}

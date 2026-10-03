@@ -55,6 +55,7 @@ export function catalogFor(active: ReadonlySet<SectionId>, current?: SectionId):
 
 export const HEADER = {
   siteName: "Книга рецептов",
+  signature: { text: "Юлианы", locale: "ru" as const },
   homeHref: PROTOTYPE.home,
   searchHref: PROTOTYPE.search,
   searchLabel: "Поиск",

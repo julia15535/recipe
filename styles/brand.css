@@ -9,6 +9,8 @@
        Fraunces не подошёл: в нём нет русских букв. */
     --font-body: var(--font-manrope), "Manrope", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     --font-display: var(--font-prata), Georgia, "Times New Roman", serif;
+    /* Подпись в логотипе «Книга рецептов · Юлианы» (владелец 03.10, ADR-0033). */
+    --font-signature: var(--font-great-vibes), "Great Vibes", cursive;
 
     /* Главный цвет — олива (оливковое масло, травы). 600 — кнопки. */
     --color-brand-50: #f7f8eb;
@@ -45,6 +47,8 @@
     --color-accent-500: #dc9154;
     --color-accent-600: #b67035;
     --color-accent-700: #8b5426;
+    /* Подпись в логотипе — цвет владельца; на фоне страницы 5,2:1 (AA). */
+    --color-signature: #8a5a3b;
 
     /* Фон — кремовая «бумага»; карточки и поля — светлый крем, не стерильный белый. */
     --color-page: #f8f2e6;

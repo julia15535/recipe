@@ -370,7 +370,7 @@ test.describe("шапка с каталогом (владелец: «шапка 
     await page.goto("/admin/ui/recipe/bowl", { waitUntil: "networkidle" });
     const banner = page.getByRole("banner");
     const menu = banner.getByRole("button", { name: "Каталог" });
-    const title = banner.getByRole("link", { name: "Книга рецептов" });
+    const title = banner.getByRole("link", { name: "Книга рецептов Юлианы" });
     const [menuBox, titleBox] = [await menu.boundingBox(), await title.boundingBox()];
     if (!menuBox || !titleBox) throw new Error("нет значка меню или названия");
     expect(menuBox.x + menuBox.width).toBeLessThanOrEqual(titleBox.x);
@@ -398,11 +398,12 @@ test.describe("шапка с каталогом (владелец: «шапка 
       expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
       expect(await smallTargets(page)).toEqual([]);
       const banner = page.getByRole("banner");
-      const title = await banner.getByRole("link", { name: "Книга рецептов" }).boundingBox();
+      const title = await banner.getByRole("link", { name: "Книга рецептов Юлианы" }).boundingBox();
       const search = await banner.getByRole("link", { name: "Поиск" }).boundingBox();
       if (!title || !search) throw new Error("нет названия или лупы");
       expect(title.x + title.width).toBeLessThanOrEqual(search.x);
-      expect(title.height).toBeLessThan(50);
+      // Логотип в две строки (название и подпись, ADR-0033) — в пределах строки шапки 72 px.
+      expect(title.height).toBeLessThanOrEqual(72);
     }
   });
 
