@@ -13,7 +13,7 @@ const AMOUNT = "^[0-9]{1,6}([.,][0-9]{1,6})?( [0-9]{1,6}/[0-9]{1,6}|/[0-9]{1,6})
 export const RECIPE_JSON_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["result_type", "title", "description", "time", "yield", "sections", "tags", "ingredients", "steps", "tips", "changes", "doubts"],
+  required: ["result_type", "title", "description", "time", "yield", "sections", "tags", "ingredients_source", "ingredients", "steps", "tips", "changes", "doubts"],
   properties: {
     result_type: { type: "string", enum: ["recipe", "not_recipe"] },
     title: str(200),
@@ -27,6 +27,8 @@ export const RECIPE_JSON_SCHEMA = {
     },
     sections: { type: "array", maxItems: 3, items: { type: "string", enum: [...SECTION_CODES] } },
     tags: { type: "array", maxItems: 5, items: { type: "string", enum: [...TAG_CODES] } },
+    // Перед ingredients: модель сначала решает, есть ли список автора (порядок полей = порядок ответа).
+    ingredients_source: { type: "string", enum: ["list", "text"] },
     ingredients: {
       type: "array",
       maxItems: 60,
@@ -65,6 +67,7 @@ export const aiRecipeSchema: z.ZodType<AiRecipe> = z.object({
   yield: z.object({ amount: text(20), word: text(30) }).nullable(),
   sections: z.array(z.enum(SECTION_CODES)).max(3),
   tags: z.array(z.enum(TAG_CODES)).max(5),
+  ingredients_source: z.enum(["list", "text"]),
   ingredients: z
     .array(z.object({ name: text(200), amount: maybe(40), unit: maybe(30), note: maybe(300), is_main: z.boolean() }))
     .max(60),

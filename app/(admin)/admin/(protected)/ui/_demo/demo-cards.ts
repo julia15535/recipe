@@ -1,7 +1,7 @@
 import type { CardData } from "@/components/recipe/recipe-card";
 import type { SearchEntry } from "@/components/search/recipe-search";
 
-import { COMPOSITION_TAGS, PROTOTYPE, SECTIONS, sectionLabel } from "./demo-catalog";
+import { COMPOSITION_TAGS, compositionTags, PROTOTYPE, SECTIONS, sectionLabel } from "./demo-catalog";
 import { RECIPES } from "./demo-recipes";
 import { recipesInSection } from "./demo-selection";
 import type { DemoRecipe } from "./demo-types";
@@ -10,7 +10,9 @@ import type { DemoRecipe } from "./demo-types";
 // что и `/ru`, только на примерных данных и со своими адресами.
 export function demoCard(recipe: DemoRecipe): CardData {
   const [main] = recipe.sections;
-  return { href: PROTOTYPE.recipe(recipe.slug), title: recipe.title, time: recipe.time ?? null, section: { code: main, label: sectionLabel(main) }, tone: recipe.tone };
+  // Первый тег — в порядке автора рецепта (как на сайте), не каталога.
+  const [tag = null] = compositionTags(recipe.composition);
+  return { href: PROTOTYPE.recipe(recipe.slug), title: recipe.title, time: recipe.time ?? null, section: { code: main, label: sectionLabel(main) }, tag, tone: recipe.tone };
 }
 
 export function demoCards(recipes: DemoRecipe[]): CardData[] {

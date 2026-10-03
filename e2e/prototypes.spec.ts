@@ -182,10 +182,10 @@ test.describe("первый рецепт владельца — вафли из 
     await expect(page.locator('[data-testid="servings"]')).toHaveCount(0);
     await expect(page.getByText("Несладкие творожные вафли")).toHaveCount(0);
     const amount = (name: string) => ingredientRow(page, name).getByTestId("ingredient-amount");
-    await expect(amount("Разрыхлитель")).toHaveText("½ ч. л.");
+    await expect(amount("Разрыхлитель")).toHaveText("0,5 ч. л.");
     await expect(amount("Соль")).toHaveText("щепотка");
     await expect(amount("Чёрный перец")).toHaveText("по желанию");
-    await expect(amount("Растительное масло")).toHaveText("½ ст. л.");
+    await expect(amount("Растительное масло")).toHaveText("0,5 ст. л.");
     await expect(amount("Молоко")).toHaveText("1 ст. л., если творог сухой");
     await expectNoAxeViolations(page);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
@@ -195,8 +195,8 @@ test.describe("первый рецепт владельца — вафли из 
     await input.fill("300");
     await expect(amount("Яйца")).toHaveText("≈ 2 шт.");
     await expect(amount("Цельнозерновая мука")).toHaveText("≈ 55 г");
-    await expect(amount("Разрыхлитель")).toHaveText("≈ ½ ч. л.");
-    await expect(amount("Растительное масло")).toHaveText("≈ ½ ст. л.");
+    await expect(amount("Разрыхлитель")).toHaveText("≈ 0,5 ч. л.");
+    await expect(amount("Растительное масло")).toHaveText("≈ 0,5 ст. л.");
     await expect(amount("Молоко")).toHaveText("≈ 1 ст. л., если творог сухой");
     await expect(amount("Соль")).toHaveText("щепотка");
 
@@ -211,9 +211,9 @@ test.describe("первый рецепт владельца — вафли из 
 
     await input.fill("137,5");
     await expect(amount("Яйца")).toHaveText("≈ 1 шт.");
-    await expect(amount("Разрыхлитель")).toHaveText("≈ ¼ ч. л.");
-    await expect(amount("Растительное масло")).toHaveText("≈ ¾ ч. л.");
-    await expect(amount("Молоко")).toHaveText("≈ ½ ст. л., если творог сухой");
+    await expect(amount("Разрыхлитель")).toHaveText("≈ 0,25 ч. л.");
+    await expect(amount("Растительное масло")).toHaveText("≈ 0,75 ч. л.");
+    await expect(amount("Молоко")).toHaveText("≈ 0,5 ст. л., если творог сухой");
 
     // Меньше 1 яйца — граммами с подсказкой (King Arthur: яйцо ≈ 50 г).
     await input.fill("40");
@@ -221,7 +221,7 @@ test.describe("первый рецепт владельца — вафли из 
 
     await page.getByRole("button", { name: /Как в рецепте/ }).click();
     await expect(amount("Яйца")).toHaveText("2 шт.");
-    await expect(amount("Разрыхлитель")).toHaveText("½ ч. л.");
+    await expect(amount("Разрыхлитель")).toHaveText("0,5 ч. л.");
   });
 
   test("основной ингредиент — название слева, как у остальных, поле рядом в одной строке", async ({ page }) => {
@@ -256,6 +256,28 @@ test.describe("первый рецепт владельца — вафли из 
     await page.getByRole("radio", { name: "По ингредиенту" }).click();
     await page.getByRole("row", { name: "Творог" }).click();
     await expect(page.getByRole("link", { name: /Творожные вафли/ })).toBeVisible();
+  });
+
+  test("карточка: под названием время и один тег — первый у автора; без времени — тег, без тегов — время", async ({ page }) => {
+    await page.goto("/admin/ui/section/breakfast", { waitUntil: "networkidle" });
+    const card = (title: string) => recipeCards(page).filter({ hasText: title });
+    await expect(card("Творожные вафли").locator("[data-tag]")).toHaveText(["Белок"]);
+    await expect(card("Творожные вафли")).not.toContainText("мин");
+    await expect(card("Омлет с овощами").locator("[data-tag]")).toHaveText(["Белок"]);
+    await expect(card("Омлет с овощами")).toContainText("15 мин");
+    await expect(card("Тонкие блины на молоке").locator("[data-tag]")).toHaveCount(0);
+    await expect(card("Тонкие блины на молоке")).toContainText("40 мин");
+    await expectNoAxeViolations(page);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+
+    // У салата с тыквой «Полезные жиры» первые у автора (в каталоге — третьи); время + длинный тег помещаются;
+    // тег входит в название ссылки.
+    await page.goto("/admin/ui/section/salads", { waitUntil: "networkidle" });
+    await expect(page.getByRole("link", { name: /Салат с тыквой и нутом.*35 мин.*Полезные жиры/ })).toBeVisible();
+    await expect(card("Салат с тыквой и нутом").locator("[data-tag]")).toHaveText(["Полезные жиры"]);
+    await expect(card("Боул с лососем, киноа и авокадо").locator("[data-tag]")).toHaveText(["Белок"]);
+    await expectNoAxeViolations(page);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
   });
 });
 

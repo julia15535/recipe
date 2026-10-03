@@ -44,7 +44,7 @@ export const RECIPES: DemoRecipe[] = [
   },
   {
     slug: "pumpkin-salad", title: "Салат с тыквой и нутом", description: "Тёплая тыква, нут, руккола, семечки и мягкий сыр.",
-    sections: ["salads"], composition: ["protein", "fiber", "healthy-fats"], time: "35 мин", yield: { amount: 2 }, tone: "from-accent-100 to-brand-200", main: 0,
+    sections: ["salads"], composition: ["healthy-fats", "protein", "fiber"], time: "35 мин", yield: { amount: 2 }, tone: "from-accent-100 to-brand-200", main: 0,
     ingredients: [ing("Тыква", 400, "г"), ing("Нут варёный", 150, "г"), ing("Руккола", 60, "г"), ing("Тыквенные семечки", 20, "г"), ing("Фета", 80, "г"), ing("Масло оливковое", 20, "мл")],
     search: ["Тыква", "Нут", "Сыр"],
     steps: ["Запеките кубики тыквы с маслом 25 минут при 200 °C.", "Выложите рукколу, нут, тёплую тыкву и раскрошенную фету.", "Посыпьте подсушенными семечками и сбрызните маслом."],

@@ -61,8 +61,9 @@ export const HEADER = {
   language: { href: "/en", label: "EN", name: "English", lang: "en" },
 };
 
+/** Теги рецепта в порядке автора — как на сайте (`lib/server/recipes/view.ts` по `position`), не каталога. */
 export function compositionTags(ids: readonly CompositionTagId[]) {
-  return COMPOSITION_TAGS.filter((tag) => ids.includes(tag.id));
+  return ids.flatMap((id) => COMPOSITION_TAGS.filter((tag) => tag.id === id));
 }
 
 export function sectionLabel(id: SectionId): string {

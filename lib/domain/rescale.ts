@@ -24,32 +24,29 @@ export const factorOf = (value: Fraction, base: Fraction): Fraction => div(value
 
 // Числа по языку: ru «2,5», en «2.5».
 const NUMBER = perLang((locale) => new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }));
+const QUARTER = perLang((locale) => new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }));
 const SMALL = perLang((locale) => new Intl.NumberFormat(locale, { maximumSignificantDigits: 2 }));
 const INPUT = perLang((locale) => new Intl.NumberFormat(locale, { maximumFractionDigits: 3, useGrouping: false }));
 const PLURAL = perLang((locale) => new Intl.PluralRules(locale));
 
-// Простые дроби — форма записи для ложек и штук, только когда значение и есть такая дробь.
-const GLYPH: Record<string, string> = { "1/4": "¼", "1/3": "⅓", "1/2": "½", "2/3": "⅔", "3/4": "¾" };
-const FRACTION_UNITS = new Set(["ч. л.", "ст. л.", "шт."]);
+const multipleOf = (value: number, part: number) => Math.abs(value / part - Math.round(value / part)) < 1e-9;
 
-/** До десятых; меньше единицы — две значащие цифры; ложки и штуки — «½», «1⅓». */
-export function formatAmount(value: Fraction, unit?: string | null, lang: Lang = "ru"): string {
-  if (unit && FRACTION_UNITS.has(unit)) {
-    const whole = Math.floor(value.num / value.den);
-    const rest = fraction(value.num - whole * value.den, value.den);
-    if (rest.num === 0) return NUMBER(lang).format(whole);
-    const glyph = GLYPH[`${rest.num}/${rest.den}`];
-    if (glyph) return whole > 0 ? `${whole}${glyph}` : glyph;
-  }
+/**
+ * Количество десятичной записью (владелец 03.10: «1,5 ст. л.», не «1½»): половины и четверти — точно («0,25»,
+ * «1,75»), трети — до десятых («0,3», «1,3»), остальное — до десятых, меньше единицы — две значащие цифры.
+ */
+export function formatAmount(value: Fraction, lang: Lang = "ru"): string {
   const number = toNumber(value);
+  if (multipleOf(number, 0.25)) return QUARTER(lang).format(number);
+  if (multipleOf(number, 1 / 3)) return NUMBER(lang).format(number);
   return number > 0 && number < 1 ? SMALL(lang).format(number) : NUMBER(lang).format(number);
 }
 
 /** Количество строки × коэффициент; диапазон — оба конца; без количества — null. */
-export function formatQuantity(quantity: Quantity, factor: Fraction, unit?: string | null, lang: Lang = "ru"): string | null {
-  if (quantity.kind === "exact") return formatAmount(mul(quantity.amount, factor), unit, lang);
+export function formatQuantity(quantity: Quantity, factor: Fraction, lang: Lang = "ru"): string | null {
+  if (quantity.kind === "exact") return formatAmount(mul(quantity.amount, factor), lang);
   if (quantity.kind === "range") {
-    const [min, max] = [formatAmount(mul(quantity.min, factor), unit, lang), formatAmount(mul(quantity.max, factor), unit, lang)];
+    const [min, max] = [formatAmount(mul(quantity.min, factor), lang), formatAmount(mul(quantity.max, factor), lang)];
     return min === max ? min : `${min}–${max}`;
   }
   return null;

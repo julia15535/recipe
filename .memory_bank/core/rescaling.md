@@ -3,12 +3,12 @@ tier: 1
 topic: rescaling
 scope: Пересчёт от основного ингредиента, порции, правила округления
 tier2: ../domain/rounding-rules.md
-updated: 2026-10-02
+updated: 2026-10-03
 importance: high
 source: _intake/_processed/brief/product-decisions-2026-10-01.md
 status: draft
 source_of_truth: supporting
-last_verified: 2026-10-02
+last_verified: 2026-10-03
 review_after: 2026-12-27
 ---
 
@@ -24,6 +24,8 @@ review_after: 2026-12-27
 - **Округление показа (ADR-0026, `lib/domain/rounding.ts`):** точное значение хранится, на экране — ближайшая
   удобная мера по источнику USDA/NFSMI (2002): г/мл — до 1, ч. л. — до ¼ (меньше ⅛ — «щепотка»), ст. л. — целые и ½,
   штучное — до ½; яйца — целые, при отклонении > 15 % — граммами (King Arthur: яйцо ≈ 50 г). Пересчитанные строки — с ≈.
+- **Запись чисел (ADR-0030):** десятичная, не дроби — «0,5», «0,25», «1,5 ст. л.», трети до десятых («0,3»); `/en` —
+  с точкой (`lib/domain/rescale.ts` `formatAmount`). Хранение — точные дроби.
 - Пересчёт — программно, мгновенно, без ИИ (`lib/domain/rescale.ts`, дроби — `lib/domain/fraction.ts`). КБЖУ пока нет.
 - Позже: правила на конкретный ингредиент (соль, специи, разрыхлители) — со справочником ингредиентов (ADR-0003).
 

@@ -19,6 +19,8 @@ export type PublicCard = {
   time: string | null;
   section: { code: string; label: string };
   photo: PhotoRef | null;
+  /** Первый тег состава в порядке автора (решение владельца 03.10) — на карточке рядом с названием. */
+  tag: { id: string; label: string } | null;
 };
 export type SearchItem = Omit<PublicCard, "id"> & { ingredients: string[]; sections: string[]; tagCodes: string[] };
 
@@ -46,8 +48,9 @@ export function readCards(locale: Locale, options: { sectionCode?: string; limit
       .where(and(published, inSection))
       .orderBy(desc(t.recipes.publishedAt), desc(t.recipes.id));
     const rows = options.limit ? await query.limit(options.limit) : await query;
-    const photos = await photoRefs(getDb(), rows.map((row) => row.id));
-    return rows.map(({ code, label, ...card }) => ({ ...card, section: { code, label }, photo: photos.get(card.id) ?? null }));
+    const ids = rows.map((row) => row.id);
+    const [photos, tags] = await Promise.all([photoRefs(getDb(), ids), firstTags(locale, ids)]);
+    return rows.map(({ code, label, ...card }) => ({ ...card, section: { code, label }, photo: photos.get(card.id) ?? null, tag: tags.get(card.id) ?? null }));
   });
 }
 
@@ -73,7 +76,8 @@ export function readSearchIndex(locale: Locale): Promise<SearchItem[]> {
         .select({ recipeId: t.recipeCompositionTags.recipeId, name: t.compositionTags.code })
         .from(t.recipeCompositionTags)
         .innerJoin(t.compositionTags, eq(t.compositionTags.id, t.recipeCompositionTags.tagId))
-        .where(inArray(t.recipeCompositionTags.recipeId, ids)),
+        .where(inArray(t.recipeCompositionTags.recipeId, ids))
+        .orderBy(t.recipeCompositionTags.position),
     ]);
     const [byIngredient, bySection, byTag] = [ingredients, sections, tags].map(group);
     return cards.map(({ id, ...card }) => ({
@@ -83,6 +87,19 @@ export function readSearchIndex(locale: Locale): Promise<SearchItem[]> {
       tagCodes: byTag?.get(id) ?? [],
     }));
   });
+}
+
+/** Первый тег каждого рецепта — по позиции у автора (не по порядку каталога), с подписью на языке страницы. */
+async function firstTags(locale: Locale, ids: string[]): Promise<Map<string, { id: string; label: string }>> {
+  if (ids.length === 0) return new Map();
+  const rows = await getDb()
+    .selectDistinctOn([t.recipeCompositionTags.recipeId], { recipeId: t.recipeCompositionTags.recipeId, id: t.compositionTags.code, label: t.compositionTagLocalizations.label })
+    .from(t.recipeCompositionTags)
+    .innerJoin(t.compositionTags, eq(t.compositionTags.id, t.recipeCompositionTags.tagId))
+    .innerJoin(t.compositionTagLocalizations, and(eq(t.compositionTagLocalizations.tagId, t.compositionTags.id), eq(t.compositionTagLocalizations.locale, locale)))
+    .where(inArray(t.recipeCompositionTags.recipeId, ids))
+    .orderBy(t.recipeCompositionTags.recipeId, t.recipeCompositionTags.position);
+  return new Map(rows.map(({ recipeId, ...tag }) => [recipeId, tag]));
 }
 
 function group(rows: { recipeId: string; name: string }[]): Map<string, string[]> {

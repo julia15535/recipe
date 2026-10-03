@@ -19,15 +19,9 @@ const TBSP_PER_CUP = 250 / 15;
 const TSP_PER_CUP = 250 / 5;
 const NUMBER = perLang((locale) => new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }));
 const ONE_DECIMAL = perLang((locale) => new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }));
-const GLYPHS: Record<number, string> = { 0.25: "¼", 0.5: "½", 0.75: "¾" };
 
-/** «1¾», «½», «2» — для шагов в четверть и половину. */
-function quarters(value: number): string {
-  const whole = Math.floor(value + 1e-9);
-  const glyph = GLYPHS[Math.round((value - whole) * 4) / 4] ?? "";
-  if (!glyph) return String(whole);
-  return whole > 0 ? `${whole}${glyph}` : glyph;
-}
+/** «1,75», «0,5», «2» — шаги в четверть и половину десятичной записью (владелец 03.10). */
+const quarters = (value: number, lang: Lang): string => NUMBER(lang).format(Math.round(value * 4) / 4);
 
 export const KINDS = ["weight", "volume", "tsp", "tbsp", "cup", "egg", "piece", "fixed"] as const;
 export type Kind = (typeof KINDS)[number];
@@ -57,23 +51,23 @@ function weight(grams: number, base: "г" | "мл", lang: Lang): Part {
   return { value: rounded, unit: base, text: String(rounded) };
 }
 
-function teaspoons(value: number): Part {
+function teaspoons(value: number, lang: Lang): Part {
   if (value < 1 / 8) return { value, unit: null, text: "", pinch: true };
   const q = Math.max(0.25, Math.round(value * 4) / 4);
-  return { value: q, unit: "ч. л.", text: quarters(q) };
+  return { value: q, unit: "ч. л.", text: quarters(q, lang) };
 }
 
 // Ст. л. — целыми и половинками (¼ ст. л. мерной ложкой не отмерить); дальше 15 % — в ч. л. до ¼.
-function tablespoons(value: number): Part {
+function tablespoons(value: number, lang: Lang): Part {
   const half = Math.round(value * 2) / 2;
-  if (half < 0.5 || Math.abs(half - value) / value > 0.15) return teaspoons(value * 3);
-  return { value: half, unit: "ст. л.", text: quarters(half) };
+  if (half < 0.5 || Math.abs(half - value) / value > 0.15) return teaspoons(value * 3, lang);
+  return { value: half, unit: "ст. л.", text: quarters(half, lang) };
 }
 
-function cups(value: number, unit: string): Part {
+function cups(value: number, unit: string, lang: Lang): Part {
   const q = Math.round(value * 4) / 4;
-  if (q === 0) return tablespoons(value * TBSP_PER_CUP);
-  return { value: q, unit, text: quarters(q) };
+  if (q === 0) return tablespoons(value * TBSP_PER_CUP, lang);
+  return { value: q, unit, text: quarters(q, lang) };
 }
 
 function eggs(value: number, forceGrams: boolean): Part {
@@ -85,7 +79,7 @@ function eggs(value: number, forceGrams: boolean): Part {
 
 function pieces(value: number, unit: string | null, lang: Lang): Part {
   const half = Math.round(value * 2) / 2;
-  if (half > 0 && Math.abs(half - value) / value <= 0.25) return { value: half, unit, text: quarters(half) };
+  if (half > 0 && Math.abs(half - value) / value <= 0.25) return { value: half, unit, text: quarters(half, lang) };
   const tenth = Math.max(0.1, Math.round(value * 10) / 10);
   return { value: tenth, unit, text: ONE_DECIMAL(lang).format(tenth) };
 }
@@ -97,11 +91,11 @@ function round(kind: Kind, value: number, unit: string | null, lang: Lang, force
     case "volume":
       return weight(unit === "л" ? value * 1000 : value, "мл", lang);
     case "tsp":
-      return teaspoons(value);
+      return teaspoons(value, lang);
     case "tbsp":
-      return tablespoons(value);
+      return tablespoons(value, lang);
     case "cup":
-      return cups(value, unit ?? "стак.");
+      return cups(value, unit ?? "стак.", lang);
     case "egg":
       return eggs(value, forceGrams);
     default:
@@ -124,8 +118,8 @@ export function showQuantity(line: Line, factor: Fraction, { lang = "ru", kind =
   if (isOne(factor) || kind === "fixed") {
     const text =
       quantity.kind === "exact"
-        ? formatAmount(quantity.amount, unit, lang)
-        : `${formatAmount(quantity.min, unit, lang)}–${formatAmount(quantity.max, unit, lang)}`;
+        ? formatAmount(quantity.amount, lang)
+        : `${formatAmount(quantity.min, lang)}–${formatAmount(quantity.max, lang)}`;
     return { amount: text, unit, approx: false, hint: null, special: null };
   }
   const k = toNumber(factor);
@@ -146,7 +140,7 @@ export function showQuantity(line: Line, factor: Fraction, { lang = "ru", kind =
       return { amount: max.text, unit: max.unit, approx: true, hint: null, special: "upTo" };
     } else {
       const perTsp = kind === "tbsp" ? 3 : kind === "cup" ? TSP_PER_CUP : 1;
-      [min, max] = [teaspoons(lo * perTsp), teaspoons(hi * perTsp)];
+      [min, max] = [teaspoons(lo * perTsp, lang), teaspoons(hi * perTsp, lang)];
     }
   }
   const amount = min.text === max.text ? min.text : `${min.text}–${max.text}`;

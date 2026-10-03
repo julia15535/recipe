@@ -84,6 +84,20 @@ describe.skipIf(!enabled)("публичный сайт: БД", () => {
     expect(await preserves()).toBe(before);
   });
 
+  it("карточка: первый тег — в порядке автора, а не каталога (главная, раздел, поиск)", async () => {
+    const source = `Икра ${marker}\nТеги: заготовки, клетчатка, белок\nИнгредиенты:\n- Кабачки — 1 кг - основной\nПриготовление:\n1. Тушить.`;
+    const parsed = parseRecipeText(source);
+    if (!parsed.ok) throw new Error(JSON.stringify(parsed.issues));
+    const saved = await createRecipe(parsed, source, "published");
+    if (!saved.ok) throw new Error("не сохранилось");
+    created.push(saved.id);
+    const fiber = { id: "fiber", label: "Клетчатка" };
+    expect((await readCards("ru")).find((card) => card.id === saved.id)?.tag).toEqual(fiber);
+    expect((await readCards("ru", { sectionCode: "preserves" })).find((card) => card.id === saved.id)?.tag).toEqual(fiber);
+    const entry = (await readSearchIndex("ru")).find((item) => item.title === `Икра ${marker}`);
+    expect(entry).toMatchObject({ tag: fiber, tagCodes: ["fiber", "protein"] });
+  });
+
   it("неизвестный адрес — null", async () => {
     expect(await readPublicRecipe("ru", `net-takogo-${marker}`)).toBeNull();
   });

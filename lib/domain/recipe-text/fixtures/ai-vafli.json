@@ -10,6 +10,7 @@
  "tags": [
   "protein"
  ],
+ "ingredients_source": "list",
  "ingredients": [
   {
    "name": "Творог 0,5%",

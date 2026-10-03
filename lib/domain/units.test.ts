@@ -17,8 +17,8 @@ describe("единицы и числа по языку", () => {
   });
 
   it("числа: по-русски запятая, по-английски точка; выход — английские формы", () => {
-    expect(formatAmount(fraction(5, 2), "г", "ru")).toBe("2,5");
-    expect(formatAmount(fraction(5, 2), "г", "en")).toBe("2.5");
+    expect(formatAmount(fraction(5, 2), "ru")).toBe("2,5");
+    expect(formatAmount(fraction(5, 2), "en")).toBe("2.5");
     expect(formatInput(fraction(5, 2), "en")).toBe("2.5");
     expect(yieldLabel(fraction(1), SERVINGS_EN, "en")).toBe("1 serving");
     expect(yieldLabel(fraction(5, 2), SERVINGS_EN, "en")).toBe("2.5 servings");

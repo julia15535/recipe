@@ -12,6 +12,8 @@ export type AiRecipe = {
   yield: { amount: string; word: string } | null;
   sections: SectionCode[];
   tags: TagCode[];
+  /** Был ли у автора свой список ингредиентов (`list` — строки только из него) или собраны из текста (`text`). */
+  ingredients_source: "list" | "text";
   ingredients: AiIngredient[];
   steps: string[];
   tips: string[];

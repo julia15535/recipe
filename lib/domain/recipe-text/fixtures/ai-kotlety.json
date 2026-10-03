@@ -13,6 +13,7 @@
  "tags": [
   "protein"
  ],
+ "ingredients_source": "text",
  "ingredients": [
   {
    "name": "Фарш",

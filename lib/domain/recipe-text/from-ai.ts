@@ -3,6 +3,7 @@
 import { compare, type Fraction, parseNumber } from "../fraction";
 import type { Quantity } from "../quantity";
 import { SERVINGS, type WordForms } from "../rescale";
+import { repeatNotes, sourceNote } from "./ai-checks";
 import type { AiIngredient, AiRecipe, Check } from "./ai-recipe";
 import { LIMITS } from "./limits";
 import { withoutWeight } from "./notes";
@@ -37,6 +38,7 @@ export function fromAi(ai: AiRecipe, original: string, labels: Labels): AiDraft 
 
   const ingredients = ai.ingredients.slice(0, LIMITS.ingredients).flatMap((item, index) => ingredient(item, index, decide, checks));
   if (ingredients.length === 0) decide("Не нашлось ингредиентов.");
+  checks.push(...sourceNote(ai), ...repeatNotes(ingredients));
   const mainIndex = confirmMain(findMain(ingredients, decide, checks), ingredients, original, checks);
 
   const steps = ai.steps.map((step) => clip(step, LIMITS.step)).filter(Boolean).slice(0, LIMITS.steps);

@@ -71,6 +71,7 @@ test.describe("рецепт из любого текста", () => {
     const checks = page.getByRole("region", { name: "Проверьте" });
     await expect(checks.locator('[data-checks="changed"]')).toContainText("«полкило фарша» → Фарш — 500 г");
     await expect(checks.locator('[data-checks="note"]')).toContainText("Основной ингредиент — «Фарш");
+    await expect(checks.locator('[data-checks="note"]')).toContainText("Списка ингредиентов не было — ингредиенты собраны из текста");
     await expect(checks.locator('[data-checks="decide"]')).toHaveCount(0);
     expect(await aiCalls(page)).toBe(before + 1);
     const preview = page.getByRole("region", { name: "Так рецепт будет выглядеть на сайте" });

@@ -30,29 +30,35 @@ describe("пересчёт от основного ингредиента", () =
     expect(yieldLabel(f(21), waffles)).toBe("21 вафля");
   });
 
-  it("ложки и штуки — простыми дробями, только при точном равенстве", () => {
-    expect(formatAmount(f(1, 2), "ч. л.")).toBe("½");
-    expect(formatAmount(f(3, 2), "ст. л.")).toBe("1½");
-    expect(formatAmount(f(1, 3), "шт.")).toBe("⅓");
-    expect(formatAmount(f(4, 3), "шт.")).toBe("1⅓");
-    expect(formatAmount(f(2), "шт.")).toBe("2");
-    expect(formatAmount(f(249, 1000), "ч. л.")).toBe("0,25");
-    expect(formatAmount(f(275, 2), "г")).toBe("137,5");
-    expect(formatAmount(f(1500))).toBe("1 500");
+  it("десятичной записью (владелец 03.10): половины и четверти — точно, трети — до десятых", () => {
+    expect(formatAmount(f(1, 2))).toBe("0,5");
+    expect(formatAmount(f(3, 2))).toBe("1,5");
+    expect(formatAmount(f(5, 4))).toBe("1,25");
+    expect(formatAmount(f(7, 4))).toBe("1,75");
+    expect(formatAmount(f(1, 4))).toBe("0,25");
+    expect(formatAmount(f(3, 4))).toBe("0,75");
+    expect(formatAmount(f(1, 3))).toBe("0,3");
+    expect(formatAmount(f(2, 3))).toBe("0,7");
+    expect(formatAmount(f(4, 3))).toBe("1,3");
+    expect(formatAmount(f(2))).toBe("2");
+    expect(formatAmount(f(249, 1000))).toBe("0,25");
+    expect(formatAmount(f(275, 2))).toBe("137,5");
+    expect(formatAmount(f(1500)).replace(/\s/g, " ")).toBe("1 500");
+    expect(formatAmount(f(1500), "en")).toBe("1,500");
+    expect(formatAmount(f(5, 4), "en")).toBe("1.25");
     expect(formatAmount(f(1, 8))).toBe("0,13");
-    expect(formatAmount(f(1, 4), "ч. л.")).toBe("¼");
-    expect(formatAmount(f(3, 4), "ч. л.")).toBe("¾");
     expect(formatAmount(f(2, 1000))).toBe("0,002");
     expect(formatAmount(f(264, 10))).toBe("26,4");
   });
 
-  it("треть × 2 — ровно ⅔, а не 0,67; диапазон — с обеих сторон", () => {
-    expect(formatQuantity({ kind: "exact", amount: f(1, 3) }, f(2), "ч. л.")).toBe("⅔");
-    expect(formatQuantity({ kind: "range", min: f(1, 2), max: f(1) }, f(1), "ч. л.")).toBe("½–1");
-    expect(formatQuantity({ kind: "range", min: f(1, 2), max: f(1) }, f(2), "ч. л.")).toBe("1–2");
-    expect(formatQuantity({ kind: "range", min: f(1, 2), max: f(1) }, f(1, 2), "ч. л.")).toBe("¼–½");
-    expect(formatQuantity({ kind: "range", min: f(1), max: f(1) }, f(1), "ч. л.")).toBe("1");
-    expect(formatQuantity({ kind: "range", min: f(1, 2), max: f(1) }, f(727, 1000), "ч. л.")).toBe("0,36–0,73");
+  it("треть × 2 — точно ⅔ (0,7); диапазон — с обеих сторон", () => {
+    expect(formatQuantity({ kind: "exact", amount: f(1, 3) }, f(2))).toBe("0,7");
+    expect(formatQuantity({ kind: "range", min: f(1, 2), max: f(1) }, f(1))).toBe("0,5–1");
+    expect(formatQuantity({ kind: "range", min: f(1, 2), max: f(1) }, f(2))).toBe("1–2");
+    expect(formatQuantity({ kind: "range", min: f(1, 2), max: f(1) }, f(1, 2))).toBe("0,25–0,5");
+    expect(formatQuantity({ kind: "range", min: f(1), max: f(1) }, f(1))).toBe("1");
+    expect(formatQuantity({ kind: "range", min: f(1, 2), max: f(1) }, f(727, 1000))).toBe("0,36–0,73");
+    expect(formatQuantity({ kind: "range", min: f(1, 3), max: f(2, 3) }, f(1), "en")).toBe("0.3–0.7");
     expect(formatQuantity({ kind: "none" }, f(2))).toBeNull();
   });
 

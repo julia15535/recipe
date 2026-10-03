@@ -27,7 +27,11 @@ export function RecipeBody({ recipe, children }: { recipe: RecipeView; children:
     const next = parseAmount(value, base);
     if (next.ok) setFactor(factorOf(next.value, base));
   };
-  const reset = () => change(formatInput(base, lang));
+  // «Как в рецепте» — ровно коэффициент 1 (основной ⅓ в поле — «0,333», из него вышло бы 0,999).
+  const reset = () => {
+    setRaw(formatInput(base, lang));
+    setFactor(ONE);
+  };
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pt-4 pb-16 lg:pt-8">

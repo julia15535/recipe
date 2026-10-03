@@ -86,7 +86,14 @@ export async function englishItems(filter: { sectionCode?: string; limit?: numbe
       time: text.timeText,
       section: { code: body.primarySectionCode, label: catalog.sections.get(body.primarySectionCode)?.label ?? "" },
       photo: photos.get(recipe.id) ?? null,
+      // Первый тег — из снимка (порядок автора); нет английской подписи — тег не показываем.
+      tag: firstTag(body.tagCodes[0], catalog.tags),
     };
     return { card: { id: recipe.id, ...card }, search: { ...card, ingredients: body.ingredients.map((row) => row.name), sections: body.sectionCodes, tagCodes: body.tagCodes } };
   });
+}
+
+function firstTag(code: string | undefined, labels: Map<string, string>) {
+  const label = code ? labels.get(code) : undefined;
+  return code && label ? { id: code, label } : null;
 }

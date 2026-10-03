@@ -3,12 +3,12 @@ tier: 2
 topic: owner-auth
 scope: Вход владельца через своего Telegram-бота — поток, таблицы, cookie, webhook, CSP кабинета, тесты, аварийные действия
 tier1: ../core/auth-publishing.md
-updated: 2026-10-02
+updated: 2026-10-03
 importance: high
 source: manual
 status: working
 source_of_truth: canonical
-last_verified: 2026-10-02
+last_verified: 2026-10-03
 review_after: 2026-12-27
 ---
 
@@ -83,10 +83,11 @@ review_after: 2026-12-27
 `instrumentation-node.ts`). `TELEGRAM_API_BASE` — только заглушка Bot API в e2e.
 
 ## Модули без `server-only`
-Чистые, их берут юнит-тесты: `lib/server/auth/tokens.ts`, `telegram-update.ts`, `bot-messages.ts`.
+Чистые, их берут юнит-тесты: `lib/server/auth/tokens.ts`, `telegram-update.ts`, `bot-messages.ts`, `rate-limit.ts`.
 
 ## Логи
-Ошибки БД входа заворачиваются в `AuthStorageError` с кодом Postgres (`lib/server/auth/storage-error.ts`):
+Ошибки БД входа заворачиваются в `StorageError` (scope «вход владельца») через `guarded` (`lib/server/auth/storage-error.ts` →
+`lib/server/db/errors.ts`):
 текст ошибки Drizzle содержит параметры запроса (хеши), а Next пишет необработанные ошибки в лог.
 Webhook и статус пишут только имя ошибки; маскирование ключей — `lib/server/log.ts`.
 

@@ -103,6 +103,8 @@ test("фото: уменьшить в браузере → кадр → сайт
   const dialog = page.getByRole("dialog", { name: "Кадр для фото" });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole("group", { name: "Кадр фото" })).toBeVisible();
+  // axe — после анимации появления окна (fade-in 300 мс): посреди неё контраст «бледный» (№38).
+  await page.waitForFunction(() => !document.querySelector("[data-entering]"));
   const axe = await new AxeBuilder({ page }).include('[role="dialog"]').withTags(AXE_TAGS).analyze();
   expect(axe.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);
   expect(await smallTargets(page)).toEqual([]);
@@ -249,6 +251,8 @@ test("фото на компьютере: окно кадрирования и �
   expect(area && Math.abs(area.width / area.height - 4 / 3)).toBeLessThan(0.02);
   const box = await dialog.boundingBox();
   expect(box && box.y + box.height).toBeLessThanOrEqual(800);
+  // axe — после анимации появления окна (fade-in 300 мс): посреди неё контраст «бледный» (№38).
+  await page.waitForFunction(() => !document.querySelector("[data-entering]"));
   const axe = await new AxeBuilder({ page }).include('[role="dialog"]').withTags(AXE_TAGS).analyze();
   expect(axe.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);
   await dialog.getByRole("button", { name: "Готово" }).click();

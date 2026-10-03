@@ -95,7 +95,7 @@ describe.skipIf(!enabled)("перевод: БД", () => {
     expect(page?.view.ingredients[0]).toMatchObject({ quantity: { kind: "exact", amount: { num: 1, den: 1 } }, unit: "кг", kind: "weight" });
     expect(page?.otherSlug).toMatch(/^lecho-/);
     expect((await readPublicRecipe("ru", page?.otherSlug ?? ""))?.otherSlug).toBe(state.slug);
-    expect((await readCards("en", { sectionCode: "sauces" })).map((c) => c.slug)).toContain(state.slug);
+    expect((await readCards("en", { sectionCode: "sauces" })).find((c) => c.slug === state.slug)?.tag).toEqual({ id: "protein", label: "Protein" });
     expect((await readSearchIndex("en")).find((item) => item.slug === state.slug)?.ingredients).toEqual([`EN Томаты`, "EN Соль"]);
     expect((await readCatalog("en")).sections.find((s) => s.code === "drinks")?.recipes).toBe(before + 1);
   });
@@ -142,6 +142,19 @@ describe.skipIf(!enabled)("перевод: БД", () => {
     const late = { head: { title: "LATE", description: null, time: null, yieldForms: null }, body: {} as never, sourceContentRevision: 1, model: "x", promptVersion: "x" };
     expect(await finishJob(next, first.token, id, late)).toBe(false);
     expect((await readPublicRecipe("en", slug ?? ""))?.view.title).toBe(`EN Соус ${marker}`);
+  });
+
+  it("карточка: первый тег — из снимка, в порядке автора", async () => {
+    const source = text(`Смузи ${marker}`).replace("Теги: напитки, соусы, белок", "Теги: напитки, клетчатка, белок");
+    const parsed = parseRecipeText(source);
+    if (!parsed.ok) throw new Error(JSON.stringify(parsed.issues));
+    const saved = await createRecipe(parsed, source, "published");
+    if (!saved.ok) throw new Error("не сохранилось");
+    created.push(saved.id);
+    await translate(saved.id, false);
+    const { slug } = await translationState(saved.id);
+    expect((await readCards("en")).find((c) => c.slug === slug)?.tag).toEqual({ id: "fiber", label: "Fibre" });
+    expect((await readSearchIndex("en")).find((item) => item.slug === slug)).toMatchObject({ tag: { id: "fiber" }, tagCodes: ["fiber", "protein"] });
   });
 
   it("снят с публикации — нет и на английском; удаление рецепта убирает перевод и задания", async () => {

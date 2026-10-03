@@ -5,16 +5,19 @@ import { SectionIcon } from "@/components/catalog/section-icon";
 import type { PhotoRef } from "@/lib/domain/photo";
 import { cx } from "@/utils/cx";
 
+import { type CompositionTag, CompositionTags } from "./composition-tags";
 import { RecipePhoto } from "./recipe-photo";
 
 // Карточка рецепта (2 колонки на телефоне, 4 на компьютере): фото 4:3 — кадр владельца (ADR-0028), без фото —
-// спокойная заглушка с иконкой основного раздела (у прототипов — цветная); основной раздел (ADR-0018), название, время.
+// спокойная заглушка с иконкой основного раздела (у прототипов — цветная); основной раздел (ADR-0018), название;
+// под названием — время и первый тег состава автора (решение владельца 03.10, ADR-0030).
 export type CardData = {
   href: string;
   title: string;
   time: string | null;
   section: { code: string; label: string };
   photo?: PhotoRef | null;
+  tag?: CompositionTag | null;
   tone?: string;
 };
 
@@ -39,11 +42,17 @@ export function RecipeCard({ card }: { card: CardData }) {
       <div className="flex flex-col gap-1.5 p-3">
         <span className="text-xs font-semibold tracking-wide text-brand-secondary uppercase">{card.section.label}</span>
         <h3 className="font-display text-lg leading-snug break-words text-primary group-hover:underline">{card.title}</h3>
-        {card.time && (
-          <span className="flex items-center gap-1 text-sm text-tertiary">
-            <Clock className="size-4" aria-hidden />
-            {card.time}
-          </span>
+        {(card.time || card.tag) && (
+          <div className="flex flex-wrap items-center gap-2">
+            {card.time && (
+              <span className="flex items-center gap-1 text-sm text-tertiary">
+                <Clock className="size-4" aria-hidden />
+                {card.time}
+              </span>
+            )}
+            {/* Имя списка = сам тег: внутри ссылки оно входит в её название («…, Белок»), не подменяя его. */}
+            {card.tag && <CompositionTags tags={[card.tag]} label={card.tag.label} />}
+          </div>
         )}
       </div>
     </NextLink>
