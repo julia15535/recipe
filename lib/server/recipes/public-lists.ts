@@ -7,7 +7,8 @@ import { guarded } from "@/lib/server/db/errors";
 import * as t from "@/lib/server/db/schema";
 import { photoRefs } from "@/lib/server/media/photo-reads";
 
-import { type Locale, published } from "./public";
+import { englishItems } from "./public-en";
+import { type Locale, published } from "./public-paths";
 
 // Списки опубликованных рецептов для сайта (ADR-0027): карточки (главная, раздел) и компактный индекс поиска.
 // Агрегированными запросами — без запроса на каждую карточку; черновики не попадают (`published`).
@@ -23,6 +24,7 @@ export type SearchItem = Omit<PublicCard, "id"> & { ingredients: string[]; secti
 
 /** Карточки: новые сверху (по дате первой публикации), опционально — одного раздела (и где он не основной). */
 export function readCards(locale: Locale, options: { sectionCode?: string; limit?: number } = {}): Promise<PublicCard[]> {
+  if (locale === "en") return guarded("сайт", async () => (await englishItems(options)).map((item) => item.card));
   return guarded("сайт", async () => {
     const inSection = options.sectionCode
       ? sql`exists (select 1 from ${t.recipeSections} rs join ${t.sections} s on s.id = rs.section_id
@@ -51,6 +53,7 @@ export function readCards(locale: Locale, options: { sectionCode?: string; limit
 
 /** Компактный индекс поиска: карточка + названия ингредиентов, коды разделов и тегов (без шагов и пометок). */
 export function readSearchIndex(locale: Locale): Promise<SearchItem[]> {
+  if (locale === "en") return guarded("сайт", async () => (await englishItems()).map((item) => item.search));
   return guarded("сайт", async () => {
     const db = getDb();
     const cards = await readCards(locale);

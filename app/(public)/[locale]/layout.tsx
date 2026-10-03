@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import "../../globals.css";
+import { LocaleCookie } from "@/components/i18n/locale-cookie";
 import { PublicRouterProvider } from "@/components/providers/public-router-provider";
 import { clientMessages } from "@/i18n/client-messages";
 import { routing } from "@/i18n/routing";
@@ -32,6 +33,7 @@ export default async function LocaleLayout({ children }: LayoutProps<"/[locale]"
     <html lang={locale} className={fontVariables}>
       <body>
         <NextIntlClientProvider messages={await clientMessages()}>
+          <LocaleCookie />
           <PublicRouterProvider>{children}</PublicRouterProvider>
         </NextIntlClientProvider>
       </body>

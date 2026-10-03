@@ -67,7 +67,7 @@ describe.skipIf(!enabled)("публичный сайт: БД", () => {
     await setRecipeStatus(recipe.id, "published");
 
     const page = await readPublicRecipe("ru", recipe.slug);
-    expect(Object.keys(page ?? {}).sort()).toEqual(["id", "slug", "updatedAt", "view"]);
+    expect(Object.keys(page ?? {}).sort()).toEqual(["id", "otherSlug", "slug", "updatedAt", "view"]);
     expect(page?.view.title).toBe(`Аджика ${marker}`);
     expect(page?.view.sections.map((section) => section.href)).toEqual([expect.stringMatching(/^\/ru\/catalog\/.+/), expect.stringMatching(/^\/ru\/catalog\/.+/)]);
     expect(await preserves()).toBe(before + 1);

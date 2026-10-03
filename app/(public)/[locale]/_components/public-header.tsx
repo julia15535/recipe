@@ -7,9 +7,10 @@ import { type Locale, type PublicSection, sectionPath } from "@/lib/server/recip
 // Шапка сайта из базы: 11 мест каталога; раздел без опубликованных рецептов — бледный и не ссылка (ADR-0020,
 // владелец 02.10), открытый раздел — выделен. Данные шапки читает сама страница внутри своего <Suspense> — под
 // границей ошибок (`error.tsx`), чтобы сбой базы давал «Попробовать снова», а не пустой каталог.
-type Props = { locale: Locale; sections: PublicSection[]; current?: string };
+// `alternate` — эта же страница на другом языке (кнопка RU/EN, ADR-0029): у рецепта без перевода — главная.
+type Props = { locale: Locale; sections: PublicSection[]; current?: string; alternate: string };
 
-export async function PublicHeader({ locale, sections, current }: Props) {
+export async function PublicHeader({ locale, sections, current, alternate }: Props) {
   const [meta, site] = await Promise.all([getTranslations("Meta"), getTranslations("Site")]);
   const catalog: CatalogSection[] = sections.map((section) => ({
     id: section.code,
@@ -25,6 +26,7 @@ export async function PublicHeader({ locale, sections, current }: Props) {
       searchHref={`/${locale}/search`}
       searchLabel={site("search")}
       catalog={{ sections: catalog, label: site("catalog"), closeLabel: site("close") }}
+      language={{ href: alternate, label: site("otherLanguage.label"), name: site("otherLanguage.name"), lang: site("otherLanguage.lang") }}
     />
   );
 }

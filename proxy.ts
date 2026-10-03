@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
 
 // Next 16: proxy.ts вместо middleware.ts — один на приложение, поэтому ветки собираем здесь явно.
-// Публичные пути → next-intl (префикс локали; пока нет английской версии, `/` всегда → /ru — i18n/routing.ts).
+// Публичные пути → next-intl (префикс локали; `/` — по языку браузера и cookie выбора, i18n/routing.ts, ADR-0029).
 // /admin → мимо локалей, со строгой CSP на nonce. Авторизацию proxy НЕ делает: её проверяет
 // серверный слой у данных (requireOwner, lib/server/auth/owner.ts). Здесь — только «оптимистичное»
 // перенаправление без cookie сессии: честный 307 на вход вместо перехода уже в браузере.
@@ -50,7 +50,13 @@ export default function proxy(request: NextRequest) {
     }
     return withAdminCsp(request);
   }
-  return handleI18nRouting(request);
+  const response = handleI18nRouting(request);
+  // `/` — только перенаправление по языку браузера и cookie выбора (ADR-0029): ответ разный для разных людей.
+  if (pathname === "/") {
+    response.headers.set("Cache-Control", "private, no-store");
+    response.headers.set("Vary", "Accept-Language, Cookie");
+  }
+  return response;
 }
 
 export const config = {

@@ -17,6 +17,7 @@ import { log } from "@/lib/server/log";
 import { catalogLabels, getCatalog } from "@/lib/server/recipes/catalog";
 import { countImportsLastHour, dropImport, IMPORTS_PER_HOUR, loadImport, storeImport } from "@/lib/server/recipes/imports";
 import { refreshPublicSite } from "@/lib/server/recipes/public-cache";
+import { translateLater } from "@/lib/server/recipes/translate-later";
 import { createRecipe, replaceRecipe } from "@/lib/server/recipes/save";
 
 // ИИ-разбор рецепта (план recipe-ai-parse): «Разобрать» → черновик и «Проверьте»; «Сохранить» берёт разбор
@@ -100,6 +101,7 @@ export async function saveParsedRecipe(input: z.input<typeof saveInput>): Promis
       : await createRecipe(parsed, sourceText, publish ? "published" : "draft", originalText);
     if (saved.ok) {
       refreshPublicSite();
+      if (!target && publish) await translateLater(saved.id, false);
       await dropImport(importId); // разбор одноразовый: второе нажатие не создаст дубль
       return { ok: true, id: saved.id };
     }

@@ -9,9 +9,11 @@ import { requireOwner } from "@/lib/server/auth/owner";
 import { editablePhoto } from "@/lib/server/media/photo-reads";
 import { recipePath } from "@/lib/server/recipes/public";
 import { getRecipe } from "@/lib/server/recipes/queries";
+import { translationState } from "@/lib/server/recipes/translation-queue";
 
 import { PhotoBlock } from "../_components/photo-block";
 import { RecipeActions } from "../_components/recipe-actions";
+import { TranslationBlock } from "../_components/translation-block";
 import { StatusBadge } from "../_components/status-badge";
 
 export const metadata: Metadata = { title: "Рецепт · Кабинет владельца" };
@@ -20,7 +22,9 @@ export const metadata: Metadata = { title: "Рецепт · Кабинет вл�
 export default async function RecipePage({ params }: PageProps<"/admin/recipes/[id]">) {
   await requireOwner();
   const id = z.uuid().safeParse((await params).id);
-  const [recipe, editable] = id.success ? await Promise.all([getRecipe(id.data), editablePhoto(id.data)]) : [null, null];
+  const [recipe, editable, translation] = id.success
+    ? await Promise.all([getRecipe(id.data), editablePhoto(id.data), translationState(id.data)])
+    : [null, null, null];
   if (!recipe) notFound();
   const photo = recipe.view.photo && editable?.id === recipe.view.photo.id ? { ...recipe.view.photo, size: editable.size, crop: editable.crop } : null;
   return (
@@ -34,6 +38,7 @@ export default async function RecipePage({ params }: PageProps<"/admin/recipes/[
         </div>
         <RecipeActions id={recipe.id} status={recipe.status} siteHref={recipePath("ru", recipe.slug)} />
         <PhotoBlock recipeId={recipe.id} title={recipe.view.title} photo={photo} />
+        {translation && <TranslationBlock id={recipe.id} published={recipe.status === "published"} state={translation} />}
       </div>
       <RecipeBody recipe={recipe.view}>
         <RecipeIntro recipe={recipe.view} />

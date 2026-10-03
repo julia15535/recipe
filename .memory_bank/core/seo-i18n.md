@@ -24,20 +24,19 @@ JSON-LD Recipe · хлебные крошки · индексируемые ра
 ## SEO-футер (ТЗ §20)
 Категории, подкатегории, теги, подборки — в футере, не в основном интерфейсе (позже).
 
-## Языки (ADR-0009)
-- RU — основной; EN формирует ИИ при добавлении/правке, владелец правит вручную.
-- Переводить: название, описание, ингредиенты, комментарии, шаги; категории/теги — заранее
-  заданные EN-эквиваленты.
-- URL: всегда с префиксом `/ru/…`, `/en/…` (`i18n/routing.ts`, ADR-0011). Пока EN нет (ADR-0027): `/` всегда
-  → `/ru` (`localeDetection: false`), `/en` — заглушка noindex, прочие `/en/*` — 404, кнопки языка в шапке нет.
-  `www` → основной домен 301 (`next.config.ts`).
-- canonical и hreflang — один источник: metadata страницы (`app/(public)/[locale]/_components/page-metadata.ts`
-  → `lib/i18n/alternates.ts`), абсолютные от `SITE_URL`; hreflang — только живые языки (`LIVE_LOCALES`, сейчас
-  ru; x-default — когда их больше одного); Open Graph — название и описание; у рецепта с фото — ещё кадр `og.jpg` 1200×630 (ADR-0028); `Link`-заголовки next-intl выключены.
+## Языки (ADR-0009, ADR-0029)
+- RU — основной; EN — перевод ИИ, разделы и теги — заранее заданные EN-названия (миграция 0008).
+- URL: всегда с префиксом `/ru/…`, `/en/…` (`i18n/routing.ts`, ADR-0011). `/` — по языку браузера и cookie выбора
+  `NEXT_LOCALE` (на год; пишет и `components/i18n/locale-cookie.tsx` — кнопка RU/EN переходит без перезагрузки),
+  ответ `no-store` + `Vary` (`proxy.ts`, ADR-0029). `www` → основной домен 301 (`next.config.ts`).
+- Английская версия (ADR-0029): ИИ переводит рецепт после публикации, на `/en` — только переведённые; адреса разделов и
+  рецептов по-английски свои; кнопка языка ведёт на ту же страницу (рецепт без перевода — на `/en`).
+- canonical и hreflang — один источник: metadata (`app/(public)/[locale]/_components/page-metadata.ts` →
+  `lib/i18n/alternates.ts`): пары адресов языков, у рецепта без перевода — только ru, x-default — только у главной;
+  Open Graph — название и описание (`ru_RU` / `en_GB`); у рецепта с фото — кадр `og.jpg` (ADR-0028).
 - Поисковикам закрыто (владелец 02.10: «поисковикам ничего не давай пока что, позже сделаем»):
   `SITE_INDEXABLE=false` → `app/robots.ts` Disallow + `noindex` на всех страницах. Значение и запекается при сборке
   (robots, layout), и читается при запросе (metadata разделов и рецептов) — открывать в CI И в `web.env`.
-  Открытие — отдельным шагом: robots, `sitemap.xml`, JSON-LD Recipe. Проверки — `e2e/routing.spec.ts`,
-  `e2e/platform.spec.ts`, `e2e/public.spec.ts`.
+  Открытие — отдельным шагом: robots, `sitemap.xml`, JSON-LD Recipe. Проверки — `e2e/routing.spec.ts`, `e2e/public.spec.ts`.
 - Адреса: раздел `/{locale}/catalog/{slug}` (ADR-0017), рецепт `/{locale}/recipe/{slug}`, поиск — всегда `noindex`;
   slug уникален в `(locale, slug)`, история slug и 301 — позже.

@@ -14,6 +14,7 @@ import { log } from "@/lib/server/log";
 import { catalogLabels, getCatalog } from "@/lib/server/recipes/catalog";
 import { refreshPublicSite } from "@/lib/server/recipes/public-cache";
 import { createRecipe, replaceRecipe } from "@/lib/server/recipes/save";
+import { translateLater } from "@/lib/server/recipes/translate-later";
 import { deleteDraft, setRecipeStatus } from "@/lib/server/recipes/status";
 
 // Действия кабинета с рецептами (план recipe-upload). Каждое — requireOwner(); сохранение заново
@@ -54,6 +55,7 @@ export async function saveNewRecipe(input: string, publish: boolean): Promise<Sa
     const saved = await createRecipe(parsed, source, publish === true ? "published" : "draft");
     if (!saved.ok) return FAILED;
     refreshPublicSite();
+    if (publish === true) await translateLater(saved.id, false);
     return { ok: true, id: saved.id };
   });
 }
@@ -86,6 +88,7 @@ export async function changeRecipeStatus(form: FormData): Promise<void> {
   const { id: recipeId, status } = statusForm.parse({ id: form.get("id"), status: form.get("status") });
   await setRecipeStatus(recipeId, status);
   refreshPublicSite();
+  if (status === "published") await translateLater(recipeId, false); // перевод — сам после публикации (ADR-0029)
   refresh();
 }
 

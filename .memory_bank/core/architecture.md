@@ -20,15 +20,14 @@ TypeScript 6 strict · Tailwind 4 + Untitled UI React (ADR-0015) · Zod 4 · nex
 Vitest 4 + Playwright.
 
 ## Маршруты
-- `app/(public)/[locale]/` — сайт (ADR-0027): `/ru`, `catalog/[slug]`, `recipe/[slug]`, `search`; данные — под
-  `<Suspense>` после `io()` из `"use cache"` (`lib/server/recipes/public-cache.ts`), сборка без БД. Локаль —
-  `next/root-params` (`i18n/request.ts`); неизвестный путь → локализованная 404 (внутри потока — 200 + noindex).
+- `app/(public)/[locale]/` — сайт ru/en (ADR-0027, ADR-0029): главная, `catalog/[slug]`, `recipe/[slug]`, `search`;
+  данные — под `<Suspense>` после `io()` из `"use cache"` (`public-cache.ts`), сборка без БД; локаль — `next/root-params`.
 - `app/(admin)/admin/` — кабинет: свой root layout, RU, `noindex`, полностью динамический; открыт только
   `login/`, остальное — группа `(protected)`: рецепты (`recipes/…`, фото), пробные экраны `ui/` (ADR-0022).
-- `proxy.ts` — next-intl для публичных путей; `/admin` — CSP с nonce и 307 на вход без cookie сессии;
-  `www` → apex — `redirects()` в `next.config.ts`.
+- `proxy.ts` — next-intl (`/` по языку браузера); `/admin` — CSP с nonce и 307 на вход; `www` → apex — `next.config.ts`.
 - API: `health/live`, `health/ready` (БД + `GIT_SHA`), `telegram/webhook`, `auth/status`; фото —
-  `app/media/recipe/[photoId]/[file]/route.ts` (ADR-0028; мимо proxy — адрес с точкой).
+  `app/media/recipe/[photoId]/[file]/route.ts` (ADR-0028; мимо proxy — адрес с точкой); подборщик переводов —
+  `/api/jobs/translations` (только сам процесс, секрет в памяти; ADR-0029).
 
 ## Слои кода
 - `lib/domain/` — чистые функции без IO (ESLint `eslint.config.mjs`): дроби, пересчёт, разбор текста рецепта

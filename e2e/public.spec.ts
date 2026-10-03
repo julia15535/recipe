@@ -158,24 +158,45 @@ test.describe("публичный сайт", () => {
     await expect(page.getByRole("link", { name: "На главную" })).toHaveAttribute("href", "/ru");
   });
 
-  test("английской версии пока нет: /en — заглушка с noindex, без кнопки языка в шапке; /en/search — 404", async ({ page, request }) => {
-    await page.goto("/en");
-    await expect(h1(page)).toHaveText("English version is coming soon");
+  test("английская версия: шапка и надписи по-английски, кнопка языка ведёт на ту же страницу", async ({ page }) => {
+    await page.goto("/en/catalog/preserves");
+    await expect(h1(page)).toHaveText("Preserves");
+    await expect(page.getByText("No recipes yet — coming soon.")).toBeVisible();
     await expectNoindex(page);
-    await expect(page.getByRole("link", { name: "Open the Russian version" })).toHaveAttribute("href", "/ru");
-    expect((await request.get("/en/search")).status()).toBe(404);
-    await page.goto("/ru");
-    await expect(page.getByRole("banner").getByRole("link", { name: /English|EN/ })).toHaveCount(0);
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.getByRole("banner").getByRole("link", { name: "Русский" })).toHaveAttribute("href", "/ru/catalog/zagotovki");
+    await page.goto("/ru/catalog/zagotovki");
+    await expect(page.getByRole("banner").getByRole("link", { name: "English" })).toHaveAttribute("href", "/en/catalog/preserves");
+    await page.goto("/en/search", { waitUntil: "networkidle" });
+    await expect(h1(page)).toHaveText("Search");
+    await expect(page.getByRole("radio", { name: "By ingredient" })).toBeVisible();
+    await expectPhoneFriendly(page);
+  });
+
+  test("выбор языка кнопкой запоминается: английский браузер, нажали «Русский» — `/` ведёт на /ru", async ({ page }) => {
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/en$/);
+    await page.getByRole("banner").getByRole("link", { name: "Русский" }).click();
+    await expect(page).toHaveURL(/\/ru$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "ru");
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/ru$/);
+    await page.getByRole("banner").getByRole("link", { name: "English" }).click();
+    await expect(page).toHaveURL(/\/en$/);
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/en$/);
   });
 
   test("телефон 320 px: строка шапки помещается, без горизонтальной прокрутки", async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 640 });
-    for (const path of ["/ru", "/ru/catalog/zagotovki", "/ru/search", "/en"]) {
+    for (const path of ["/ru", "/ru/catalog/zagotovki", "/ru/search", "/en", "/en/search"]) {
       await page.goto(path, { waitUntil: "networkidle" });
       expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
-      if (path === "/en") continue;
       const banner = page.getByRole("banner");
-      const [name, search] = [await banner.getByRole("link", { name: "Книга рецептов" }).boundingBox(), await banner.getByRole("link", { name: "Поиск" }).boundingBox()];
+      const [name, search] = [
+        await banner.getByRole("link", { name: /^(Книга рецептов|Recipe Book)$/ }).boundingBox(),
+        await banner.getByRole("link", { name: /^(Поиск|Search)$/ }).boundingBox(),
+      ];
       if (!name || !search) throw new Error("нет названия или лупы");
       expect(name.x + name.width).toBeLessThanOrEqual(search.x);
     }

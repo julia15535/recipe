@@ -287,6 +287,20 @@ Popover по тапу, не Tooltip.
 **Симптом:** проверка целей ≥ 44 px нашла «INPUT 16px» — спрятанный input ползунка; `input:not([type="range"])` его не
 отсеял: `type` задан свойством, не атрибутом. **Convention:** отсеивать по `el.type === "range"` (`e2e/photos.spec.ts`).
 
+## 47. `export const runtime` при `cacheComponents`
+**Симптом:** сборка падает: «Route segment config "runtime" is not compatible with `nextConfig.cacheComponents`».
+**Convention:** в Route Handler'ах не задавать `runtime` — по умолчанию и так Node (`app/api/jobs/translations/route.ts`).
+
+## 48. Кнопка языка без перезагрузки не запоминает выбор
+**Симптом:** RU/EN переходит мягко (`router.push`), а next-intl пишет cookie `NEXT_LOCALE` только при полной загрузке —
+на `/` снова язык браузера. **Convention:** язык открытой страницы пишет `components/i18n/locale-cookie.tsx`; e2e
+«нажать → открыть `/`» (`e2e/public.spec.ts`).
+
+## 49. Тесты БД в разных файлах делят счётчики разделов
+**Симптом:** «ожидалось +1, стало +2» — два файла `*.db.test.ts` параллельно публикуют в один раздел.
+**Convention:** у каждого файла свой раздел для сравнения счётчиков («Заготовки» — `public.db.test.ts`, «Напитки» —
+`translations.db.test.ts`).
+
 ---
 
 # Анти-паттерны ПАМЯТИ (уроки эксплуатации — актуальны любому проекту с Memory Bank)

@@ -76,11 +76,6 @@
     "reset": "Reset search",
     "found": "Found: {count}"
   },
-  "Soon": {
-    "title": "English version is coming soon",
-    "lead": "Meanwhile, the recipes are available in Russian.",
-    "open": "Open the Russian version"
-  },
   "NotFound": {
     "title": "Page not found",
     "back": "Back to home"

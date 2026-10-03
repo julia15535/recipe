@@ -1,16 +1,21 @@
 import { describe, expect, it } from "vitest";
 
-import { localizedAlternates } from "./alternates";
+import { pageAlternates, samePathAlternates } from "./alternates";
 
-describe("localizedAlternates", () => {
-  it("главная: canonical на свою локаль, hreflang — только русская версия (английской пока нет)", () => {
-    expect(localizedAlternates("ru", "/")).toEqual({ canonical: "/ru", languages: { ru: "/ru" } });
+describe("canonical и hreflang", () => {
+  it("главная: оба языка и x-default на корень", () => {
+    expect(samePathAlternates("en", "/")).toEqual({ canonical: "/en", languages: { ru: "/ru", en: "/en", "x-default": "/" } });
   });
 
-  it("вложенная страница: тот же путь, без en и x-default", () => {
-    expect(localizedAlternates("ru", "/recipe/vafli")).toEqual({
+  it("поиск: тот же путь на обоих языках, без x-default", () => {
+    expect(samePathAlternates("ru", "/search")).toEqual({ canonical: "/ru/search", languages: { ru: "/ru/search", en: "/en/search" } });
+  });
+
+  it("рецепт: адреса языков разные; без перевода — только ru", () => {
+    expect(pageAlternates("ru", { ru: "/ru/recipe/vafli", en: "/en/recipe/waffles" })).toEqual({
       canonical: "/ru/recipe/vafli",
-      languages: { ru: "/ru/recipe/vafli" },
+      languages: { ru: "/ru/recipe/vafli", en: "/en/recipe/waffles" },
     });
+    expect(pageAlternates("ru", { ru: "/ru/recipe/vafli" })).toEqual({ canonical: "/ru/recipe/vafli", languages: { ru: "/ru/recipe/vafli" } });
   });
 });
