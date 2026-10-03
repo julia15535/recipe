@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { io } from "next/cache";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 
 import { RecipeGrid } from "@/components/recipe/recipe-card";
@@ -43,16 +43,17 @@ async function SectionScreen({ params }: Pick<Props, "params">) {
   const section = catalog.sections.find((item) => item.slug === slug);
   if (!section) notFound();
   const recipes = section.recipes > 0 ? await cachedSectionRecipes("ru", section.code) : [];
+  const t = await getTranslations("Section");
 
   return (
     <>
       <PublicHeader locale="ru" sections={catalog.sections} current={section.code} />
       <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pt-4 pb-16 lg:px-8 lg:pt-8">
-        <nav aria-label="Хлебные крошки">
+        <nav aria-label={t("breadcrumbs")}>
           <ol className="flex flex-wrap items-center gap-2 text-sm text-tertiary">
             <li>
               <NextLink href="/ru" className="inline-flex min-h-11 items-center underline-offset-4 hover:underline">
-                Главная
+                {t("home")}
               </NextLink>
             </li>
             <li aria-hidden>/</li>
@@ -65,12 +66,12 @@ async function SectionScreen({ params }: Pick<Props, "params">) {
         {recipes.length > 0 ? (
           <section aria-labelledby="section-recipes">
             <h2 id="section-recipes" className="sr-only">
-              Рецепты раздела
+              {t("recipes")}
             </h2>
             <RecipeGrid cards={toCards("ru", recipes)} />
           </section>
         ) : (
-          <p className="text-lg text-tertiary">Пока нет рецептов — скоро появятся.</p>
+          <p className="text-lg text-tertiary">{t("empty")}</p>
         )}
       </main>
     </>

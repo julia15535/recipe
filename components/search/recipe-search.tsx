@@ -2,12 +2,14 @@
 
 import { ArrowLeft, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import type { Key } from "react-aria-components";
 
 import { AppButton } from "@/components/app-button";
 import { ButtonGroup, ButtonGroupItem } from "@/components/base/button-group/button-group";
 import { Input } from "@/components/base/input/input";
+import { useLang } from "@/components/i18n/use-lang";
 import type { CardData } from "@/components/recipe/recipe-card";
 import { matches, paramsFromQuery, queryFromParams, rankedChips, type SearchQuery } from "@/lib/domain/search";
 
@@ -28,6 +30,8 @@ type Props = {
 // тегами; отдельная страница, на компьютере — карточкой по центру. Ищет мгновенно в браузере по индексу
 // опубликованных рецептов (`lib/domain/search.ts`); состояние — в адресе (`by`, `q`, `i`, `section`, `tag`).
 export function RecipeSearch({ items, sections, tags, homeHref }: Props) {
+  const t = useTranslations("Search");
+  const lang = useLang();
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -67,7 +71,7 @@ export function RecipeSearch({ items, sections, tags, homeHref }: Props) {
     if (next === "recipe" || next === "ingredient") update({ mode: next });
   };
   const reset = () => setQuery({ mode: query.mode, text: "", ingredients: [], section: null, tags: [] });
-  const ranked = useMemo(() => rankedChips(items.map((item) => item.ingredients)), [items]);
+  const ranked = useMemo(() => rankedChips(items.map((item) => item.ingredients), lang), [items, lang]);
   const found = items.filter((item) => matches({ title: item.title, ingredients: item.ingredients, sections: item.sections, tags: item.tagCodes }, query));
   const back = () => {
     const navigation = (window as { navigation?: { canGoBack?: boolean } }).navigation;
@@ -78,31 +82,31 @@ export function RecipeSearch({ items, sections, tags, homeHref }: Props) {
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pt-4 pb-16 lg:gap-8 lg:px-8 lg:pt-10">
       <section
-        aria-label="Поиск рецептов"
+        aria-label={t("region")}
         data-testid="search-card"
         className="flex w-full max-w-3xl flex-col gap-4 lg:mx-auto lg:rounded-3xl lg:bg-primary lg:p-8 lg:shadow-sm lg:ring-1 lg:ring-secondary"
       >
         <div className="flex items-center gap-3">
-          <AppButton color="tertiary" onPress={back} iconLeading={ArrowLeft} aria-label="Назад" />
-          <h1 className="font-display text-display-xs text-primary">Поиск</h1>
+          <AppButton color="tertiary" onPress={back} iconLeading={ArrowLeft} aria-label={t("back")} />
+          <h1 className="font-display text-display-xs text-primary">{t("title")}</h1>
         </div>
 
-        <ButtonGroup aria-label="Как искать" size="lg" selectedKeys={[query.mode]} onSelectionChange={changeMode} disallowEmptySelection className="w-full">
+        <ButtonGroup aria-label={t("how")} size="lg" selectedKeys={[query.mode]} onSelectionChange={changeMode} disallowEmptySelection className="w-full">
           <ButtonGroupItem id="recipe" className={SEGMENT}>
-            По рецепту
+            {t("byRecipe")}
           </ButtonGroupItem>
           <ButtonGroupItem id="ingredient" className={SEGMENT}>
-            По ингредиенту
+            {t("byIngredient")}
           </ButtonGroupItem>
         </ButtonGroup>
 
         <Input
-          aria-label={query.mode === "recipe" ? "Название рецепта" : "Найти ингредиент"}
+          aria-label={query.mode === "recipe" ? t("recipeField") : t("ingredientField")}
           size="lg"
           icon={Search}
           value={query.text}
           onChange={(text) => update({ text })}
-          placeholder={query.mode === "recipe" ? "Например, сырники" : "Например, творог"}
+          placeholder={query.mode === "recipe" ? t("recipePlaceholder") : t("ingredientPlaceholder")}
         />
 
         {query.mode === "ingredient" && (
@@ -110,7 +114,7 @@ export function RecipeSearch({ items, sections, tags, homeHref }: Props) {
         )}
 
         {staleSection && query.section === null && (
-          <p className="text-sm text-tertiary">Раздел «{staleSection.label}» пока пуст — выберите другой или начните поиск.</p>
+          <p className="text-sm text-tertiary">{t("staleSection", { label: staleSection.label })}</p>
         )}
         <SearchRefine
           sections={active}

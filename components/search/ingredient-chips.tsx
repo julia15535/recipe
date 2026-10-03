@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import type { Selection } from "react-aria-components";
 
@@ -16,6 +17,7 @@ type Props = { ranked: string[]; text: string; selected: string[]; onChange: (se
 // чтобы с ростом книги список не уводил результаты за экран; набранный текст фильтрует весь список. Выбранный
 // ингредиент не прячем — иначе он фильтрует результаты, а снять его нельзя.
 export function IngredientChips({ ranked, text, selected, onChange }: Props) {
+  const t = useTranslations("Search");
   const [all, setAll] = useState(false);
   const typed = normalize(text);
   const shown = typed
@@ -27,7 +29,7 @@ export function IngredientChips({ ranked, text, selected, onChange }: Props) {
 
   return (
     <div className="flex flex-col gap-2">
-      <TagGroup label="Ингредиенты" selectionMode="multiple" size="lg" selectedKeys={selected} onSelectionChange={pick}>
+      <TagGroup label={t("ingredients")} selectionMode="multiple" size="lg" selectedKeys={selected} onSelectionChange={pick}>
         <TagList className="flex flex-wrap gap-2">
           {shown.map((name) => (
             <Tag key={name} id={name} className={CHIP}>
@@ -38,7 +40,7 @@ export function IngredientChips({ ranked, text, selected, onChange }: Props) {
       </TagGroup>
       {!typed && !all && ranked.length > FIRST && (
         <AppButton color="link-color" onPress={() => setAll(true)} className="min-h-11 self-start">
-          {`Все ингредиенты · ${ranked.length}`}
+          {t("allIngredients", { count: ranked.length })}
         </AppButton>
       )}
     </div>

@@ -23,6 +23,9 @@ export const recipes = pgTable(
     // Последний вставленный «как есть» текст, из которого ИИ собрал рецепт (план recipe-ai-parse).
     originalText: text("original_text"),
     revision: integer("revision").notNull().default(1),
+    // Ревизия содержания (ADR-0029): растёт только при замене текста рецепта, не при публикации — по ней перевод
+    // «устарел» (`revision` растёт и при смене статуса — для защиты от устаревшей вкладки).
+    contentRevision: integer("content_revision").notNull().default(1),
     // Основной ингредиент — якорь пересчёта; null — автор не отметил, рецепт без пересчёта (02.10).
     mainIngredientId: uuid("main_ingredient_id"),
     primarySectionId: uuid("primary_section_id").notNull(),
@@ -37,6 +40,7 @@ export const recipes = pgTable(
     check("recipes_source_text_check", sql`octet_length(${t.sourceText}) between 1 and 20480`),
     check("recipes_original_text_check", sql`${t.originalText} is null or octet_length(${t.originalText}) between 1 and 20480`),
     check("recipes_revision_check", sql`${t.revision} >= 1`),
+    check("recipes_content_revision_check", sql`${t.contentRevision} >= 1`),
     check(
       "recipes_yield_check",
       sql`(${t.yieldNum} is null and ${t.yieldDen} is null) or (${t.yieldNum} > 0 and ${t.yieldDen} between 1 and 1000000)`,
@@ -63,7 +67,11 @@ export const recipeLocalizations = pgTable(
     check("recipe_localizations_locale_check", sql`${t.locale} in ('ru', 'en')`),
     check("recipe_localizations_slug_check", sql`${t.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$' and length(${t.slug}) <= 80`),
     check("recipe_localizations_title_check", sql`length(${t.title}) between 1 and 120`),
-    check("recipe_localizations_yield_forms_check", sql`${t.yieldForms} is null or cardinality(${t.yieldForms}) = 3`),
+    // Формы слова выхода: русские — три («вафля / вафли / вафель»), английские — две («waffle / waffles»).
+    check(
+      "recipe_localizations_yield_forms_check",
+      sql`${t.yieldForms} is null or (${t.locale} = 'ru' and cardinality(${t.yieldForms}) = 3) or (${t.locale} = 'en' and cardinality(${t.yieldForms}) = 2)`,
+    ),
   ],
 );
 

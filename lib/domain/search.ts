@@ -1,7 +1,11 @@
 // Поиск по опубликованным рецептам — в браузере, по компактному индексу (план public-pages, ADR-0002: без ИИ).
 // Нормализация одна для данных и запроса: NFKC, нижний регистр, «ё» → «е», лишние пробелы.
 
+import { type Lang, NUMBER_LOCALE } from "./lang";
+
 export type SearchMode = "recipe" | "ingredient";
+// «перец / травы / паприка», «орехи или фундук» — отдельные таблетки; союз — на языке рецептов.
+const OR: Record<Lang, RegExp> = { ru: /\s*\/\s*|\s+или\s+/i, en: /\s*\/\s*|\s+or\s+/i };
 export type SearchQuery = { mode: SearchMode; text: string; ingredients: string[]; section: string | null; tags: string[] };
 export type Searchable = { title: string; ingredients: readonly string[]; sections: readonly string[]; tags: readonly string[] };
 
@@ -13,34 +17,35 @@ export function normalize(text: string): string {
  * «Таблетки» ингредиентов из названий строк: без уточнений в скобках, процентов и чисел; «перец / травы / паприка»
  * и «орехи или фундук» — отдельными; после запятой — уточнение, не берём. «Творог 0,5%» → «Творог».
  */
-export function ingredientChips(names: readonly string[]): string[] {
+export function ingredientChips(names: readonly string[], lang: Lang = "ru"): string[] {
   const seen = new Map<string, string>();
   for (const name of names) {
-    for (const part of name.replace(/\([^)]*\)/g, " ").split(",")[0]?.split(/\s*\/\s*|\s+или\s+/i) ?? []) {
+    for (const part of name.replace(/\([^)]*\)/g, " ").split(",")[0]?.split(OR[lang]) ?? []) {
       const clean = part.replace(/\d+([.,]\d+)?\s*%?/g, " ").replace(/\s+/g, " ").trim();
       if (clean.length < 2) continue;
       const key = normalize(clean);
       if (!seen.has(key)) seen.set(key, clean.charAt(0).toUpperCase() + clean.slice(1));
     }
   }
-  return [...seen.values()].sort((a, b) => a.localeCompare(b, "ru"));
+  return [...seen.values()].sort(new Intl.Collator(NUMBER_LOCALE[lang]).compare);
 }
 
 /**
  * «Таблетки» всех рецептов по частоте: сначала ингредиенты, что встречаются в большем числе рецептов (их и
  * показываем первыми, пока поле пустое), при равенстве — по алфавиту. «Черный»/«Чёрный» — одна таблетка.
  */
-export function rankedChips(recipes: readonly (readonly string[])[]): string[] {
+export function rankedChips(recipes: readonly (readonly string[])[], lang: Lang = "ru"): string[] {
   const found = new Map<string, { label: string; count: number }>();
+  const collator = new Intl.Collator(NUMBER_LOCALE[lang]);
   for (const names of recipes) {
-    for (const label of ingredientChips(names)) {
+    for (const label of ingredientChips(names, lang)) {
       const key = normalize(label);
       const entry = found.get(key);
       if (entry) entry.count += 1;
       else found.set(key, { label, count: 1 });
     }
   }
-  return [...found.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "ru")).map((entry) => entry.label);
+  return [...found.values()].sort((a, b) => b.count - a.count || collator.compare(a.label, b.label)).map((entry) => entry.label);
 }
 
 export function hasCriteria(query: SearchQuery): boolean {

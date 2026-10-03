@@ -5,3 +5,4 @@ export * from "./catalog";
 export * from "./recipe-rows";
 export * from "./recipes";
 export * from "./photos";
+export * from "./translations";

@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 import type { Selection } from "react-aria-components";
 
@@ -24,6 +25,7 @@ type Props = {
 // теги состава (ADR-0019). На телефоне «таблетки» не стоят перед результатами — спрятаны за «Уточнить»; если
 // уточнение уже задано (из адреса), блок открыт сразу.
 export function SearchRefine({ sections, section, onSectionChange, tags, selectedTags, onTagsChange }: Props) {
+  const t = useTranslations("Search");
   const [open, setOpen] = useState(section !== null || selectedTags.length > 0);
   const panelId = useId();
   const active = (section ? 1 : 0) + selectedTags.length;
@@ -39,14 +41,14 @@ export function SearchRefine({ sections, section, onSectionChange, tags, selecte
         onPress={() => setOpen((value) => !value)}
         className="self-start"
       >
-        {active > 0 ? `Уточнить · ${active}` : "Уточнить"}
+        {active > 0 ? t("refineCount", { count: active }) : t("refine")}
       </AppButton>
       <div id={panelId} hidden={!open} className="flex flex-col gap-3">
         {sections.length > 0 && (
           <>
-            <p className={CAPTION}>Раздел</p>
+            <p className={CAPTION}>{t("section")}</p>
             <TagGroup
-              label="Раздел"
+              label={t("section")}
               selectionMode="single"
               disallowEmptySelection={false}
               size="lg"
@@ -63,9 +65,9 @@ export function SearchRefine({ sections, section, onSectionChange, tags, selecte
             </TagGroup>
           </>
         )}
-        <p className={CAPTION}>Особенности состава</p>
+        <p className={CAPTION}>{t("composition")}</p>
         <TagGroup
-          label="Особенности состава"
+          label={t("composition")}
           selectionMode="multiple"
           size="lg"
           selectedKeys={selectedTags}

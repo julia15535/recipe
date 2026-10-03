@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Link } from "react-aria-components";
 
 import { cx } from "@/utils/cx";
@@ -27,6 +28,7 @@ export function CatalogRibbon({ sections, label, className }: { sections: Catalo
 }
 
 function RibbonCell({ section }: { section: CatalogSection }) {
+  const t = useTranslations("Catalog");
   if (section.current)
     return (
       <span aria-current="page" className={cx(CELL, "bg-accent-100 text-primary")} data-current>
@@ -39,7 +41,7 @@ function RibbonCell({ section }: { section: CatalogSection }) {
       <span className={cx(CELL, "text-quaternary")} data-empty>
         <SectionIcon id={section.id} className="size-5 text-brand-secondary opacity-35" />
         {section.label}
-        <span className="sr-only">, пока нет рецептов</span>
+        <span className="sr-only">{t("noRecipesSr")}</span>
       </span>
     );
   return (

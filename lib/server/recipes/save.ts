@@ -58,7 +58,15 @@ export function replaceRecipe(
       const keep = originalText === undefined ? {} : { originalText };
       const [updated] = await tx
         .update(recipes)
-        .set({ sourceText, ...keep, ...rows.recipe, revision: sql`${recipes.revision} + 1`, updatedAt: sql`now()` })
+        .set({
+          sourceText,
+          ...keep,
+          ...rows.recipe,
+          revision: sql`${recipes.revision} + 1`,
+          // Ревизия содержания — для «перевод устарел» (ADR-0029); публикация её не трогает.
+          contentRevision: sql`${recipes.contentRevision} + 1`,
+          updatedAt: sql`now()`,
+        })
         .where(and(eq(recipes.id, id), eq(recipes.revision, expectedRevision)))
         .returning({ revision: recipes.revision });
       if (!updated) {

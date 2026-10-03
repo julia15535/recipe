@@ -1,0 +1,1771 @@
+{
+  "id": "11aebf3e-7248-4783-9727-6188bb9691d8",
+  "prevId": "96ba9478-4fe4-4981-8d45-774e88f30238",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.owner_login_challenges": {
+      "name": "owner_login_challenges",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "challenge_hash": {
+          "name": "challenge_hash",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "binding_hash": {
+          "name": "binding_hash",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "ip_hash": {
+          "name": "ip_hash",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "telegram_id": {
+          "name": "telegram_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "confirmed_at": {
+          "name": "confirmed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "consumed_at": {
+          "name": "consumed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "owner_login_challenges_ip_created_idx": {
+          "name": "owner_login_challenges_ip_created_idx",
+          "columns": [
+            {
+              "expression": "ip_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "owner_login_challenges_expires_at_idx": {
+          "name": "owner_login_challenges_expires_at_idx",
+          "columns": [
+            {
+              "expression": "expires_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "owner_login_challenges_challenge_hash_unique": {
+          "name": "owner_login_challenges_challenge_hash_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "challenge_hash"
+          ]
+        },
+        "owner_login_challenges_binding_hash_unique": {
+          "name": "owner_login_challenges_binding_hash_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "binding_hash"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "owner_login_challenges_status_check": {
+          "name": "owner_login_challenges_status_check",
+          "value": "\"owner_login_challenges\".\"status\" in ('pending', 'confirmed', 'rejected', 'consumed', 'cancelled')"
+        },
+        "owner_login_challenges_code_check": {
+          "name": "owner_login_challenges_code_check",
+          "value": "\"owner_login_challenges\".\"code\" ~ '^[0-9]{4}$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.owner_sessions": {
+      "name": "owner_sessions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "telegram_id": {
+          "name": "telegram_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "owner_sessions_expires_at_idx": {
+          "name": "owner_sessions_expires_at_idx",
+          "columns": [
+            {
+              "expression": "expires_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "owner_sessions_token_hash_unique": {
+          "name": "owner_sessions_token_hash_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token_hash"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.telegram_updates": {
+      "name": "telegram_updates",
+      "schema": "",
+      "columns": {
+        "update_id": {
+          "name": "update_id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "telegram_updates_received_at_idx": {
+          "name": "telegram_updates_received_at_idx",
+          "columns": [
+            {
+              "expression": "received_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.composition_tag_localizations": {
+      "name": "composition_tag_localizations",
+      "schema": "",
+      "columns": {
+        "tag_id": {
+          "name": "tag_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "composition_tag_localizations_tag_id_composition_tags_id_fk": {
+          "name": "composition_tag_localizations_tag_id_composition_tags_id_fk",
+          "tableFrom": "composition_tag_localizations",
+          "tableTo": "composition_tags",
+          "columnsFrom": [
+            "tag_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "composition_tag_localizations_tag_id_locale_pk": {
+          "name": "composition_tag_localizations_tag_id_locale_pk",
+          "columns": [
+            "tag_id",
+            "locale"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "composition_tag_localizations_locale_check": {
+          "name": "composition_tag_localizations_locale_check",
+          "value": "\"composition_tag_localizations\".\"locale\" in ('ru', 'en')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.composition_tags": {
+      "name": "composition_tags",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "composition_tags_code_unique": {
+          "name": "composition_tags_code_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "code"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "composition_tags_code_check": {
+          "name": "composition_tags_code_check",
+          "value": "\"composition_tags\".\"code\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "composition_tags_position_check": {
+          "name": "composition_tags_position_check",
+          "value": "\"composition_tags\".\"position\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.section_localizations": {
+      "name": "section_localizations",
+      "schema": "",
+      "columns": {
+        "section_id": {
+          "name": "section_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "section_localizations_section_id_sections_id_fk": {
+          "name": "section_localizations_section_id_sections_id_fk",
+          "tableFrom": "section_localizations",
+          "tableTo": "sections",
+          "columnsFrom": [
+            "section_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "section_localizations_section_id_locale_pk": {
+          "name": "section_localizations_section_id_locale_pk",
+          "columns": [
+            "section_id",
+            "locale"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "section_localizations_locale_slug_unique": {
+          "name": "section_localizations_locale_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "locale",
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "section_localizations_locale_check": {
+          "name": "section_localizations_locale_check",
+          "value": "\"section_localizations\".\"locale\" in ('ru', 'en')"
+        },
+        "section_localizations_slug_check": {
+          "name": "section_localizations_slug_check",
+          "value": "\"section_localizations\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.sections": {
+      "name": "sections",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sections_parent_fk": {
+          "name": "sections_parent_fk",
+          "tableFrom": "sections",
+          "tableTo": "sections",
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sections_code_unique": {
+          "name": "sections_code_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "code"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "sections_code_check": {
+          "name": "sections_code_check",
+          "value": "\"sections\".\"code\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "sections_position_check": {
+          "name": "sections_position_check",
+          "value": "\"sections\".\"position\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.recipe_imports": {
+      "name": "recipe_imports",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "original_text": {
+          "name": "original_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "result": {
+          "name": "result",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "recipe_imports_created_at_idx": {
+          "name": "recipe_imports_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "recipe_imports_original_text_check": {
+          "name": "recipe_imports_original_text_check",
+          "value": "octet_length(\"recipe_imports\".\"original_text\") between 1 and 20480"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.recipe_ingredients": {
+      "name": "recipe_ingredients",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "recipe_id": {
+          "name": "recipe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantity_kind": {
+          "name": "quantity_kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount_num": {
+          "name": "amount_num",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amount_den": {
+          "name": "amount_den",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amount_max_num": {
+          "name": "amount_max_num",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amount_max_den": {
+          "name": "amount_max_den",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unit": {
+          "name": "unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "recipe_ingredients_recipe_id_recipes_id_fk": {
+          "name": "recipe_ingredients_recipe_id_recipes_id_fk",
+          "tableFrom": "recipe_ingredients",
+          "tableTo": "recipes",
+          "columnsFrom": [
+            "recipe_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "recipe_ingredients_position_unique": {
+          "name": "recipe_ingredients_position_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "recipe_id",
+            "position"
+          ]
+        },
+        "recipe_ingredients_recipe_id_unique": {
+          "name": "recipe_ingredients_recipe_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "recipe_id",
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "recipe_ingredients_position_check": {
+          "name": "recipe_ingredients_position_check",
+          "value": "\"recipe_ingredients\".\"position\" >= 0"
+        },
+        "recipe_ingredients_name_check": {
+          "name": "recipe_ingredients_name_check",
+          "value": "length(\"recipe_ingredients\".\"display_name\") between 1 and 200"
+        },
+        "recipe_ingredients_unit_check": {
+          "name": "recipe_ingredients_unit_check",
+          "value": "\"recipe_ingredients\".\"unit\" is null or length(\"recipe_ingredients\".\"unit\") between 1 and 30"
+        },
+        "recipe_ingredients_note_check": {
+          "name": "recipe_ingredients_note_check",
+          "value": "\"recipe_ingredients\".\"note\" is null or length(\"recipe_ingredients\".\"note\") between 1 and 300"
+        },
+        "recipe_ingredients_amount_bounds_check": {
+          "name": "recipe_ingredients_amount_bounds_check",
+          "value": "coalesce(\"recipe_ingredients\".\"amount_num\", 1) between 1 and 1000000000000000 and coalesce(\"recipe_ingredients\".\"amount_den\", 1) between 1 and 1000000\n        and coalesce(\"recipe_ingredients\".\"amount_max_num\", 1) between 1 and 1000000000000000 and coalesce(\"recipe_ingredients\".\"amount_max_den\", 1) between 1 and 1000000"
+        },
+        "recipe_ingredients_quantity_check": {
+          "name": "recipe_ingredients_quantity_check",
+          "value": "(\"recipe_ingredients\".\"quantity_kind\" = 'exact' and \"recipe_ingredients\".\"amount_num\" is not null and \"recipe_ingredients\".\"amount_den\" is not null\n          and \"recipe_ingredients\".\"amount_max_num\" is null and \"recipe_ingredients\".\"amount_max_den\" is null)\n        or (\"recipe_ingredients\".\"quantity_kind\" = 'range' and \"recipe_ingredients\".\"amount_num\" is not null and \"recipe_ingredients\".\"amount_den\" is not null\n          and \"recipe_ingredients\".\"amount_max_num\" is not null and \"recipe_ingredients\".\"amount_max_den\" is not null\n          and \"recipe_ingredients\".\"amount_num\"::numeric * \"recipe_ingredients\".\"amount_max_den\" <= \"recipe_ingredients\".\"amount_max_num\"::numeric * \"recipe_ingredients\".\"amount_den\")\n        or (\"recipe_ingredients\".\"quantity_kind\" = 'none' and \"recipe_ingredients\".\"amount_num\" is null and \"recipe_ingredients\".\"amount_den\" is null\n          and \"recipe_ingredients\".\"amount_max_num\" is null and \"recipe_ingredients\".\"amount_max_den\" is null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.recipe_steps": {
+      "name": "recipe_steps",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "recipe_id": {
+          "name": "recipe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "text": {
+          "name": "text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "recipe_steps_recipe_id_recipes_id_fk": {
+          "name": "recipe_steps_recipe_id_recipes_id_fk",
+          "tableFrom": "recipe_steps",
+          "tableTo": "recipes",
+          "columnsFrom": [
+            "recipe_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "recipe_steps_position_unique": {
+          "name": "recipe_steps_position_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "recipe_id",
+            "position"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "recipe_steps_position_check": {
+          "name": "recipe_steps_position_check",
+          "value": "\"recipe_steps\".\"position\" >= 0"
+        },
+        "recipe_steps_text_check": {
+          "name": "recipe_steps_text_check",
+          "value": "length(\"recipe_steps\".\"text\") between 1 and 2000"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.recipe_tips": {
+      "name": "recipe_tips",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "recipe_id": {
+          "name": "recipe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "text": {
+          "name": "text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "recipe_tips_recipe_id_recipes_id_fk": {
+          "name": "recipe_tips_recipe_id_recipes_id_fk",
+          "tableFrom": "recipe_tips",
+          "tableTo": "recipes",
+          "columnsFrom": [
+            "recipe_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "recipe_tips_position_unique": {
+          "name": "recipe_tips_position_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "recipe_id",
+            "position"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "recipe_tips_position_check": {
+          "name": "recipe_tips_position_check",
+          "value": "\"recipe_tips\".\"position\" >= 0"
+        },
+        "recipe_tips_text_check": {
+          "name": "recipe_tips_text_check",
+          "value": "length(\"recipe_tips\".\"text\") between 1 and 1000"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.recipe_composition_tags": {
+      "name": "recipe_composition_tags",
+      "schema": "",
+      "columns": {
+        "recipe_id": {
+          "name": "recipe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tag_id": {
+          "name": "tag_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "recipe_composition_tags_tag_idx": {
+          "name": "recipe_composition_tags_tag_idx",
+          "columns": [
+            {
+              "expression": "tag_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "recipe_composition_tags_recipe_id_recipes_id_fk": {
+          "name": "recipe_composition_tags_recipe_id_recipes_id_fk",
+          "tableFrom": "recipe_composition_tags",
+          "tableTo": "recipes",
+          "columnsFrom": [
+            "recipe_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "recipe_composition_tags_tag_id_composition_tags_id_fk": {
+          "name": "recipe_composition_tags_tag_id_composition_tags_id_fk",
+          "tableFrom": "recipe_composition_tags",
+          "tableTo": "composition_tags",
+          "columnsFrom": [
+            "tag_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "recipe_composition_tags_recipe_id_tag_id_pk": {
+          "name": "recipe_composition_tags_recipe_id_tag_id_pk",
+          "columns": [
+            "recipe_id",
+            "tag_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "recipe_composition_tags_position_unique": {
+          "name": "recipe_composition_tags_position_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "recipe_id",
+            "position"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "recipe_composition_tags_position_check": {
+          "name": "recipe_composition_tags_position_check",
+          "value": "\"recipe_composition_tags\".\"position\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.recipe_localizations": {
+      "name": "recipe_localizations",
+      "schema": "",
+      "columns": {
+        "recipe_id": {
+          "name": "recipe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "time_text": {
+          "name": "time_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "yield_forms": {
+          "name": "yield_forms",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "recipe_localizations_recipe_id_recipes_id_fk": {
+          "name": "recipe_localizations_recipe_id_recipes_id_fk",
+          "tableFrom": "recipe_localizations",
+          "tableTo": "recipes",
+          "columnsFrom": [
+            "recipe_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "recipe_localizations_recipe_id_locale_pk": {
+          "name": "recipe_localizations_recipe_id_locale_pk",
+          "columns": [
+            "recipe_id",
+            "locale"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "recipe_localizations_locale_slug_unique": {
+          "name": "recipe_localizations_locale_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "locale",
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "recipe_localizations_locale_check": {
+          "name": "recipe_localizations_locale_check",
+          "value": "\"recipe_localizations\".\"locale\" in ('ru', 'en')"
+        },
+        "recipe_localizations_slug_check": {
+          "name": "recipe_localizations_slug_check",
+          "value": "\"recipe_localizations\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$' and length(\"recipe_localizations\".\"slug\") <= 80"
+        },
+        "recipe_localizations_title_check": {
+          "name": "recipe_localizations_title_check",
+          "value": "length(\"recipe_localizations\".\"title\") between 1 and 120"
+        },
+        "recipe_localizations_yield_forms_check": {
+          "name": "recipe_localizations_yield_forms_check",
+          "value": "\"recipe_localizations\".\"yield_forms\" is null or (\"recipe_localizations\".\"locale\" = 'ru' and cardinality(\"recipe_localizations\".\"yield_forms\") = 3) or (\"recipe_localizations\".\"locale\" = 'en' and cardinality(\"recipe_localizations\".\"yield_forms\") = 2)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.recipe_sections": {
+      "name": "recipe_sections",
+      "schema": "",
+      "columns": {
+        "recipe_id": {
+          "name": "recipe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "section_id": {
+          "name": "section_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "recipe_sections_section_idx": {
+          "name": "recipe_sections_section_idx",
+          "columns": [
+            {
+              "expression": "section_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "recipe_sections_recipe_id_recipes_id_fk": {
+          "name": "recipe_sections_recipe_id_recipes_id_fk",
+          "tableFrom": "recipe_sections",
+          "tableTo": "recipes",
+          "columnsFrom": [
+            "recipe_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "recipe_sections_section_id_sections_id_fk": {
+          "name": "recipe_sections_section_id_sections_id_fk",
+          "tableFrom": "recipe_sections",
+          "tableTo": "sections",
+          "columnsFrom": [
+            "section_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "recipe_sections_recipe_id_section_id_pk": {
+          "name": "recipe_sections_recipe_id_section_id_pk",
+          "columns": [
+            "recipe_id",
+            "section_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "recipe_sections_position_unique": {
+          "name": "recipe_sections_position_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "recipe_id",
+            "position"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "recipe_sections_position_check": {
+          "name": "recipe_sections_position_check",
+          "value": "\"recipe_sections\".\"position\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.recipes": {
+      "name": "recipes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'draft'"
+        },
+        "source_text": {
+          "name": "source_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_text": {
+          "name": "original_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "content_revision": {
+          "name": "content_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "main_ingredient_id": {
+          "name": "main_ingredient_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "primary_section_id": {
+          "name": "primary_section_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "yield_num": {
+          "name": "yield_num",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "yield_den": {
+          "name": "yield_den",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "recipes_status_updated_idx": {
+          "name": "recipes_status_updated_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "updated_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "recipes_status_check": {
+          "name": "recipes_status_check",
+          "value": "\"recipes\".\"status\" in ('draft', 'published')"
+        },
+        "recipes_source_text_check": {
+          "name": "recipes_source_text_check",
+          "value": "octet_length(\"recipes\".\"source_text\") between 1 and 20480"
+        },
+        "recipes_original_text_check": {
+          "name": "recipes_original_text_check",
+          "value": "\"recipes\".\"original_text\" is null or octet_length(\"recipes\".\"original_text\") between 1 and 20480"
+        },
+        "recipes_revision_check": {
+          "name": "recipes_revision_check",
+          "value": "\"recipes\".\"revision\" >= 1"
+        },
+        "recipes_content_revision_check": {
+          "name": "recipes_content_revision_check",
+          "value": "\"recipes\".\"content_revision\" >= 1"
+        },
+        "recipes_yield_check": {
+          "name": "recipes_yield_check",
+          "value": "(\"recipes\".\"yield_num\" is null and \"recipes\".\"yield_den\" is null) or (\"recipes\".\"yield_num\" > 0 and \"recipes\".\"yield_den\" between 1 and 1000000)"
+        },
+        "recipes_published_at_check": {
+          "name": "recipes_published_at_check",
+          "value": "\"recipes\".\"status\" <> 'published' or \"recipes\".\"published_at\" is not null"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.recipe_photo_files": {
+      "name": "recipe_photo_files",
+      "schema": "",
+      "columns": {
+        "photo_id": {
+          "name": "photo_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "width": {
+          "name": "width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_type": {
+          "name": "content_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bytes": {
+          "name": "bytes",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "recipe_photo_files_photo_id_recipe_photos_id_fk": {
+          "name": "recipe_photo_files_photo_id_recipe_photos_id_fk",
+          "tableFrom": "recipe_photo_files",
+          "tableTo": "recipe_photos",
+          "columnsFrom": [
+            "photo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "recipe_photo_files_photo_id_name_pk": {
+          "name": "recipe_photo_files_photo_id_name_pk",
+          "columns": [
+            "photo_id",
+            "name"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "recipe_photo_files_name_check": {
+          "name": "recipe_photo_files_name_check",
+          "value": "\"recipe_photo_files\".\"name\" in ('source', 'w480', 'w960', 'w1600', 'og')"
+        },
+        "recipe_photo_files_type_check": {
+          "name": "recipe_photo_files_type_check",
+          "value": "\"recipe_photo_files\".\"content_type\" in ('image/jpeg', 'image/webp')"
+        },
+        "recipe_photo_files_size_check": {
+          "name": "recipe_photo_files_size_check",
+          "value": "\"recipe_photo_files\".\"width\" between 1 and 4096 and \"recipe_photo_files\".\"height\" between 1 and 4096"
+        },
+        "recipe_photo_files_bytes_check": {
+          "name": "recipe_photo_files_bytes_check",
+          "value": "octet_length(\"recipe_photo_files\".\"bytes\") between 1 and 1048576"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.recipe_photos": {
+      "name": "recipe_photos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "recipe_id": {
+          "name": "recipe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_width": {
+          "name": "source_width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_height": {
+          "name": "source_height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "crop_left": {
+          "name": "crop_left",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "crop_top": {
+          "name": "crop_top",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "crop_width": {
+          "name": "crop_width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "crop_height": {
+          "name": "crop_height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "recipe_photos_recipe_id_recipes_id_fk": {
+          "name": "recipe_photos_recipe_id_recipes_id_fk",
+          "tableFrom": "recipe_photos",
+          "tableTo": "recipes",
+          "columnsFrom": [
+            "recipe_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "recipe_photos_recipe_unique": {
+          "name": "recipe_photos_recipe_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "recipe_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "recipe_photos_source_check": {
+          "name": "recipe_photos_source_check",
+          "value": "\"recipe_photos\".\"source_width\" between 1 and 4096 and \"recipe_photos\".\"source_height\" between 1 and 4096"
+        },
+        "recipe_photos_crop_check": {
+          "name": "recipe_photos_crop_check",
+          "value": "\"recipe_photos\".\"crop_left\" >= 0 and \"recipe_photos\".\"crop_top\" >= 0 and \"recipe_photos\".\"crop_width\" >= 1 and \"recipe_photos\".\"crop_height\" >= 1\n        and \"recipe_photos\".\"crop_left\" + \"recipe_photos\".\"crop_width\" <= \"recipe_photos\".\"source_width\" and \"recipe_photos\".\"crop_top\" + \"recipe_photos\".\"crop_height\" <= \"recipe_photos\".\"source_height\"\n        and abs(\"recipe_photos\".\"crop_width\" * 3 - \"recipe_photos\".\"crop_height\" * 4) <= 4"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.recipe_translation_jobs": {
+      "name": "recipe_translation_jobs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "recipe_id": {
+          "name": "recipe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'queued'"
+        },
+        "token": {
+          "name": "token",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lease_until": {
+          "name": "lease_until",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "input": {
+          "name": "input",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_content_revision": {
+          "name": "source_content_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "error": {
+          "name": "error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revalidated_at": {
+          "name": "revalidated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "recipe_translation_jobs_active_unique": {
+          "name": "recipe_translation_jobs_active_unique",
+          "columns": [
+            {
+              "expression": "recipe_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "locale",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"recipe_translation_jobs\".\"status\" in ('queued', 'running')",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "recipe_translation_jobs_pick_idx": {
+          "name": "recipe_translation_jobs_pick_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "lease_until",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "recipe_translation_jobs_recipe_id_recipes_id_fk": {
+          "name": "recipe_translation_jobs_recipe_id_recipes_id_fk",
+          "tableFrom": "recipe_translation_jobs",
+          "tableTo": "recipes",
+          "columnsFrom": [
+            "recipe_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "recipe_translation_jobs_locale_check": {
+          "name": "recipe_translation_jobs_locale_check",
+          "value": "\"recipe_translation_jobs\".\"locale\" = 'en'"
+        },
+        "recipe_translation_jobs_status_check": {
+          "name": "recipe_translation_jobs_status_check",
+          "value": "\"recipe_translation_jobs\".\"status\" in ('queued', 'running', 'done', 'failed')"
+        },
+        "recipe_translation_jobs_input_check": {
+          "name": "recipe_translation_jobs_input_check",
+          "value": "jsonb_typeof(\"recipe_translation_jobs\".\"input\") = 'object' and pg_column_size(\"recipe_translation_jobs\".\"input\") <= 262144"
+        },
+        "recipe_translation_jobs_error_check": {
+          "name": "recipe_translation_jobs_error_check",
+          "value": "\"recipe_translation_jobs\".\"error\" is null or length(\"recipe_translation_jobs\".\"error\") <= 200"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.recipe_translations": {
+      "name": "recipe_translations",
+      "schema": "",
+      "columns": {
+        "recipe_id": {
+          "name": "recipe_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "body": {
+          "name": "body",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "schema_version": {
+          "name": "schema_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_content_revision": {
+          "name": "source_content_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "model": {
+          "name": "model",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_version": {
+          "name": "prompt_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "translated_at": {
+          "name": "translated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "recipe_translations_recipe_id_locale_recipe_localizations_recipe_id_locale_fk": {
+          "name": "recipe_translations_recipe_id_locale_recipe_localizations_recipe_id_locale_fk",
+          "tableFrom": "recipe_translations",
+          "tableTo": "recipe_localizations",
+          "columnsFrom": [
+            "recipe_id",
+            "locale"
+          ],
+          "columnsTo": [
+            "recipe_id",
+            "locale"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "recipe_translations_recipe_id_locale_pk": {
+          "name": "recipe_translations_recipe_id_locale_pk",
+          "columns": [
+            "recipe_id",
+            "locale"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "recipe_translations_locale_check": {
+          "name": "recipe_translations_locale_check",
+          "value": "\"recipe_translations\".\"locale\" = 'en'"
+        },
+        "recipe_translations_body_check": {
+          "name": "recipe_translations_body_check",
+          "value": "jsonb_typeof(\"recipe_translations\".\"body\") = 'object' and pg_column_size(\"recipe_translations\".\"body\") <= 262144"
+        },
+        "recipe_translations_revision_check": {
+          "name": "recipe_translations_revision_check",
+          "value": "\"recipe_translations\".\"source_content_revision\" >= 1 and \"recipe_translations\".\"schema_version\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

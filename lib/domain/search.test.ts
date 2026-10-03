@@ -63,3 +63,15 @@ describe("поиск", () => {
     expect(paramsFromQuery(base)).toBe("");
   });
 });
+
+describe("поиск по-английски", () => {
+  it("«or» делит таблетки, сортировка по-английски", () => {
+    expect(ingredientChips(["Walnuts or hazelnuts", "Black pepper / herbs", "Cottage cheese 0.5%"], "en")).toEqual([
+      "Black pepper",
+      "Cottage cheese",
+      "Hazelnuts",
+      "Herbs",
+      "Walnuts",
+    ]);
+  });
+});

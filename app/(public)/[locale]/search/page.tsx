@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { io } from "next/cache";
 import { notFound } from "next/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 
 import { RecipeSearch } from "@/components/search/recipe-search";
@@ -16,7 +16,7 @@ import { HeaderFallback, PublicHeader } from "../_components/public-header";
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   if (locale !== "ru") return {};
-  return pageMetadata({ locale, path: "/search", title: "Поиск", noindex: true });
+  return pageMetadata({ locale, path: "/search", title: (await getTranslations("Search"))("title"), noindex: true });
 }
 
 export default async function SearchPage() {

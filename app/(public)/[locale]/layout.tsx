@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import "../../globals.css";
 import { PublicRouterProvider } from "@/components/providers/public-router-provider";
+import { clientMessages } from "@/i18n/client-messages";
 import { routing } from "@/i18n/routing";
 import { getSiteConfig } from "@/lib/server/env";
 import { fontVariables } from "@/styles/fonts";
@@ -30,7 +31,7 @@ export default async function LocaleLayout({ children }: LayoutProps<"/[locale]"
   return (
     <html lang={locale} className={fontVariables}>
       <body>
-        <NextIntlClientProvider>
+        <NextIntlClientProvider messages={await clientMessages()}>
           <PublicRouterProvider>{children}</PublicRouterProvider>
         </NextIntlClientProvider>
       </body>

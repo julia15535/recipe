@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronRight, Menu, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Heading, Link } from "react-aria-components";
 
 import { AppButton } from "@/components/app-button";
@@ -61,6 +62,7 @@ export function CatalogSheet({ sections, label, closeLabel, className }: Props) 
 
 // Строка листа: текущий раздел — выделен, не ссылка; пустой — бледный с «Пока нет рецептов» (ADR-0020).
 function SheetRow({ section, onNavigate }: { section: CatalogSection; onNavigate: () => void }) {
+  const t = useTranslations("Catalog");
   if (section.current)
     return (
       <div aria-current="page" className="-mx-2 flex min-h-12 items-center gap-3 rounded-lg bg-accent-100 px-2 py-2 text-lg text-primary" data-current>
@@ -74,7 +76,7 @@ function SheetRow({ section, onNavigate }: { section: CatalogSection; onNavigate
         <SectionIcon id={section.id} className="size-6 shrink-0 text-brand-secondary opacity-35" />
         <span className="flex flex-col">
           <span className="text-lg">{section.label}</span>
-          <span className="text-sm">Пока нет рецептов</span>
+          <span className="text-sm">{t("noRecipes")}</span>
         </span>
       </div>
     );

@@ -9,10 +9,15 @@ const exact = (value: number): Quantity => ({ kind: "exact", amount: f(value) })
 const line = (name: string, value: number, unit: string | null, note: string | null = null) => ({ name, quantity: exact(value), unit, note });
 // Вафли: творог 275 → 300 г.
 const WAFFLES = fraction(300, 275);
-const shown = (name: string, value: number, unit: string | null, factor = WAFFLES, note: string | null = null) => {
-  const result = showQuantity(line(name, value, unit, note), factor);
-  return result && `${result.approx ? "≈ " : ""}${result.amount} ${result.unit ?? ""}`.trim() + (result.hint ? ` (${result.hint})` : "");
+// Как показывает интерфейс по-русски (коды → слова из messages/ru.json).
+const words = (result: ReturnType<typeof showQuantity>) => {
+  if (!result) return result;
+  const amount = result.special === "pinch" ? "щепотка" : result.special === "upTo" ? `до ${result.amount}` : result.amount;
+  const hint = result.hint === "weighEggs" ? " (слегка перемешайте яйца и отвесьте)" : "";
+  return `${result.approx ? "≈ " : ""}${amount} ${result.special === "pinch" ? "" : (result.unit ?? "")}`.trim() + hint;
 };
+const shown = (name: string, value: number, unit: string | null, factor = WAFFLES, note: string | null = null) =>
+  words(showQuantity(line(name, value, unit, note), factor));
 
 describe("округление пересчёта — вафли на 300 г творога", () => {
   it("как в плане: яйца, мука, разрыхлитель, масло, молоко", () => {
@@ -92,14 +97,28 @@ describe("округление — правила", () => {
 
   it("диапазоны: оба конца; разные единицы — оба в мелкой", () => {
     const range = (min: number, max: number): Quantity => ({ kind: "range", min: f(min), max: f(max) });
-    const r = (name: string, min: number, max: number, unit: string, k: number) => {
-      const s = showQuantity({ name, quantity: range(min, max), unit, note: null }, x(k));
-      return s && `${s.approx ? "≈ " : ""}${s.amount} ${s.unit ?? ""}`.trim();
-    };
+    const r = (name: string, min: number, max: number, unit: string, k: number) => words(showQuantity({ name, quantity: range(min, max), unit, note: null }, x(k)));
     expect(r("Разрыхлитель", 0.5, 1, "ч. л.", 2)).toBe("≈ 1–2 ч. л.");
     expect(r("Орехи", 70, 80, "г", 1.09)).toBe("≈ 76–87 г");
     expect(r("Мука", 495, 505, "г", 2)).toBe("≈ 990–1010 г");
-    expect(r("Яйца", 1, 2, "шт.", 0.45)).toBe("≈ 25–45 г");
+    expect(r("Яйца", 1, 2, "шт.", 0.45)).toBe("≈ 25–45 г (слегка перемешайте яйца и отвесьте)");
     expect(r("Корица", 0.1, 0.5, "ч. л.", 1.01)).toBe("≈ до ½ ч. л.");
+  });
+});
+
+describe("округление по-английски и стакан 250 мл", () => {
+  it("числа с точкой, коды вместо слов; вид строки из перевода", () => {
+    const en = (value: number, unit: string, k: number, kind?: Parameters<typeof showQuantity>[2] extends infer O ? O extends { kind?: infer K } ? K : never : never) =>
+      showQuantity({ name: "Egg", quantity: exact(value), unit, note: null }, f(k), { lang: "en", kind });
+    expect(en(625, "г", 2)).toMatchObject({ amount: "1.25", unit: "кг", approx: true });
+    expect(en(1, "шт.", 0.1)).toMatchObject({ amount: "0.1" });
+    // Английское «Egg» по словам не распознать — вид «egg» приходит из перевода.
+    expect(en(2, "шт.", 1.25, "egg")).toMatchObject({ amount: "125", unit: "г", hint: "weighEggs" });
+    expect(en(0.5, "ч. л.", 0.2)).toMatchObject({ special: "pinch" });
+  });
+
+  it("очень малая доля стакана — в ложки по 250 мл", () => {
+    // 1/10 стакана = 25 мл ≈ 1⅔ ст. л. → ближайшая половинка 1½ (отклонение 10 %).
+    expect(shown("Молоко", 1, "стак.", f(0.1))).toBe("≈ 1½ ст. л.");
   });
 });

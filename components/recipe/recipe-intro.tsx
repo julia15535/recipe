@@ -1,5 +1,6 @@
 import { Clock } from "lucide-react";
 import NextLink from "next/link";
+import { useTranslations } from "next-intl";
 
 import { CompositionTags } from "@/components/recipe/composition-tags";
 import { RecipePhoto } from "@/components/recipe/recipe-photo";
@@ -10,9 +11,10 @@ import type { RecipeView } from "./view";
 // Шапка рецепта: разделы спокойной строкой (ADR-0018; ссылка — если есть страница раздела), название,
 // описание, строка «время + теги состава своим цветом» (ADR-0021); фото блюда 4:3 (ADR-0028); у прототипов — цветная заглушка.
 export function RecipeIntro({ recipe }: { recipe: RecipeView }) {
+  const t = useTranslations("Recipe");
   return (
     <div className="flex flex-col gap-3">
-      <nav aria-label="Разделы каталога">
+      <nav aria-label={t("sections")}>
         <ul className="flex flex-wrap items-center text-sm font-semibold tracking-wide uppercase">
           {recipe.sections.map((section, index) => (
             <li key={section.code} className="flex items-center">
@@ -44,7 +46,7 @@ export function RecipeIntro({ recipe }: { recipe: RecipeView }) {
             {recipe.time}
           </p>
         )}
-        <CompositionTags tags={recipe.tags} label="Особенности состава" />
+        <CompositionTags tags={recipe.tags} label={t("composition")} />
       </div>
       {recipe.photo ? (
         <RecipePhoto photo={recipe.photo} alt={recipe.title} sizes="(min-width: 768px) 736px, calc(100vw - 32px)" priority className="mt-2 rounded-2xl" />

@@ -69,6 +69,8 @@ describe.skipIf(!enabled)("рецепты: БД", () => {
     const text = simple(`Щи ${marker}`);
     const replaced = await replaceRecipe(first.id, 1, parsed(text), text);
     expect(replaced).toEqual({ ok: true, id: first.id, revision: 2 });
+    const [row] = await getDb().select({ contentRevision: recipes.contentRevision }).from(recipes).where(eq(recipes.id, first.id));
+    expect(row?.contentRevision).toBe(2);
     const after = await getRecipe(first.id);
     expect(after?.view.title).toBe(`Щи ${marker}`);
     expect(after?.slug).toBe(a?.slug);
@@ -144,6 +146,10 @@ describe.skipIf(!enabled)("рецепты: БД", () => {
     const [draft] = await getDb().select().from(recipes).where(eq(recipes.id, id));
     expect(draft?.publishedAt).toEqual(published?.publishedAt);
     expect(draft?.revision).toBe(3);
+    // Повторная смена на тот же статус ничего не меняет; ревизия содержания от публикации не растёт.
+    expect(await setRecipeStatus(id, "draft")).toBe(true);
+    const [same] = await getDb().select().from(recipes).where(eq(recipes.id, id));
+    expect([same?.revision, same?.contentRevision]).toEqual([3, 1]);
     expect(await deleteDraft(id)).toBe(true);
     expect(await getRecipe(id)).toBeNull();
     expect(await getDb().select().from(recipeIngredients).where(eq(recipeIngredients.recipeId, id))).toEqual([]);

@@ -6,7 +6,75 @@
   "Site": {
     "search": "Search",
     "catalog": "Catalogue",
-    "close": "Close"
+    "close": "Close",
+    "otherLanguage": {
+      "label": "RU",
+      "name": "Русский",
+      "lang": "ru"
+    }
+  },
+  "Home": {
+    "newRecipes": "New recipes",
+    "emptyTitle": "Recipes are coming soon",
+    "emptyText": "The author is preparing the first recipes — please check back a little later."
+  },
+  "Section": {
+    "breadcrumbs": "Breadcrumbs",
+    "home": "Home",
+    "recipes": "Recipes in this section",
+    "empty": "No recipes yet — coming soon."
+  },
+  "Catalog": {
+    "noRecipes": "No recipes yet",
+    "noRecipesSr": ", no recipes yet"
+  },
+  "Recipe": {
+    "sections": "Catalogue sections",
+    "composition": "Nutrition highlights",
+    "tabs": "Recipe and method",
+    "recipe": "Recipe",
+    "steps": "Method",
+    "ingredients": "Ingredients",
+    "approx": "about ",
+    "tips": "Tips",
+    "mainHint": "Main ingredient: enter your amount — everything else will be recalculated.",
+    "empty": "Enter an amount",
+    "format": "Numbers only, e.g. 250 or 2.5",
+    "zero": "The amount must be greater than zero",
+    "tooBig": "Too much — no more than {amount}",
+    "reset": "As in the recipe: {amount}",
+    "pinch": "a pinch",
+    "upTo": "up to {amount}",
+    "weighEggs": "lightly beat the eggs and weigh",
+    "cupNote": "1 cup = 250 ml",
+    "untitled": "Untitled"
+  },
+  "Search": {
+    "region": "Recipe search",
+    "back": "Back",
+    "title": "Search",
+    "how": "How to search",
+    "byRecipe": "By recipe",
+    "byIngredient": "By ingredient",
+    "recipeField": "Recipe name",
+    "ingredientField": "Find an ingredient",
+    "recipePlaceholder": "e.g. pancakes",
+    "ingredientPlaceholder": "e.g. cottage cheese",
+    "staleSection": "The “{label}” section is empty for now — choose another or start searching.",
+    "ingredients": "Ingredients",
+    "allIngredients": "All ingredients · {count}",
+    "refine": "Refine",
+    "refineCount": "Refine · {count}",
+    "section": "Section",
+    "composition": "Nutrition highlights",
+    "results": "Results",
+    "emptyTitle": "Recipes are coming soon",
+    "emptyText": "The author is preparing the first recipes — please check back a little later.",
+    "start": "Start typing a name or choose ingredients.",
+    "nothingTitle": "Nothing found",
+    "nothingText": "Try removing filters or choosing another ingredient.",
+    "reset": "Reset search",
+    "found": "Found: {count}"
   },
   "Soon": {
     "title": "English version is coming soon",

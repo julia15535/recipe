@@ -3,9 +3,20 @@
 import type { Fraction } from "@/lib/domain/fraction";
 import type { PhotoRef } from "@/lib/domain/photo";
 import type { Quantity } from "@/lib/domain/quantity";
+import type { Kind } from "@/lib/domain/rounding";
 import type { WordForms } from "@/lib/domain/rescale";
 
-export type ViewIngredient = { id: string; name: string; quantity: Quantity; unit: string | null; note: string | null };
+/** `unit` — русский код единицы (и в переводе); `kind` и `unitForms` — из перевода: вид строки для округления и
+ * английские формы авторской единицы (ADR-0029). */
+export type ViewIngredient = {
+  id: string;
+  name: string;
+  quantity: Quantity;
+  unit: string | null;
+  note: string | null;
+  kind?: Kind;
+  unitForms?: readonly [one: string, other: string] | null;
+};
 
 export type RecipeView = {
   title: string;
