@@ -8,7 +8,7 @@ importance: high
 source: manual
 status: working
 source_of_truth: supporting
-last_verified: 2026-10-02
+last_verified: 2026-10-03
 review_after: 2026-10-29
 ---
 
@@ -24,7 +24,7 @@ Vitest 4 + Playwright.
   `<Suspense>` после `io()` из `"use cache"` (`lib/server/recipes/public-cache.ts`), сборка без БД. Локаль —
   `next/root-params` (`i18n/request.ts`); неизвестный путь → локализованная 404 (внутри потока — 200 + noindex).
 - `app/(admin)/admin/` — кабинет: свой root layout, RU, `noindex`, полностью динамический; открыт только
-  `login/`, остальное — группа `(protected)` с пробными экранами `ui/` (ADR-0022, `domain/owner-auth.md`).
+  `login/`, остальное — группа `(protected)`: рецепты (`recipes/…`, фото), пробные экраны `ui/` (ADR-0022).
 - `proxy.ts` — next-intl для публичных путей; `/admin` — CSP с nonce и 307 на вход без cookie сессии;
   `www` → apex — `redirects()` в `next.config.ts`.
 - API: `health/live`, `health/ready` (БД + `GIT_SHA`), `telegram/webhook`, `auth/status`; фото —
@@ -34,11 +34,9 @@ Vitest 4 + Playwright.
 - `lib/domain/` — чистые функции без IO (ESLint `eslint.config.mjs`): дроби, пересчёт, разбор текста рецепта
   (`lib/domain/recipe-text/`), коды каталога, кадр фото (`lib/domain/photo.ts`).
 - `lib/server/` — `server-only`: env, БД (`lib/server/db/client.ts`), логгер с маскированием (`log.ts`), вход
-  (`lib/server/auth/`, `requireOwner()`), рецепты (`lib/server/recipes/`), фото — sharp (`lib/server/media/`); без него
-  намеренно — `env-schema.ts`, схема БД и чистые модули входа.
-  UI в БД не ходит.
-- Env: `SITE_URL`, `SITE_INDEXABLE` — при сборке (и при запросе в metadata, ADR-0027); секреты лениво, прод без
-  них не стартует (`instrumentation-node.ts`).
+  (`lib/server/auth/`, `requireOwner()`), рецепты (`lib/server/recipes/`), фото (`lib/server/media/`); UI в БД не ходит.
+- Env: обязательны `SITE_URL`, `DATABASE_URL`, `GIT_SHA`; вход (Telegram) — все переменные или ни одной, ключ ИИ —
+  по желанию; заданное наполовину или с ошибкой — прод не стартует (`instrumentation-node.ts`).
 - Миграции: `drizzle-kit generate` → `scripts/migrate.mjs` (advisory lock); роли —
   `deploy/recipe-roles.sql`.
 

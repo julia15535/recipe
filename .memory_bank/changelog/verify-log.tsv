@@ -69,3 +69,13 @@ date	doc	reason	claims	mismatch	fixed	note
 2026-10-02	.memory_bank/core/recipe-upload.md	code	14	2	2	
 2026-10-02	.memory_bank/core/catalog.md	rotation	14	1	1	
 2026-10-02	.memory_bank/domain/recipe-upload.md	code	10	2	2	
+2026-10-03	.memory_bank/decisions/adr-0001-0050.md	code	22	0	0	
+2026-10-03	.memory_bank/core/data-models.md	code	14	0	0	
+2026-10-03	.memory_bank/domain/recipe-model.md	code	8	1	1	
+2026-10-03	.memory_bank/domain/screens.md	code	11	0	0	
+2026-10-03	.memory_bank/core/deployment.md	code	20	0	0	
+2026-10-03	.memory_bank/core/access-and-integrations.md	code	11	0	0	
+2026-10-03	.memory_bank/core/architecture.md	rotation	26	2	2	
+2026-10-03	.memory_bank/core/seo-i18n.md	code	4	1	1	
+2026-10-03	.memory_bank/core/ux.md	code	1	0	0	
+2026-10-03	.memory_bank/anti-patterns.md	code	8	0	0	

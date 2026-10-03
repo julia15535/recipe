@@ -8,7 +8,7 @@ importance: high
 source: _intake/_processed/brief/technical_spec_recipe_book.md
 status: draft
 source_of_truth: supporting
-last_verified: 2026-09-27
+last_verified: 2026-10-03
 review_after: 2026-12-27
 ---
 

@@ -279,6 +279,14 @@ Popover по тапу, не Tooltip.
 **Convention:** большие файлы уменьшать в браузере до < 850 КБ (`components/media/shrink-image.ts`); e2e проверяет размер
 всего запроса Server Action (`e2e/photos.spec.ts`).
 
+## 45. `naturalWidth` у `<img srcset>` — не ширина файла
+**Симптом:** e2e «на компьютере берётся крупный вариант» видел 736 — браузер пересчитывает `naturalWidth` под `sizes`.
+**Convention:** какой файл выбран — по `currentSrc` (`e2e/photos.spec.ts`).
+
+## 46. Скрытый `input` ползунка React Aria без атрибута `type`
+**Симптом:** проверка целей ≥ 44 px нашла «INPUT 16px» — спрятанный input ползунка; `input:not([type="range"])` его не
+отсеял: `type` задан свойством, не атрибутом. **Convention:** отсеивать по `el.type === "range"` (`e2e/photos.spec.ts`).
+
 ---
 
 # Анти-паттерны ПАМЯТИ (уроки эксплуатации — актуальны любому проекту с Memory Bank)
