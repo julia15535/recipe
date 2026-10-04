@@ -7,6 +7,7 @@ import { afterAll, describe, expect, it } from "vitest";
 
 import { parseRecipeText } from "@/lib/domain/recipe-text/parse";
 import { type AiTranslation, composeTranslation, type SourceRecipe } from "@/lib/domain/translation";
+import { sourceRecipeSchema } from "@/lib/server/ai/translate-schema";
 import { type Masked, maskNumbers } from "@/lib/domain/translation-numbers";
 import { getDb, getSql } from "@/lib/server/db/client";
 import { recipes, recipeTranslationJobs } from "@/lib/server/db/schema";
@@ -19,6 +20,7 @@ import { setRecipeStatus } from "./status";
 import { claimJob, enqueueTranslation, finishJob, MAX_ATTEMPTS } from "./translation-jobs";
 import { failExhausted, translationState } from "./translation-queue";
 import { runJob } from "./translation-run";
+import { writeTranslation } from "./translation-store";
 
 const enabled = process.env.RECIPE_DB_TESTS === "1";
 const created: string[] = [];
@@ -173,6 +175,36 @@ describe.skipIf(!enabled)("перевод: БД", () => {
       sql`update recipe_translations set body = jsonb_set(body, '{ingredients}', (select jsonb_agg(i - 'amountStyle') from jsonb_array_elements(body -> 'ingredients') i)) where recipe_id = ${saved.id}`,
     );
     expect(await styles()).toEqual([undefined, undefined, undefined]);
+  });
+
+  it("состояние для кабинета — один снимок: перевод, завершившийся между чтениями, не даёт «готово без перевода»", async () => {
+    const id = await published(`Ряженка ${marker}`);
+    const jobId = await enqueueTranslation(id, false);
+    const claimed = jobId ? await claimJob(jobId) : null;
+    if (!jobId || !claimed) throw new Error("нет задания");
+    const done = await fake("EN")(sourceRecipeSchema.parse(claimed.input));
+    if (!done.ok) throw new Error("перевод заглушки");
+    const saved = { head: done.head, body: done.body, sourceContentRevision: claimed.sourceContentRevision, model: "test/model", promptVersion: "test" };
+    // Барьер: таблица заданий заперта, пока кабинет читает состояние; завершаем перевод, когда чтение ждёт блокировку.
+    // Два отдельных запроса (прежняя ошибка) увидели бы «перевода нет» до коммита и «done» — после.
+    let reading: ReturnType<typeof translationState> | null = null;
+    await getDb().transaction(async (tx) => {
+      await tx.execute(sql`set local lock_timeout = '10s'`);
+      await tx.execute(sql`lock table recipe_translation_jobs in access exclusive mode`);
+      reading = translationState(id);
+      reading.catch(() => undefined);
+      for (let i = 0; ; i += 1) {
+        const [row] = await getSql()<{ n: number }[]>`select count(*)::int as n from pg_stat_activity
+          where datname = current_database() and wait_event_type = 'Lock' and query ilike '%recipe_translation_jobs%' and pid <> pg_backend_pid()`;
+        if ((row?.n ?? 0) > 0) break;
+        if (i > 100) throw new Error("чтение состояния не дошло до блокировки");
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      await writeTranslation(tx, id, saved);
+      await tx.update(recipeTranslationJobs).set({ status: "done", finishedAt: sql`now()`, leaseUntil: null }).where(eq(recipeTranslationJobs.id, jobId));
+    });
+    const state = await (reading as ReturnType<typeof translationState> | null);
+    expect({ status: state?.job?.status, slug: state?.slug ?? null }).toEqual({ status: "done", slug: expect.stringMatching(/ryazhenka-/) });
   });
 
   it("снят с публикации — нет и на английском; удаление рецепта убирает перевод и задания", async () => {

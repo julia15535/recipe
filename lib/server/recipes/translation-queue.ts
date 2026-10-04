@@ -67,25 +67,41 @@ export type TranslationState = {
   job: { status: "queued" | "running" | "done" | "failed"; error: string | null } | null;
 };
 
-/** Для кабинета: есть ли перевод, устарел ли (русский меняли после него), последнее задание. */
+/**
+ * Для кабинета: есть ли перевод, устарел ли (русский меняли после него), последнее задание. ОДНИМ запросом — один
+ * снимок базы: два параллельных чтения видели «задание выполнено» без перевода, если перевод записывался между ними,
+ * и статус застывал на «ещё нет» (сбой e2e 03.10, разбор с Codex; тест — translations.db.test.ts).
+ */
 export function translationState(recipeId: string): Promise<TranslationState> {
   return guarded("перевод", async () => {
     const db = getDb();
-    const [[ready], [job]] = await Promise.all([
-      db
-        .select({ slug: t.recipeLocalizations.slug, source: t.recipeTranslations.sourceContentRevision, content: t.recipes.contentRevision })
-        .from(t.recipeTranslations)
-        .innerJoin(t.recipeLocalizations, and(eq(t.recipeLocalizations.recipeId, t.recipeTranslations.recipeId), eq(t.recipeLocalizations.locale, "en")))
-        .innerJoin(t.recipes, eq(t.recipes.id, t.recipeTranslations.recipeId))
-        .where(eq(t.recipeTranslations.recipeId, recipeId)),
-      db
-        .select({ status: t.recipeTranslationJobs.status, error: t.recipeTranslationJobs.error })
-        .from(t.recipeTranslationJobs)
-        .where(eq(t.recipeTranslationJobs.recipeId, recipeId))
-        .orderBy(desc(t.recipeTranslationJobs.createdAt))
-        .limit(1),
-    ]);
-    return { slug: ready?.slug ?? null, outdated: ready ? ready.source !== ready.content : false, job: job ?? null };
+    const job = db
+      .select({ status: t.recipeTranslationJobs.status, error: t.recipeTranslationJobs.error })
+      .from(t.recipeTranslationJobs)
+      .where(and(eq(t.recipeTranslationJobs.recipeId, t.recipes.id), eq(t.recipeTranslationJobs.locale, "en")))
+      .orderBy(desc(t.recipeTranslationJobs.createdAt), desc(t.recipeTranslationJobs.id))
+      .limit(1)
+      .as("last_job");
+    const [row] = await db
+      .select({
+        slug: t.recipeLocalizations.slug,
+        source: t.recipeTranslations.sourceContentRevision,
+        content: t.recipes.contentRevision,
+        jobStatus: job.status,
+        jobError: job.error,
+      })
+      .from(t.recipes)
+      .leftJoin(t.recipeTranslations, and(eq(t.recipeTranslations.recipeId, t.recipes.id), eq(t.recipeTranslations.locale, "en")))
+      .leftJoin(t.recipeLocalizations, and(eq(t.recipeLocalizations.recipeId, t.recipes.id), eq(t.recipeLocalizations.locale, "en")))
+      .leftJoinLateral(job, sql`true`)
+      .where(eq(t.recipes.id, recipeId));
+    // Перевод готов, только если есть и снимок, и английская локализация.
+    const ready = row && row.source !== null && row.slug !== null ? { slug: row.slug, outdated: row.source !== row.content } : null;
+    return {
+      slug: ready?.slug ?? null,
+      outdated: ready?.outdated ?? false,
+      job: row?.jobStatus ? { status: row.jobStatus, error: row.jobError ?? null } : null,
+    };
   });
 }
 

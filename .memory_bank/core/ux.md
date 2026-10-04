@@ -3,7 +3,7 @@ tier: 1
 topic: ux
 scope: Экраны и mobile-first — главная, страница рецепта, работа одной рукой
 tier2: ../domain/screens.md
-updated: 2026-10-03
+updated: 2026-10-04
 importance: high
 source: _intake/_processed/brief/product-decisions-2026-10-01.md
 status: draft

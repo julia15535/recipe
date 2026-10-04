@@ -3,7 +3,7 @@ tier: 2
 topic: screens
 scope: Экраны по решениям владельца — шапка, главная, страница раздела, поиск, рецепт; прототипы /admin/ui
 tier1: ../core/ux.md
-updated: 2026-10-03
+updated: 2026-10-04
 importance: high
 source: _intake/_processed/brief/product-decisions-2026-10-01.md
 status: working
@@ -75,7 +75,9 @@ review_after: 2026-12-27
 - Кабинет: у опубликованного рецепта — «Открыть на сайте» (`app/(admin)/admin/(protected)/recipes/_components/recipe-actions.tsx`).
 - Кабинет, блок «Английская версия» (`app/(admin)/admin/(protected)/recipes/_components/translation-block.tsx`,
   ADR-0029): статус перевода, «Перевести» / «Перевести заново», «Открыть по-английски»; пока переводится — страница
-  обновляется сама.
+  обновляется сама (по одному обновлению за раз). Состояние — одним запросом (`lib/server/recipes/translation-queue.ts`
+  `translationState`, один снимок базы, тест с барьером — `translations.db.test.ts`); «выполнено, а перевода не видно» —
+  до 5 обновлений, потом «обновите страницу» (план translation-status-race).
 - Кабинет, блок «Фото блюда» (`app/(admin)/admin/(protected)/recipes/_components/photo-block.tsx`): «Добавить фото» →
   окно «Кадр для фото» (рамка 4:3, затенённые полосы — что не попадёт в превью ссылки; «−/+», ползунок, щипок, колесо,
   стрелки) → «Готово»; «Изменить кадр» (без повторного выбора), «Заменить фото», «Убрать фото» (с подтверждением).

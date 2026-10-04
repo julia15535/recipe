@@ -14,7 +14,8 @@ const KOTLETY = readFileSync("lib/domain/recipe-text/fixtures/kotlety.txt", "utf
 const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const unique = () => Math.random().toString(36).slice(2, 7);
 const h1 = (page: Page) => page.getByRole("heading", { level: 1 }).filter({ visible: true });
-const translation = (page: Page) => page.locator("[data-translation]");
+// :visible — Next 16 держит прошлую страницу скрытой после перехода.
+const translation = (page: Page) => page.locator("[data-translation]:visible");
 
 test("опубликовать → перевод на /en; правка → «устарела»; перевести заново; снять — нет и на /en", async ({ page }) => {
   test.setTimeout(150_000);
