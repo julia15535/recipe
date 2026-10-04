@@ -45,14 +45,14 @@ export function SiteHeader({ siteName, signature, homeHref, searchHref, searchLa
             signature && "sm:pr-18 lg:pr-16",
           )}
         >
-          <span data-logo-title className="font-display text-md leading-tight whitespace-nowrap min-[360px]:text-xl lg:text-display-xs lg:leading-tight">
+          <span data-logo-title className="pt-1.5 font-display text-md leading-tight whitespace-nowrap min-[360px]:text-xl lg:pt-3 lg:text-display-xs lg:leading-tight">
             {siteName}
           </span>
           {signature && (
             <span
               data-logo-signature
               className={cx(
-                "mr-2 -rotate-4 justify-self-end font-signature text-[1.75rem] leading-none whitespace-nowrap text-signature min-[360px]:mr-0 min-[360px]:text-[2rem] sm:justify-self-start",
+                "mt-1 mr-2 -rotate-4 justify-self-end font-signature text-[1.5rem] leading-none whitespace-nowrap text-signature min-[360px]:mr-0 min-[360px]:text-[1.625rem] sm:mt-0 sm:justify-self-start",
                 signature.locale === "en" ? "sm:ml-[64%]" : "sm:ml-[68%]",
               )}
             >
