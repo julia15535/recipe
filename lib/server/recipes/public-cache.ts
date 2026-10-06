@@ -1,13 +1,15 @@
 import "server-only";
 import { cacheLife, cacheTag, updateTag } from "next/cache";
 
+import { readArticleCards, readPublicArticle, readRecipeArticles } from "@/lib/server/articles/public";
+
 import { type Locale, readCatalog, readPublicRecipe } from "./public";
 import { readCards, readSearchIndex } from "./public-lists";
 
 // Кэш публичного сайта (ADR-0013, план public-pages). Вызывать только после `await io()` под <Suspense>:
 // сборка образа идёт без БД, и чтение не должно попасть в статическую оболочку. После любой правки владельца
 // кабинет сбрасывает все теги сразу (`PUBLIC_TAGS`, `updateTag`) — сайт маленький, так проще и надёжнее.
-export const PUBLIC_TAGS = ["recipes", "catalog", "search-index"] as const;
+export const PUBLIC_TAGS = ["recipes", "catalog", "search-index", "articles"] as const;
 export const recipeTag = (id: string) => `recipe:${id}`;
 
 // Сервер держит данные до сброса тегами (или час); браузер посетителя без проверки сервера — 30 с (минимум Next):
@@ -54,4 +56,26 @@ export async function cachedRecipe(locale: Locale, slug: string) {
   const recipe = await readPublicRecipe(locale, slug);
   if (recipe) cacheTag(recipeTag(recipe.id));
   return recipe;
+}
+
+// Статьи (ADR-0034): страница статьи зависит и от рецептов (карточки связанных), страница рецепта — от статей.
+export async function cachedArticleCards(locale: Locale, limit?: number) {
+  "use cache";
+  cacheTag("articles");
+  cacheLife(LIFE);
+  return readArticleCards(locale, { limit });
+}
+
+export async function cachedArticle(locale: Locale, slug: string) {
+  "use cache";
+  cacheTag("articles", "recipes");
+  cacheLife(LIFE);
+  return readPublicArticle(locale, slug);
+}
+
+export async function cachedRecipeArticles(locale: Locale, recipeId: string) {
+  "use cache";
+  cacheTag("articles");
+  cacheLife(LIFE);
+  return readRecipeArticles(locale, recipeId);
 }

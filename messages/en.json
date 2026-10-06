@@ -4,6 +4,7 @@
     "description": "Home recipes: search by name and ingredients, scale to the amount you have."
   },
   "Site": {
+    "articles": "Articles",
     "signature": "Yuliana's",
     "search": "Search",
     "catalog": "Catalogue",
@@ -84,5 +85,13 @@
   "Error": {
     "title": "Something went wrong",
     "retry": "Try again"
+  },
+  "Articles": {
+    "title": "Articles",
+    "empty": "No articles yet.",
+    "recipes": "Recipes in this article",
+    "related": "Articles about this recipe",
+    "home": "Articles",
+    "all": "All articles"
   }
 }

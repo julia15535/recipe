@@ -20,6 +20,11 @@ export function startAiStub(): Promise<() => Promise<void>> {
       calls += 1;
       const request = JSON.parse(body || "{}") as { messages?: { content: string }[]; response_format?: { json_schema?: { name?: string } } };
       const text = request.messages?.[1]?.content ?? "";
+      if (request.response_format?.json_schema?.name === "article_markup") {
+        res.setHeader("content-type", "application/json");
+        res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(markup(text)) }, finish_reason: "stop" }], usage: { cost: 0 } }));
+        return;
+      }
       if (request.response_format?.json_schema?.name === "recipe_translation") {
         res.setHeader("content-type", "application/json");
         res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(translate(text)) }, finish_reason: "stop" }], usage: { cost: 0 } }));
@@ -45,6 +50,18 @@ export function startAiStub(): Promise<() => Promise<void>> {
 }
 
 type Row = { id: string; text: string };
+
+/** «Разметка» статьи заглушкой: «#» — заголовок, «-» — пункт, остальное — абзац по строке; пустые и [ФОТО] — мимо. */
+function markup(raw: string) {
+  const marks = raw.split("\n").flatMap((line) => {
+    const match = /^(\d+): (.*)$/.exec(line);
+    const text = match?.[2] ?? "";
+    if (!match || text.trim() === "" || text === "[ФОТО]") return [];
+    const at = Number(match[1]);
+    return [{ kind: text.startsWith("#") ? "h2" : /^[-•]\s/.test(text) ? "bullet" : "p", from: at, to: at }];
+  });
+  return { marks };
+}
 type AiRow = { name: string; amount: string | null };
 const withMilk = (text: string) =>
   (kotlety.ingredients as AiRow[]).map((row) => (row.name === "Молоко" && text.includes("Молоко — 0,5") ? { ...row, amount: "0,5" } : row));

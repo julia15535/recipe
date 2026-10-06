@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Menu, X } from "lucide-react";
+import { BookOpen, ChevronRight, Menu, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Heading, Link } from "react-aria-components";
 
@@ -14,10 +14,11 @@ import type { CatalogSection } from "./types";
 // (владелец 01.10: «привычно для пользователей, что это типа меню»); «выпадающий список» — нижний лист
 // с крупными строками под большой палец (ui-rules: без мелких desktop-dropdown); пустой раздел —
 // бледная строка «Пока нет рецептов» (ADR-0020). Фокус внутри, Esc, закрытие по фону, запрет прокрутки
-// страницы и возврат фокуса на кнопку даёт React Aria (Modal из Untitled UI).
-type Props = { sections: CatalogSection[]; label: string; closeLabel: string; className?: string };
+// страницы и возврат фокуса на кнопку даёт React Aria (Modal из Untitled UI). `extra` — отдельная строка под
+// разделами (на телефоне «Статьи», ADR-0034): не раздел каталога, поэтому после черты.
+type Props = { sections: CatalogSection[]; label: string; closeLabel: string; className?: string; extra?: { href: string; label: string } };
 
-export function CatalogSheet({ sections, label, closeLabel, className }: Props) {
+export function CatalogSheet({ sections, label, closeLabel, className, extra }: Props) {
   return (
     <div className={className}>
       <DialogTrigger>
@@ -50,6 +51,17 @@ export function CatalogSheet({ sections, label, closeLabel, className }: Props) 
                       </li>
                     ))}
                   </ul>
+                  {extra && (
+                    <Link
+                      href={extra.href}
+                      onPress={close}
+                      className="mt-2 flex min-h-12 items-center gap-3 rounded-lg border-t-2 border-secondary py-2 pt-3 text-lg text-primary outline-brand focus-visible:outline-2"
+                    >
+                      <BookOpen className="size-6 shrink-0 text-brand-secondary" aria-hidden />
+                      <span className="flex-1">{extra.label}</span>
+                      <ChevronRight className="size-5 text-quaternary" aria-hidden />
+                    </Link>
+                  )}
                 </>
               )}
             </Dialog>

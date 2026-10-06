@@ -25,15 +25,17 @@ type Props = {
   searchHref: string;
   searchLabel: string;
   language?: { href: string; label: string; name: string; lang: string };
+  /** «Статьи» (ADR-0034): на компьютере — ссылкой перед «Поиск», на телефоне — строкой в листе каталога. */
+  articles?: { href: string; label: string };
   catalog?: { sections: CatalogSection[]; label: string; closeLabel: string };
 };
 
-export function SiteHeader({ siteName, signature, homeHref, searchHref, searchLabel, language, catalog }: Props) {
+export function SiteHeader({ siteName, signature, homeHref, searchHref, searchLabel, language, catalog, articles }: Props) {
   return (
     <header className="sticky top-0 z-40 border-b border-secondary bg-page pt-[env(safe-area-inset-top)]">
       <div className="mx-auto flex h-18 w-full max-w-7xl items-center gap-1 px-4 sm:gap-2 lg:h-19 lg:px-8">
         {catalog && (
-          <CatalogSheet sections={catalog.sections} label={catalog.label} closeLabel={catalog.closeLabel} className="lg:hidden" />
+          <CatalogSheet sections={catalog.sections} label={catalog.label} closeLabel={catalog.closeLabel} className="lg:hidden" extra={articles} />
         )}
         <Link
           href={homeHref}
@@ -60,6 +62,11 @@ export function SiteHeader({ siteName, signature, homeHref, searchHref, searchLa
             </span>
           )}
         </Link>
+        {articles && (
+          <AppButton color="tertiary" href={articles.href} className="max-lg:hidden">
+            {articles.label}
+          </AppButton>
+        )}
         <AppButton color="secondary" size="lg" href={searchHref} iconLeading={Search} aria-label={searchLabel} className="sm:hidden" />
         <AppButton color="secondary" href={searchHref} iconLeading={Search} className="max-sm:hidden">
           {searchLabel}

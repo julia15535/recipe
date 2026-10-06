@@ -1,9 +1,9 @@
 ---
 tier: 1
 topic: recipe-import
-scope: Добавление рецепта — ИИ-импорт (текст, голос, фото, PDF/Word), предпросмотр
+scope: ИИ-импорт рецепта — текст, голос, фото, PDF/Word
 tier2: ../domain/ai-import.md
-updated: 2026-10-02
+updated: 2026-10-06
 importance: high
 source: _intake/_processed/brief/technical_spec_recipe_book.md
 status: draft

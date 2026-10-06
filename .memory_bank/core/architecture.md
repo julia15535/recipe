@@ -3,7 +3,7 @@ tier: 1
 topic: architecture
 scope: Стек, слои, SEO-рендер, где ИИ, деплой — перед архитектурным решением
 tier2: ""
-updated: 2026-10-03
+updated: 2026-10-06
 importance: high
 source: manual
 status: working
@@ -20,13 +20,13 @@ TypeScript 6 strict · Tailwind 4 + Untitled UI React (ADR-0015) · Zod 4 · nex
 Vitest 4 + Playwright.
 
 ## Маршруты
-- `app/(public)/[locale]/` — сайт ru/en (ADR-0027, ADR-0029): главная, `catalog/[slug]`, `recipe/[slug]`, `search`;
+- `app/(public)/[locale]/` — сайт ru/en (ADR-0027, ADR-0029): главная, `catalog/[slug]`, `recipe/[slug]`, `search`, `articles` (ADR-0034, пока RU);
   данные — под `<Suspense>` после `io()` из `"use cache"` (`public-cache.ts`), сборка без БД; локаль — `next/root-params`.
 - `app/(admin)/admin/` — кабинет: свой root layout, RU, `noindex`, полностью динамический; открыт только
-  `login/`, остальное — группа `(protected)`: рецепты (`recipes/…`, фото), пробные экраны `ui/` (ADR-0022).
+  `login/`, остальное — группа `(protected)`: рецепты (`recipes/…`, фото), статьи (`articles/…`), пробные экраны `ui/` (ADR-0022).
 - `proxy.ts` — next-intl (`/` по языку браузера); `/admin` — CSP с nonce и 307 на вход; `www` → apex — `next.config.ts`.
 - API: `health/live`, `health/ready` (БД + `GIT_SHA`), `telegram/webhook`, `auth/status`; фото —
-  `app/media/recipe/[photoId]/[file]/route.ts` (ADR-0028; мимо proxy — адрес с точкой); подборщик переводов —
+  `app/media/{recipe,article}/[photoId]/[file]/route.ts` (ADR-0028, ADR-0034; мимо proxy — адрес с точкой); подборщик переводов —
   `/api/jobs/translations` (только сам процесс, секрет в памяти; ADR-0029).
 
 ## Слои кода
@@ -41,7 +41,7 @@ Vitest 4 + Playwright.
 
 ## Направления для следующих планов
 - Импорт файлов: очередь-таблица в Postgres (`SKIP LOCKED`), воркер из того же образа, потоковый Route Handler.
-- ИИ на входе — `lib/server/ai/` (Vercel AI Gateway, ADR-0024); распознавание и голос — тем же путём.
+- ИИ на входе — `lib/server/ai/` (ADR-0024); распознавание и голос — тем же путём.
 - Критический CVE Next/React — обновление в тот же день.
 
 **Деплой и прод:** `core/deployment.md`.

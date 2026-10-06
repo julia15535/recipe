@@ -4,11 +4,13 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 
+import { ArticleGrid } from "@/components/article/article-card";
 import { RecipeBody } from "@/components/recipe/recipe-body";
 import { RecipeIntro } from "@/components/recipe/recipe-intro";
 import { photoUrl } from "@/lib/domain/photo";
 import { type Locale, type PublicRecipe, recipePath } from "@/lib/server/recipes/public";
-import { cachedCatalog, cachedRecipe } from "@/lib/server/recipes/public-cache";
+import { articlePath } from "@/lib/server/articles/public";
+import { cachedCatalog, cachedRecipe, cachedRecipeArticles } from "@/lib/server/recipes/public-cache";
 
 import { otherLocale, pageLocale } from "../../_components/page-locale";
 import { pageMetadata } from "../../_components/page-metadata";
@@ -45,8 +47,9 @@ export default async function RecipePage({ params }: Props) {
 async function RecipeScreen({ params, locale }: Pick<Props, "params"> & { locale: Locale }) {
   await io();
   const { slug } = await params;
-  const [catalog, recipe, t] = await Promise.all([cachedCatalog(locale), cachedRecipe(locale, slug), getTranslations("Recipe")]);
+  const [catalog, recipe, t, a] = await Promise.all([cachedCatalog(locale), cachedRecipe(locale, slug), getTranslations("Recipe"), getTranslations("Articles")]);
   if (!recipe) notFound();
+  const articles = await cachedRecipeArticles(locale, recipe.id);
   const other = otherLocale(locale);
   const hasCup = recipe.view.ingredients.some((item) => item.unit === "стак.");
   return (
@@ -57,6 +60,14 @@ async function RecipeScreen({ params, locale }: Pick<Props, "params"> & { locale
           <RecipeIntro recipe={recipe.view} />
           {hasCup && t("cupNote") && <p className="text-sm text-tertiary">{t("cupNote")}</p>}
         </RecipeBody>
+        {articles.length > 0 && (
+          <section aria-labelledby="recipe-articles" className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 pt-4 pb-16">
+            <h2 id="recipe-articles" className="font-display text-display-xs text-primary">
+              {a("related")}
+            </h2>
+            <ArticleGrid cards={articles.map((card) => ({ href: articlePath(locale, card.slug), title: card.title, excerpt: card.excerpt, photo: card.photo }))} />
+          </section>
+        )}
       </main>
     </>
   );

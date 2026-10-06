@@ -3,7 +3,7 @@ tier: 1
 topic: deployment
 scope: CI/CD, прод, автодеплой, откат, бэкапы
 tier2: ""
-updated: 2026-10-03
+updated: 2026-10-06
 importance: high
 source: manual
 status: working
@@ -38,7 +38,7 @@ review_after: 2026-10-29
 ## Бэкап (решение владельца 29.09)
 Сервер: `deploy/recipe-db-backup.sh` — `pg_dump -Fc` раз в сутки, ≤ 7 дней (с фото — ADR-0028). У владельца:
 `deploy/local/recipe-backup-pull.sh` (≤ 7 дней, проверки) и еженедельно `deploy/local/recipe-restore-drill.sh`
-(восстановление + целость фото).
+(восстановление + целость фото). Фото статей (ADR-0034) — до 10 на статью: следить за размером дампа.
 
 ## Открыто
 Канал алертов (Telegram) — пока итоги проверок только в журнале.

@@ -7,7 +7,7 @@ import { log } from "@/lib/server/log";
 import { PhotoError } from "./process";
 
 // Обработка фото — одна на весь сервер (0,25 CPU, 384 МБ): вторая сразу получает «подождите», а не очередь
-// буферизованных запросов; не больше 30 за час. Ошибки — понятными фразами для владельца (ADR-0028).
+// буферизованных запросов; не больше 30 за час — общий лимит фото рецептов и статей (ADR-0034). Ошибки — понятными фразами для владельца (ADR-0028).
 export type PhotoResult = { ok: true } | { ok: false; message: string };
 
 const MESSAGES = {
@@ -19,6 +19,8 @@ const MESSAGES = {
   limit: "Слишком много фото за час — попробуйте позже.",
   conflict: "Фото уже изменили в другой вкладке — обновите страницу.",
   "not-found": "Рецепт не найден — возможно, его удалили.",
+  gone: "Статья не найдена — возможно, её удалили.",
+  "too-many": "В статье уже 10 фото — сначала уберите лишнее.",
   storage: "Не получилось сохранить — попробуйте ещё раз.",
 } as const;
 export const fail = (reason: keyof typeof MESSAGES): PhotoResult => ({ ok: false, message: MESSAGES[reason] });
@@ -27,7 +29,7 @@ let processing = false;
 
 export async function exclusive(work: () => Promise<PhotoResult>): Promise<PhotoResult> {
   if (processing) return fail("busy");
-  if (!allow("recipe-photo", 30, 60 * 60 * 1000)) return fail("limit");
+  if (!allow("photo", 30, 60 * 60 * 1000)) return fail("limit");
   processing = true;
   try {
     return await work();

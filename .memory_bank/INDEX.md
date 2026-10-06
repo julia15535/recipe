@@ -25,13 +25,14 @@
 | Сущности — рецепт, ингредиенты, шаги, справочники, категории/теги | `core/data-models.md` | `domain/recipe-model.md` |
 | CI/CD, прод, автодеплой, откат, бэкапы | `core/deployment.md` | — |
 | Справочник ингредиентов — иерархия, единицы, граммовые эквиваленты, КБЖУ | `core/ingredients.md` | `domain/recipe-model.md` |
-| Перед планированием — уроки; что пробовали и что НЕ сработало, отброшенные подходы | `core/lessons.md` | `anti-patterns.md` |
+| Уроки перед планом — что пробовали и что не сработало | `core/lessons.md` | `anti-patterns.md` |
 | Бизнес-контекст — зачем продукт, для кого, что в scope, критерии успеха | `product_brief.md` | — |
-| Добавление рецепта — ИИ-импорт (текст, голос, фото, PDF/Word), предпросмотр | `core/recipe-import.md` | `domain/ai-import.md` |
+| ИИ-импорт рецепта — текст, голос, фото, PDF/Word | `core/recipe-import.md` | `domain/ai-import.md` |
 | Добавление рецепта — вставить любой текст, ИИ-разбор, проверка, публикация | `core/recipe-upload.md` | `domain/recipe-upload.md` |
 | Пересчёт от основного ингредиента, порции, правила округления | `core/rescaling.md` | `domain/rounding-rules.md` |
-| Поиск — «По рецепту / По ингредиенту», иерархия, уточнение категорией и тегом | `core/search.md` | `domain/search-spec.md` |
+| Поиск — по рецепту и ингредиенту, уточнение разделом и тегом | `core/search.md` | `domain/search-spec.md` |
 | Экраны и mobile-first — главная, страница рецепта, работа одной рукой | `core/ux.md` | `domain/screens.md` |
+| Статьи — текст владельца с фото, связь с рецептами | `core/articles.md` | `domain/articles.md` |
 | Сквозные сценарии посетителя и владельца, статусы рецепта | `core/flows.md` | — |
 | SEO публичных страниц, RU + EN, URL-схема, SEO-футер | `core/seo-i18n.md` | — |
 <!-- GENERATED:decision-tree END -->
