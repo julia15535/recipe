@@ -3,7 +3,7 @@ tier: 1
 topic: ingredients
 scope: Справочник ингредиентов — иерархия, единицы, граммовые эквиваленты, КБЖУ
 tier2: ../domain/recipe-model.md
-updated: 2026-10-03
+updated: 2026-10-06
 importance: high
 source: _intake/_processed/brief/product-decisions.md
 status: draft

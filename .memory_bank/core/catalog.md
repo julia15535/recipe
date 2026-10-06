@@ -8,7 +8,7 @@ importance: high
 source: _intake/_processed/brief/product-decisions-2026-10-01.md
 status: draft
 source_of_truth: supporting
-last_verified: 2026-10-02
+last_verified: 2026-10-06
 review_after: 2026-12-27
 ---
 

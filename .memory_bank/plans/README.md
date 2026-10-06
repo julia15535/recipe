@@ -37,7 +37,7 @@ draft → in_progress → completed → перенос в completed_plans/
 
 | slug | Название | status | created | updated |
 |------|----------|--------|---------|---------|
-| composition-tags-omega-antioxidants | Теги состава «Омега-3» и «Антиоксиданты» | in_progress | 2026-10-06 | 2026-10-06 |
+| _(нет активных планов)_ | | | | |
 <!-- GENERATED:plans-registry END -->
 
 > Шаблон нового плана — `_template.md`. Реестр регенерирует аудит — руками не правим.
