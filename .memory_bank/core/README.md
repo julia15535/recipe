@@ -19,7 +19,7 @@
 | `data-models.md` | data-models | Сущности — рецепт, ингредиенты, шаги, справочники, категории/теги | `../domain/recipe-model.md` | 2026-10-06 |
 | `deployment.md` | deployment | CI/CD, прод, автодеплой, откат, бэкапы | — | 2026-10-06 |
 | `ingredients.md` | ingredients | Справочник ингредиентов — иерархия, единицы, граммовые эквиваленты, КБЖУ | `../domain/recipe-model.md` | 2026-10-03 |
-| `lessons.md` | lessons | Уроки перед планом — что пробовали и что не сработало | `../anti-patterns.md` | 2026-10-03 |
+| `lessons.md` | lessons | Уроки перед планом — что пробовали и что не сработало | `../anti-patterns.md` | 2026-10-06 |
 | `recipe-import.md` | recipe-import | ИИ-импорт рецепта — текст, голос, фото, PDF/Word | `../domain/ai-import.md` | 2026-10-06 |
 | `recipe-upload.md` | recipe-upload | Добавление рецепта — вставить любой текст, ИИ-разбор, проверка, публикация | `../domain/recipe-upload.md` | 2026-10-03 |
 | `rescaling.md` | rescaling | Пересчёт от основного ингредиента, порции, правила округления | `../domain/rounding-rules.md` | 2026-10-03 |

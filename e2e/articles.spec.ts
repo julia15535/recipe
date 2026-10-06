@@ -30,6 +30,9 @@ async function aiCalls(page: Page): Promise<number> {
   return ((await (await page.request.get(`http://127.0.0.1:${AI_STUB_PORT}/__ai-calls`)).json()) as { calls: number }).calls;
 }
 
+// Порядок блоков статьи на сайте — с повтором: страница дописывается потоком, снимок мог бы застать её недогруженной.
+const order = (page: Page) => page.locator("main article > *").evaluateAll((els) => els.map((el) => el.tagName));
+
 async function expectGood(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
   // Служебный «объявитель» React Aria ([data-live-announcer]) после окна кадрирования ещё несколько секунд ссылается на
@@ -107,7 +110,7 @@ test("статья: текст → фото между абзацами → св
   }
   await page.setViewportSize({ width: 375, height: 812 });
   // Фото стоит после первого абзаца — перед заголовком «С творожным сыром и рыбой».
-  expect(await page.locator("main article > *").evaluateAll((els) => els.map((el) => el.tagName))).toEqual(["H1", "P", "FIGURE", "H2", "P", "H2", "UL", "SECTION"]);
+  await expect.poll(() => order(page)).toEqual(["H1", "P", "FIGURE", "H2", "P", "H2", "UL", "SECTION"]);
 
   // Рецепт ведёт на статью; на главной — блок «Статьи».
   await page.getByRole("link", { name: new RegExp(recipeTitle) }).click();
@@ -130,7 +133,7 @@ test("статья: текст → фото между абзацами → св
   await page.waitForURL(cabinet);
   expect(await aiCalls(page)).toBe(before);
   await page.goto(site, { waitUntil: "networkidle" });
-  expect(await page.locator("main article > *").evaluateAll((els) => els.map((el) => el.tagName))).toEqual(["H1", "P", "H2", "P", "H2", "UL", "FIGURE", "SECTION"]);
+  await expect.poll(() => order(page)).toEqual(["H1", "P", "H2", "P", "H2", "UL", "FIGURE", "SECTION"]);
 
   // Метку стёрли в тексте — предупреждение до сохранения, фото «без места» (на сайте его нет) → убрать его там.
   await page.goto(`${cabinet}/edit`);
@@ -150,7 +153,9 @@ test("статья: текст → фото между абзацами → св
   await expect(page.getByText("Фото убрано.")).toBeVisible();
   await expect(page.getByRole("region", { name: "Фото без места" })).toHaveCount(0);
   // Снять, удалить черновик; рецепт — тоже.
+  // Дожидаемся, что статья снята: иначе на медленной машине сайт откроется раньше, чем сервер её снимет.
   await page.getByRole("button", { name: "Снять с публикации" }).click();
+  await expect(page.getByRole("button", { name: "Опубликовать" })).toBeVisible();
   await page.goto(site);
   await expect(page.getByRole("heading", { name: "Страница не найдена" })).toBeVisible();
   await page.goto(cabinet);

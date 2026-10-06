@@ -4,6 +4,7 @@ topic: how-to-write-rules
 scope: Как писать path-scoped правила .claude/rules/ — формат frontmatter, принципы
 tier1: ""
 updated: 2026-09-27
+last_verified: 2026-10-06
 importance: low
 source: manual
 ---
