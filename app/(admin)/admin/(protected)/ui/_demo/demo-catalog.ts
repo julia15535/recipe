@@ -27,8 +27,10 @@ export const COMPOSITION_TAGS = [
   { id: "protein", label: "Белок" },
   { id: "fiber", label: "Клетчатка" },
   { id: "healthy-fats", label: "Полезные жиры" },
+  { id: "omega-3", label: "Омега-3" },
   { id: "low-sugar", label: "Мало сахара" },
   { id: "iron", label: "Железо" },
+  { id: "antioxidants", label: "Антиоксиданты" },
 ] as const;
 
 export type CompositionTagId = (typeof COMPOSITION_TAGS)[number]["id"];

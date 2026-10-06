@@ -15,7 +15,8 @@ export const SECTION_CODES = [
 ] as const;
 export type SectionCode = (typeof SECTION_CODES)[number];
 
-export const TAG_CODES = ["protein", "fiber", "healthy-fats", "low-sugar", "iron"] as const;
+// Порядок — как в фильтре поиска (composition_tags.position, миграция 0011).
+export const TAG_CODES = ["protein", "fiber", "healthy-fats", "omega-3", "low-sugar", "iron", "antioxidants"] as const;
 export type TagCode = (typeof TAG_CODES)[number];
 
 const SECTION_WORDS: Record<SectionCode, readonly string[]> = {
@@ -32,19 +33,23 @@ const SECTION_WORDS: Record<SectionCode, readonly string[]> = {
   preserves: ["заготовка", "заготовки"],
 };
 
-// «Без сахара» не тег (владелец 01.10: «без сахара не надо писать»).
+// «Без сахара» не тег (владелец 01.10: «без сахара не надо писать»). Просто «омега» — не тег: бывает омега-6 и омега-9.
 const TAG_WORDS: Record<TagCode, readonly string[]> = {
   protein: ["белок", "белки", "белковое", "много белка"],
   fiber: ["клетчатка"],
   "healthy-fats": ["полезные жиры"],
+  "omega-3": ["омега-3", "омега 3", "омега3"],
   "low-sugar": ["мало сахара"],
   iron: ["железо"],
+  antioxidants: ["антиоксиданты", "антиоксидант"],
 };
 
 export function normalizeWord(text: string): string {
   return text
     .toLowerCase()
     .replaceAll("ё", "е")
+    // Дефисы и тире из текстовых редакторов («омега‑3», «омега–3») — обычный дефис.
+    .replace(/[\u2010-\u2015\u2212]/gu, "-")
     .replace(/[.!?;:]+$/, "")
     .replace(/\s+/g, " ")
     .trim();

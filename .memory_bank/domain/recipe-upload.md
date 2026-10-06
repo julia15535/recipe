@@ -3,7 +3,7 @@ tier: 2
 topic: recipe-upload-details
 scope: Добавление рецепта вставкой текста в кабинете — формат «как пишет владелец», разбор, замечания, сохранение, схема БД рецептов, тесты
 tier1: ../core/recipe-upload.md
-updated: 2026-10-03
+updated: 2026-10-06
 importance: high
 source: manual
 status: working
@@ -136,4 +136,5 @@ ingredients-panel}.tsx` на модели `components/recipe/view.ts`; прот�
 статусы, советы, `original_text`, разборы, права роли). e2e: `e2e/recipes.spec.ts` с заглушкой шлюза
 `e2e/support/ai-stub.ts` (котлеты абзацем → «Проверьте» → черновик с советами → опубликовать → снять → удалить; двойной
 клик — один вызов; не рецепт; сбой → «Разобрать ещё раз» и старый формат; «Изменить» и устаревшая вкладка; HTML как
-текст; 375 и 1280 px, axe). Настоящая модель — вручную (`lib/server/ai/recipe-eval.live.test.ts`).
+текст; 375 и 1280 px, axe); строка «Теги: …» в тексте — заглушка берёт теги состава из неё (`e2e/composition-tags.spec.ts`).
+Настоящая модель — вручную (`lib/server/ai/recipe-eval.live.test.ts`, 20 примеров; теги состава — 17…20).

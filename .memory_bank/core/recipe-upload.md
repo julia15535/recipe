@@ -3,7 +3,7 @@ tier: 1
 topic: recipe-upload
 scope: Добавление рецепта — вставить любой текст, ИИ-разбор, проверка, публикация
 tier2: ../domain/recipe-upload.md
-updated: 2026-10-03
+updated: 2026-10-06
 importance: high
 source: manual
 status: working

@@ -51,7 +51,7 @@ export const RECIPES: DemoRecipe[] = [
   },
   {
     slug: "bowl", title: "Боул с лососем, киноа и авокадо", description: "Тёплая киноа, лосось, авокадо, шпинат и семечки — всё в одной миске.",
-    sections: ["salads", "hot"], composition: ["protein", "fiber", "healthy-fats", "low-sugar", "iron"], time: "30 мин", yield: { amount: 2 }, tone: "from-brand-100 to-accent-200", main: 0,
+    sections: ["salads", "hot"], composition: ["protein", "fiber", "healthy-fats", "omega-3", "low-sugar", "iron", "antioxidants"], time: "30 мин", yield: { amount: 2 }, tone: "from-brand-100 to-accent-200", main: 0,
     ingredients: [ing("Лосось", 300, "г"), ing("Киноа", 120, "г"), ing("Авокадо", 1, "шт."), ing("Шпинат", 60, "г"), ing("Тыквенные семечки", 20, "г")],
     search: ["Лосось", "Киноа", "Авокадо"],
     steps: ["Отварите киноа 15 минут.", "Запеките лосось 12 минут при 200 °C.", "Разложите по мискам киноа, шпинат, лосось и авокадо, посыпьте семечками."],

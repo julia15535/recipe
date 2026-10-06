@@ -6,8 +6,10 @@ const TAG_STYLES: Record<string, string> = {
   protein: "bg-tag-protein-bg text-tag-protein-fg ring-tag-protein-border",
   fiber: "bg-tag-fiber-bg text-tag-fiber-fg ring-tag-fiber-border",
   "healthy-fats": "bg-tag-healthy-fats-bg text-tag-healthy-fats-fg ring-tag-healthy-fats-border",
+  "omega-3": "bg-tag-omega-3-bg text-tag-omega-3-fg ring-tag-omega-3-border",
   "low-sugar": "bg-tag-low-sugar-bg text-tag-low-sugar-fg ring-tag-low-sugar-border",
   iron: "bg-tag-iron-bg text-tag-iron-fg ring-tag-iron-border",
+  antioxidants: "bg-tag-antioxidants-bg text-tag-antioxidants-fg ring-tag-antioxidants-border",
 };
 const NEUTRAL = "bg-secondary text-secondary ring-secondary";
 

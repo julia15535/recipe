@@ -80,6 +80,6 @@ describe.skipIf(!enabled)("ИИ-разбор на настоящей модел�
     expect(compareRows(draft.ingredients, expected.rows)).toEqual([]);
     if (expected.steps !== undefined) expect(draft.steps).toHaveLength(expected.steps);
     if (expected.tips !== undefined) expect(draft.tips).toHaveLength(expected.tips);
-    expected.check?.({ steps: draft.steps, tips: draft.tips, notes: notes.map(plain), styles: draft.ingredients.map((item) => item.amountStyle ?? "-") });
+    expected.check?.({ steps: draft.steps, tips: draft.tips, notes: notes.map(plain), styles: draft.ingredients.map((item) => item.amountStyle ?? "-"), tags: draft.tags });
   }, 120_000);
 });

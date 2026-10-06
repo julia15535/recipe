@@ -155,7 +155,7 @@ describe.skipIf(!enabled)("перевод: БД", () => {
     created.push(saved.id);
     await translate(saved.id, false);
     const { slug } = await translationState(saved.id);
-    expect((await readCards("en")).find((c) => c.slug === slug)?.tag).toEqual({ id: "fiber", label: "Fibre" });
+    expect((await readCards("en")).find((c) => c.slug === slug)?.tag).toEqual({ id: "fiber", label: "Fiber" });
     expect((await readSearchIndex("en")).find((item) => item.slug === slug)).toMatchObject({ tag: { id: "fiber" }, tagCodes: ["fiber", "protein"] });
   });
 

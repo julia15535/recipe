@@ -5,7 +5,9 @@ import aiVafli from "@/lib/domain/recipe-text/fixtures/ai-vafli.json";
 import vafliV2 from "@/lib/domain/recipe-text/fixtures/vafli-v2.txt?raw";
 import { fromAi } from "@/lib/domain/recipe-text/from-ai";
 
-import { RECIPE_JSON_SCHEMA } from "./recipe-schema";
+import { TAG_CODES } from "@/lib/domain/catalog";
+
+import { aiRecipeSchema, RECIPE_JSON_SCHEMA } from "./recipe-schema";
 
 const pattern = new RegExp(RECIPE_JSON_SCHEMA.properties.ingredients.items.properties.amount.pattern);
 const labels = { sections: new Map<string, string>(), tags: new Map<string, string>() };
@@ -37,5 +39,12 @@ describe("схема ответа ИИ и наш разбор количеств
 
   it("чужое схема не пропускает", () => {
     for (const amount of ["½", "1,2,3", "пол", "1/2/3", ""]) expect(pattern.test(amount), amount).toBe(false);
+  });
+
+  it("теги состава: все семь вместе проходят (и в схеме для ИИ — тот же предел), восемь — нет", () => {
+    expect(RECIPE_JSON_SCHEMA.properties.tags.maxItems).toBe(7);
+    expect(aiRecipeSchema.safeParse({ ...(aiVafli as AiRecipe), tags: [...TAG_CODES] }).success).toBe(true);
+    expect(aiRecipeSchema.safeParse({ ...(aiVafli as AiRecipe), tags: [...TAG_CODES, "protein"] }).success).toBe(false);
+    expect(aiRecipeSchema.safeParse({ ...(aiVafli as AiRecipe), tags: ["omega"] }).success).toBe(false);
   });
 });

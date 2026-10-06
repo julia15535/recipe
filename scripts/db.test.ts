@@ -5,6 +5,8 @@ import { spawn } from "node:child_process";
 import postgres from "postgres";
 import { afterAll, describe, expect, it } from "vitest";
 
+import { TAG_CODES } from "@/lib/domain/catalog";
+
 const enabled = process.env.RECIPE_DB_TESTS === "1";
 const appUrl = process.env.DATABASE_URL ?? "postgres://recipe_app:recipe_app_dev@127.0.0.1:5434/recipe";
 const migratorUrl =
@@ -40,6 +42,20 @@ describe.skipIf(!enabled)("БД: роли и мигратор", () => {
     expect(await count()).toBe(before);
     await owner.end({ timeout: 5 });
   }, 60_000);
+
+  it("теги состава после миграций: те же семь кодов, что в коде, в порядке фильтра; у каждого подписи ru и en", async () => {
+    const rows = await app<{ code: string; id: string; ru: string; en: string }[]>`
+      select t.code, t.id::text as id,
+        max(l.label) filter (where l.locale = 'ru') as ru,
+        max(l.label) filter (where l.locale = 'en') as en
+      from composition_tags t join composition_tag_localizations l on l.tag_id = t.id
+      group by t.id, t.code, t.position order by t.position`;
+    expect(rows.map((row) => row.code)).toEqual([...TAG_CODES]);
+    expect(rows.find((row) => row.code === "omega-3")).toEqual({ code: "omega-3", id: "d7f2c44c-a0e4-4f09-8333-43cc7376d713", ru: "Омега-3", en: "Omega-3" });
+    expect(rows.find((row) => row.code === "antioxidants")).toEqual({ code: "antioxidants", id: "092046fc-4b5f-4705-bebe-2165cc3bb061", ru: "Антиоксиданты", en: "Antioxidants" });
+    expect(rows.find((row) => row.code === "fiber")?.en).toBe("Fiber");
+    expect(rows.every((row) => row.ru && row.en)).toBe(true);
+  });
 
   it("роль рантайма не может менять схему", async () => {
     await expect(app`create table recipe_app_ddl_probe (id int)`).rejects.toThrow(/permission denied/);

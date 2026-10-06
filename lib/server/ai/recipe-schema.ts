@@ -28,7 +28,7 @@ export const RECIPE_JSON_SCHEMA = {
       properties: { amount: str(20), word: str(30) },
     },
     sections: { type: "array", maxItems: 3, items: { type: "string", enum: [...SECTION_CODES] } },
-    tags: { type: "array", maxItems: 5, items: { type: "string", enum: [...TAG_CODES] } },
+    tags: { type: "array", maxItems: TAG_CODES.length, items: { type: "string", enum: [...TAG_CODES] } },
     // Перед ingredients: модель сначала решает, есть ли список автора (порядок полей = порядок ответа).
     ingredients_source: { type: "string", enum: ["list", "text"] },
     ingredients: {
@@ -68,7 +68,7 @@ export const aiRecipeSchema: z.ZodType<AiRecipe> = z.object({
   time: maybe(100),
   yield: z.object({ amount: text(20), word: text(30) }).nullable(),
   sections: z.array(z.enum(SECTION_CODES)).max(3),
-  tags: z.array(z.enum(TAG_CODES)).max(5),
+  tags: z.array(z.enum(TAG_CODES)).max(TAG_CODES.length),
   ingredients_source: z.enum(["list", "text"]),
   ingredients: z
     .array(z.object({ name: text(200), amount: maybe(40), unit: maybe(30), note: maybe(300), is_main: z.boolean() }))

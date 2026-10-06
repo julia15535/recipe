@@ -2,7 +2,7 @@
 workstream: catalog
 slug: composition-tags-omega-antioxidants
 title: Теги состава «Омега-3» и «Антиоксиданты»
-status: draft
+status: in_progress
 created: 2026-10-06
 updated: 2026-10-06
 completed:
@@ -94,6 +94,7 @@ completed:
 
 ## Лог выполнения
 - 2026-10-06 — план создан (draft)
+- 2026-10-06 — «деплой» от владельца; ветка `feature/composition-tags`
 - 2026-10-06 — критика Codex учтена: абсолютные позиции и проверки в миграции, без «омега», дефисы, issues.ts,
   узкие списки продуктов с источниками, отрицательные примеры ИИ, цвета, риск старой версии при выкладке, снимок EN,
   Fibre → Fiber

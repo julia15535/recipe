@@ -4,8 +4,14 @@
 // сколько шагов и советов у автора (там, где он сам их пронумеровал или выделил): ничего не потеряно и не слито.
 import { expect } from "vitest";
 
-/** `styles` — запись числа у автора по строкам (ADR-0032): fraction / decimal / «-» (целое, без числа). */
-type Seen = { steps: string[]; tips: string[]; notes: string[]; styles: string[] };
+/** `styles` — запись числа у автора по строкам (ADR-0032): fraction / decimal / «-» (целое, без числа); `tags` — теги состава. */
+type Seen = { steps: string[]; tips: string[]; notes: string[]; styles: string[]; tags: string[] };
+
+// Новые теги (ADR-0035): за основу блюда — да; за щепотку, украшение, масло для смазывания, креветки, крошку — нет.
+const tagged = (yes: string[], no: string[]) => ({ tags }: Seen) => {
+  expect(tags).toEqual(expect.arrayContaining(yes));
+  for (const code of no) expect(tags).not.toContain(code);
+};
 type Expected = "text" | "not_recipe" | { rows: readonly string[]; steps?: number; tips?: number; check?: (seen: Seen) => void };
 
 export const EXPECTED: Record<string, Expected> = {
@@ -75,5 +81,24 @@ export const EXPECTED: Record<string, Expected> = {
     rows: ["молоко|500|мл", "мука|3/2|стак.", "сахар|3/2|ст. л.", "соль|1/2|ч. л.", "сода|1/4|ч. л.", "яйц|2|шт.", "масло растительное/растительное масло|1/2|ст. л."],
     steps: 3,
     check: ({ styles }) => expect(styles).toEqual(["-", "fraction", "decimal", "fraction", "decimal", "-", "fraction"]),
+  },
+  "17-losos-omega.txt": {
+    rows: ["филе лосося/лосос|600|г", "лимон|1|шт.", "оливковое масло|1|ст. л.", "соль|-|*", "?перец/черный перец|-|*"],
+    steps: 3,
+    check: tagged(["omega-3"], ["antioxidants"]),
+  },
+  "18-smuzi-chernika.txt": { rows: ["черник|200|г", "банан|1|шт.", "натуральный йогурт/йогурт|150|мл", "мед|1|ч. л."], check: tagged(["antioxidants"], ["omega-3"]) },
+  "19-krevetki-bez-omega.txt": {
+    rows: ["креветки|300|г", "огур|1|шт.", "помидоры черри|150|г", "листья салата|1|*", "оливковое масло|2|ст. л.", "лимонный сок|1|ст. л.", "семена чиа|*|*"],
+    steps: 3,
+    check: tagged([], ["omega-3", "antioxidants"]),
+  },
+  "20-maffiny-kroshka.txt": {
+    rows: [
+      "мука|250|г", "сахар|120|г", "яйц|2|шт.", "молоко|200|мл", "сливочное масло|80|г", "разрыхлитель|2|ч. л.", "шоколадная крошка|50|г",
+      "грецкие орехи|3|*", "рапсовое масло|-|*",
+    ],
+    steps: 4,
+    check: tagged([], ["omega-3", "antioxidants"]),
   },
 };
