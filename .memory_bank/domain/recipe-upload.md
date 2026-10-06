@@ -16,7 +16,8 @@ review_after: 2026-12-27
 
 ## ИИ-разбор (основной путь, ADR-0024)
 - Поток: «Разобрать» → `aiParseRecipe` (`app/(admin)/admin/(protected)/recipes/ai-actions.ts`: `requireOwner()`,
-  один разбор за раз, ≤ 30 в час — в памяти и по сумме `recipe_imports` + `article_imports`: лимит общий со статьями) → `parseWithAi` (`lib/server/ai/parse-recipe.ts`:
+  один запрос ИИ кабинета за раз — общий с разметкой статей и подбором тегов, `lib/server/ai/one-at-a-time.ts`; ≤ 30 в
+  час — в памяти и по сумме `recipe_imports` + `article_imports`: лимит общий со статьями и подбором тегов) → `parseWithAi` (`lib/server/ai/parse-recipe.ts`:
   ≤ 20 КБ) → шлюз (`lib/server/ai/gateway.ts`: `json_schema strict`, `reasoning_effort: low` для `openai/gpt-*`, таймаут — от вызывающего, без автоповторов;
   сбои — timeout/network/auth/rate/server/bad-response/refusal/length) → zod (`recipe-schema.ts`) → `fromAi`
   (`lib/domain/recipe-text/from-ai.ts`) → проверка, что аккуратный текст ≤ 20 КБ → `recipe_imports` (сутки) → предпросмотр.
@@ -53,7 +54,9 @@ review_after: 2026-12-27
   заготовка, инъекция, не рецепт, список + добавка в шаге, «Нужно: …» в абзаце, дроби; 17…21 — теги состава) — числа в шагах и советах только из
   текста; у списков — точные строки «название|количество|единица» по порядку (`lib/server/ai/recipe-eval.expected.ts`),
   абзацы — с замечанием «списка не было»; «Омега-3» и «Антиоксиданты» — только в примерах из `NEW_TAGS_MAY_BE`, в остальных
-  их быть не должно. Замер 06.10 (версия 2026-10-06.3): 21/21. Менять промпт/модель — только с этим прогоном.
+  их быть не должно; «Мало сахара» — не у несладких (`NOT_SWEET`). Замер 06.10 (версия 2026-10-06.4): 21/21. Подбор тегов
+  кнопкой — своя проверка на тех же примерах (`lib/server/ai/suggest-tags.live.test.ts`, 21/21). Менять промпт/модель —
+  только с этими прогонами; правило тегов общее (`TAGS_RULE`), хэш промпта разбора — `suggest-tags.test.ts`.
 - Совместимость схемы: Gemini (`google/gemini-3.1-flash-lite`) не принимает `type: ["object","null"]` — при смене
   провайдера проверить схему.
 

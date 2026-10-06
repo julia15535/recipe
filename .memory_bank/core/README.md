@@ -27,7 +27,7 @@
 | `ux.md` | ux | Экраны и mobile-first — главная, страница рецепта, работа одной рукой | `../domain/screens.md` | 2026-10-06 |
 | `articles.md` | articles | Статьи — текст владельца с фото, связь с рецептами | `../domain/articles.md` | 2026-10-06 |
 | `flows.md` | flows | Сквозные сценарии посетителя и владельца, статусы рецепта | — | 2026-09-27 |
-| `seo-i18n.md` | seo-i18n | SEO публичных страниц, RU + EN, URL-схема, SEO-футер | — | 2026-10-03 |
+| `seo-i18n.md` | seo-i18n | SEO публичных страниц, RU + EN, URL-схема, SEO-футер | — | 2026-10-06 |
 <!-- GENERATED:core-registry END -->
 
 > Реестр и decision tree в INDEX регенерирует `tools/memory-audit.mjs` (или `/memory-check`

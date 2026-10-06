@@ -29,10 +29,12 @@ export function TagsBlock({ recipeId, revision, tags, current }: Props) {
   const labelOf = (code: TagCode) => tags.find((tag) => tag.code === code)?.label ?? code;
   const toggle = (code: TagCode) => setSelected((list) => (list.includes(code) ? list.filter((item) => item !== code) : [...list, code]));
 
-  const run = (kind: "suggest" | "save", work: () => Promise<void>) =>
+  // «Подбираю…» / «Сохраняю…» и сброс прежнего сообщения — до перехода: внутри async-перехода React применил бы их
+  // только в конце действия, и подпись не появилась бы.
+  const run = (kind: "suggest" | "save", work: () => Promise<void>) => {
+    setDoing(kind);
+    setNote(null);
     start(async () => {
-      setDoing(kind);
-      setNote(null);
       try {
         await work();
       } catch {
@@ -41,6 +43,7 @@ export function TagsBlock({ recipeId, revision, tags, current }: Props) {
         setDoing(null);
       }
     });
+  };
   const suggest = () =>
     run("suggest", async () => {
       const result = await suggestRecipeTags({ id: recipeId, revision: base.revision });
@@ -97,7 +100,7 @@ export function TagsBlock({ recipeId, revision, tags, current }: Props) {
       </p>
       <div className="flex flex-wrap items-center gap-3">
         <AppButton color="secondary" iconLeading={Sparkles} onPress={suggest} isDisabled={pending}>
-          {doing === "suggest" ? "Подбираю…" : "Подобрать с ИИ"}
+          {pending && doing === "suggest" ? "Подбираю…" : "Подобрать с ИИ"}
         </AppButton>
         {suggestion && (
           <AppButton color="secondary" onPress={() => setSelected(suggestion)} isDisabled={pending || sameSet(suggestion, selected)}>
@@ -105,7 +108,7 @@ export function TagsBlock({ recipeId, revision, tags, current }: Props) {
           </AppButton>
         )}
         <AppButton onPress={save} isDisabled={pending || sameSet(selected, base.tags)}>
-          {doing === "save" ? "Сохраняю…" : "Сохранить теги"}
+          {pending && doing === "save" ? "Сохраняю…" : "Сохранить теги"}
         </AppButton>
       </div>
     </section>

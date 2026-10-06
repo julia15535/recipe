@@ -37,7 +37,7 @@ draft → in_progress → completed → перенос в completed_plans/
 
 | slug | Название | status | created | updated |
 |------|----------|--------|---------|---------|
-| recipe-tags-button | Кнопка «Подобрать теги» на странице рецепта в кабинете | draft | 2026-10-06 | 2026-10-06 |
+| recipe-tags-button | Кнопка «Подобрать теги» на странице рецепта в кабинете | in_progress | 2026-10-06 | 2026-10-06 |
 <!-- GENERATED:plans-registry END -->
 
 > Шаблон нового плана — `_template.md`. Реестр регенерирует аудит — руками не правим.

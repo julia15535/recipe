@@ -90,7 +90,7 @@ export async function translatedCounts(db: Executor): Promise<Map<string, number
   return counts;
 }
 
-/** Английские карточки и записи поиска — из снимков (разделы, теги, ингредиенты на момент перевода). */
+/** Английские карточки и записи поиска — из снимков (разделы, ингредиенты на момент перевода), теги — живые. */
 export async function englishItems(filter: { sectionCode?: string; limit?: number } = {}): Promise<{ card: PublicCard; search: SearchItem }[]> {
   const db = getDb();
   const rows = await translatedRecipes(db, filter);
@@ -102,7 +102,7 @@ export async function englishItems(filter: { sectionCode?: string; limit?: numbe
       time: text.timeText,
       section: { code: body.primarySectionCode, label: catalog.sections.get(body.primarySectionCode)?.label ?? "" },
       photo: photos.get(recipe.id) ?? null,
-      // Первый тег — из снимка (порядок автора); нет английской подписи — тег не показываем.
+      // Первый тег — живой, в порядке автора (`liveTagCodes`); нет английской подписи — тег не показываем.
       tag: firstTag(body.tagCodes[0], catalog.tags),
     };
     return { card: { id: recipe.id, ...card }, search: { ...card, ingredients: body.ingredients.map((row) => row.name), sections: body.sectionCodes, tagCodes: body.tagCodes } };

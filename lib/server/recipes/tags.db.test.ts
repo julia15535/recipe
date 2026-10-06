@@ -57,7 +57,7 @@ describe.skipIf(!enabled)("теги рецепта: БД", () => {
     expect((await getRecipe(id))?.view.tags).toEqual([]);
   });
 
-  it("устаревшая вкладка — конфликт, удалённый рецепт — «нет»; неизвестный тег — откат целиком", async () => {
+  it("устаревшая вкладка — конфликт, удалённый рецепт — «нет»; неизвестный тег — ошибка, ничего не записано", async () => {
     const id = await recipe();
     const next = await retag(id, ["iron"]);
     expect(await setRecipeTags(id, 7, ["iron"], next.text)).toEqual({ ok: false, reason: "conflict" });

@@ -41,6 +41,9 @@ const MESSAGES: Record<string, string> = {
   rate: "ИИ сейчас перегружен. Попробуйте через минуту.",
   server: "У ИИ сбой. Попробуйте через минуту.",
   auth: "ИИ не принимает наш ключ — напишите мне, я проверю.",
+  refusal: "ИИ отказался подбирать теги — отметьте их сами.",
+  "bad-response": "ИИ ответил непонятно. Нажмите «Подобрать с ИИ» ещё раз.",
+  length: "ИИ ответил непонятно. Нажмите «Подобрать с ИИ» ещё раз.",
   storage: "Не получилось сохранить — попробуйте ещё раз. Отметки на месте.",
 };
 const FALLBACK = "Не удалось связаться с ИИ. Попробуйте ещё раз или отметьте теги сами.";
@@ -56,12 +59,12 @@ export async function suggestRecipeTags(input: z.input<typeof target>): Promise<
   if (!config) return fail("disabled");
   if (!takeAiTurn()) return fail("busy");
   try {
-    // Лимит общий с разборами рецептов и статей (ADR-0034): подборы считаются в памяти, в БД — только разборы.
-    const used = (await countImportsLastHour()) + (await countArticleImportsLastHour());
-    if (used >= IMPORTS_PER_HOUR || !allow("ai-parse", IMPORTS_PER_HOUR, HOUR)) return fail("limit");
     const recipe = await getRecipe(id);
     if (!recipe) return fail("gone");
     if (recipe.revision !== revision) return { ok: false, message: CONFLICT };
+    // Лимит общий с разборами рецептов и статей (ADR-0034): подборы считаются в памяти, в БД — только разборы.
+    const used = (await countImportsLastHour()) + (await countArticleImportsLastHour());
+    if (used >= IMPORTS_PER_HOUR || !allow("ai-parse", IMPORTS_PER_HOUR, HOUR)) return fail("limit");
     const answer = await suggestTagsWithAi(withoutCatalogLines(recipe.sourceText), config);
     if (!answer.ok) return fail(answer.reason);
     if ((await getRecipe(id))?.revision !== revision) return { ok: false, message: CONFLICT };

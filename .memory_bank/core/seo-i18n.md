@@ -3,7 +3,7 @@ tier: 1
 topic: seo-i18n
 scope: SEO публичных страниц, RU + EN, URL-схема, SEO-футер
 tier2: ""
-updated: 2026-10-03
+updated: 2026-10-06
 importance: med
 source: _intake/_processed/brief/technical_spec_recipe_book.md
 status: draft
@@ -25,7 +25,7 @@ JSON-LD Recipe · хлебные крошки · индексируемые ра
 Категории, подкатегории, теги, подборки — в футере, не в основном интерфейсе (позже).
 
 ## Языки (ADR-0009, ADR-0029)
-- RU — основной; EN — перевод ИИ, разделы и теги — заранее заданные EN-названия (миграция 0008).
+- RU — основной; EN — перевод ИИ, разделы и теги — EN-названия (0008, 0011); теги — живые (ADR-0036).
 - URL: всегда с префиксом `/ru/…`, `/en/…` (`i18n/routing.ts`, ADR-0011). `/` — по языку браузера и cookie выбора
   `NEXT_LOCALE` (на год; пишет и `components/i18n/locale-cookie.tsx` — кнопка RU/EN переходит без перезагрузки),
   ответ `no-store` + `Vary` (`proxy.ts`, ADR-0029). `www` → основной домен 301 (`next.config.ts`).
