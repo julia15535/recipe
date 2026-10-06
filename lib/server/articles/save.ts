@@ -33,13 +33,25 @@ export function createArticle(draft: ArticleDraft, status: "draft" | "published"
 export function replaceArticle(id: string, expectedRevision: number, draft: ArticleDraft): Promise<ArticleOutcome> {
   return guarded("статьи", () =>
     getDb().transaction(async (tx) => {
+      // Переводимое содержание (будущий EN) меняется, только если поменялись название, текст или блоки.
+      // jsonb сравнивает сама база: порядок ключей в хранимом документе другой, JSON-строки не совпали бы.
+      const [current] = await tx
+        .select({
+          sourceText: articles.sourceText,
+          title: articleLocalizations.title,
+          sameBody: sql<boolean>`${articles.body} = ${JSON.stringify(draft.body)}::jsonb`,
+        })
+        .from(articles)
+        .innerJoin(articleLocalizations, and(eq(articleLocalizations.articleId, articles.id), eq(articleLocalizations.locale, "ru")))
+        .where(eq(articles.id, id));
+      const changed = !current || current.sourceText !== draft.sourceText || current.title !== texts(draft).title || !current.sameBody;
       const [updated] = await tx
         .update(articles)
         .set({
           sourceText: draft.sourceText,
           body: draft.body,
           revision: sql`${articles.revision} + 1`,
-          contentRevision: sql`${articles.contentRevision} + 1`,
+          ...(changed ? { contentRevision: sql`${articles.contentRevision} + 1` } : {}),
           updatedAt: sql`now()`,
         })
         .where(and(eq(articles.id, id), eq(articles.revision, expectedRevision)))

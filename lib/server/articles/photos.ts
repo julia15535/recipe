@@ -36,7 +36,7 @@ async function insertFiles(tx: Executor, photoId: string, files: RenderedFile[])
 export function addArticlePhoto(articleId: string, revision: number, key: string, rendered: Rendered, text: Text): Promise<ArticleOutcome> {
   return guarded("фото", () =>
     getDb().transaction(async (tx) => {
-      const updated = await bumpText(tx, articleId, revision, text);
+      const updated = await bumpText(tx, articleId, revision, text, true);
       if (!updated.ok) return updated;
       const photo = row(articleId, key, rendered);
       await tx.insert(t.articlePhotos).values(photo);
@@ -67,11 +67,12 @@ export function recropArticlePhoto(articleId: string, key: string, expected: str
   );
 }
 
-/** Убрать фото: метка из текста (готовит действие) и строка фото с файлами — вместе. */
-export function removeArticlePhoto(articleId: string, revision: number, key: string, text: Text): Promise<ArticleOutcome> {
+/** Убрать фото: метка из текста (готовит действие) и строка фото с файлами — вместе. У фото «без места» текст тот же —
+ * переводимое содержание не меняется (`content_revision` прежний). */
+export function removeArticlePhoto(articleId: string, revision: number, key: string, text: Text, textChanged: boolean): Promise<ArticleOutcome> {
   return guarded("фото", () =>
     getDb().transaction(async (tx) => {
-      const updated = await bumpText(tx, articleId, revision, text);
+      const updated = await bumpText(tx, articleId, revision, text, textChanged);
       if (updated.ok) await tx.delete(t.articlePhotos).where(and(eq(t.articlePhotos.articleId, articleId), eq(t.articlePhotos.key, key)));
       return updated;
     }),
@@ -82,12 +83,14 @@ export function removeArticlePhoto(articleId: string, revision: number, key: str
 export function setPhotoCaption(articleId: string, key: string, caption: string | null): Promise<boolean> {
   return guarded("фото", () =>
     getDb().transaction(async (tx) => {
-      const rows = await tx
-        .update(t.articlePhotos)
-        .set({ caption })
+      const [current] = await tx
+        .select({ caption: t.articlePhotos.caption })
+        .from(t.articlePhotos)
         .where(and(eq(t.articlePhotos.articleId, articleId), eq(t.articlePhotos.key, key)))
-        .returning({ id: t.articlePhotos.id });
-      if (!rows.length) return false;
+        .for("update");
+      if (!current) return false;
+      if (current.caption === caption) return true;
+      await tx.update(t.articlePhotos).set({ caption }).where(and(eq(t.articlePhotos.articleId, articleId), eq(t.articlePhotos.key, key)));
       await tx
         .update(t.articles)
         .set({ revision: sql`${t.articles.revision} + 1`, contentRevision: sql`${t.articles.contentRevision} + 1`, updatedAt: sql`now()` })
@@ -97,14 +100,14 @@ export function setPhotoCaption(articleId: string, key: string, caption: string 
   );
 }
 
-async function bumpText(tx: Executor, articleId: string, revision: number, text: Text): Promise<ArticleOutcome> {
+async function bumpText(tx: Executor, articleId: string, revision: number, text: Text, contentChanged: boolean): Promise<ArticleOutcome> {
   const [updated] = await tx
     .update(t.articles)
     .set({
       sourceText: text.sourceText,
       body: text.body,
       revision: sql`${t.articles.revision} + 1`,
-      contentRevision: sql`${t.articles.contentRevision} + 1`,
+      ...(contentChanged ? { contentRevision: sql`${t.articles.contentRevision} + 1` } : {}),
       updatedAt: sql`now()`,
     })
     .where(and(eq(t.articles.id, articleId), eq(t.articles.revision, revision)))

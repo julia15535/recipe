@@ -9,6 +9,7 @@ import { canonicalCrop, type CropFractions } from "@/lib/domain/photo";
 import { articlePhotoFileBytes } from "@/lib/server/articles/photo-reads";
 import { addArticlePhoto, recropArticlePhoto, removeArticlePhoto, setPhotoCaption } from "@/lib/server/articles/photos";
 import { getArticle } from "@/lib/server/articles/queries";
+import { storableIssue } from "@/lib/server/articles/storable";
 import type { ArticleOutcome } from "@/lib/server/articles/save";
 import { requireOwner } from "@/lib/server/auth/owner";
 import { StorageError } from "@/lib/server/db/errors";
@@ -63,6 +64,9 @@ export async function addPhotoHere(form: FormData): Promise<PhotoResult> {
     const sourceText = insertMarker(article.sourceText, line, photoKey);
     const moved = remap(article.sourceText, article.body, sourceText);
     if (!moved.ok) return fail("conflict");
+    // Метка добавляет строки и блок — у предела статья могла бы стать нечитаемой; проверяем той же схемой, что при чтении.
+    const size = storableIssue(sourceText, moved.body) ?? moved.issues.find((issue) => issue.group === "decide");
+    if (size) return { ok: false, message: size.text };
     return finish(await addArticlePhoto(articleId, revision, photoKey, { size: source.size, crop: cropped.rect, files }, { sourceText, body: moved.body }));
   });
 }
@@ -96,7 +100,10 @@ export async function removeArticlePhotoAction(articleId: string, revision: numb
     const sourceText = removeMarker(article.sourceText, ids.data.photoKey);
     const moved = remap(article.sourceText, article.body, sourceText);
     if (!moved.ok) return fail("conflict");
-    return finish(await removeArticlePhoto(ids.data.articleId, ids.data.revision, ids.data.photoKey, { sourceText, body: moved.body }));
+    const size = storableIssue(sourceText, moved.body);
+    if (size) return { ok: false, message: size.text };
+    const changed = sourceText !== article.sourceText;
+    return finish(await removeArticlePhoto(ids.data.articleId, ids.data.revision, ids.data.photoKey, { sourceText, body: moved.body }, changed));
   });
 }
 

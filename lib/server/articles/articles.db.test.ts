@@ -98,6 +98,10 @@ describe.skipIf(!enabled)("статьи: БД", () => {
     const slug = (await getArticle(id))?.slug ?? "";
     expect((await readPublicArticle("ru", slug))?.view.recipes.map((card) => card.title)).toEqual([`Блины рецепт ${marker}`, `Вафли рецепт ${marker}`]);
     expect((await readRecipeArticles("ru", waffles)).map((card) => card.id)).toEqual([id]);
+    // Черновая статья в «Статьи по рецепту» не попадает.
+    const draft = await article(`Черновик ${marker}`);
+    await setArticleRecipes(draft, 1, [waffles]);
+    expect((await readRecipeArticles("ru", waffles)).map((card) => card.id)).toEqual([id]);
     await setRecipeStatus(pancakes, "draft");
     expect((await readPublicArticle("ru", slug))?.view.recipes.map((card) => card.title)).toEqual([`Вафли рецепт ${marker}`]);
     expect((await getArticle(id))?.recipes.map((item) => item.status)).toEqual(["draft", "published"]);
@@ -133,11 +137,46 @@ describe.skipIf(!enabled)("статьи: БД", () => {
     const without = removeMarker(after?.sourceText ?? "", "Q7K2");
     const back = remap(after?.sourceText ?? "", after?.body ?? { schemaVersion: 1, blocks: [] }, without);
     if (!back.ok || !after) throw new Error("разметка не легла");
-    expect(await removeArticlePhoto(id, after.revision, "Q7K2", { sourceText: without, body: back.body })).toMatchObject({ ok: true });
+    expect(await removeArticlePhoto(id, after.revision, "Q7K2", { sourceText: without, body: back.body }, true)).toMatchObject({ ok: true });
     expect(await getDb().select().from(articlePhotosTable).where(eq(articlePhotosTable.articleId, id))).toEqual([]);
   });
 
-  it("CHECK: код фото без похожих символов; документ — объект; связь не больше 20", async () => {
+  it("content_revision (для будущего перевода) растёт только от текста и подписи — не от публикации, кадра и связей", async () => {
+    const id = await article(`Ревизии ${marker}`);
+    const content = async () => (await getDb().select({ c: articles.contentRevision }).from(articles).where(eq(articles.id, id)))[0]?.c;
+    await setArticleStatus(id, "published");
+    await setArticleRecipes(id, 2, []);
+    expect(await content()).toBe(1);
+    const stored = await getArticle(id);
+    if (!stored) throw new Error("нет статьи");
+    expect(await replaceArticle(id, stored.revision, draftOf(stored.title))).toMatchObject({ ok: true });
+    expect(await content()).toBe(1);
+    const sourceText = insertMarker(stored.sourceText, -1, "AB34");
+    const moved = remap(stored.sourceText, stored.body, sourceText);
+    if (!moved.ok) throw new Error("разметка не легла");
+    await addArticlePhoto(id, stored.revision + 1, "AB34", await rendered("#ccc"), { sourceText, body: moved.body });
+    expect(await content()).toBe(2);
+    const photo = (await getArticle(id))?.photos.get("AB34");
+    await recropArticlePhoto(id, "AB34", photo?.id ?? "", await rendered("#ddd"));
+    await setPhotoCaption(id, "AB34", null);
+    expect(await content()).toBe(2);
+    await setPhotoCaption(id, "AB34", "Подпись");
+    expect(await content()).toBe(3);
+  });
+
+  it("фото черновика — не опубликовано (отдаётся только владельцу)", async () => {
+    const id = await article(`Фото черновика ${marker}`);
+    const stored = await getArticle(id);
+    if (!stored) throw new Error("нет статьи");
+    const sourceText = insertMarker(stored.sourceText, -1, "CD56");
+    const moved = remap(stored.sourceText, stored.body, sourceText);
+    if (!moved.ok) throw new Error("разметка не легла");
+    await addArticlePhoto(id, 1, "CD56", await rendered("#eee"), { sourceText, body: moved.body });
+    const photo = (await getArticle(id))?.photos.get("CD56");
+    expect(await articlePhotoFileInfo(photo?.id ?? "", "w480")).toEqual({ contentType: "image/webp", published: false });
+  });
+
+  it("CHECK: код фото без похожих символов; документ — объект", async () => {
     const id = await article(`Проверки ${marker}`);
     const files = await rendered("#fff");
     await expect(addArticlePhoto(id, 1, "O0I1", files, { sourceText: TEXT, body: parseArticle(TEXT, null).body })).rejects.toThrow();

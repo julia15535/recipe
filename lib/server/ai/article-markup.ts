@@ -46,7 +46,10 @@ export const ARTICLE_JSON_SCHEMA = {
 } as const;
 
 const answerSchema = z.object({
-  marks: z.array(z.object({ kind: z.enum(MARK_KINDS), from: z.number().int(), to: z.number().int() })).max(ARTICLE_LIMITS.lines),
+  // Номера строк — с 1 и не больше предела строк: ответу ИИ не верим (огромный диапазон не должен съесть память).
+  marks: z
+    .array(z.object({ kind: z.enum(MARK_KINDS), from: z.number().int().min(1).max(ARTICLE_LIMITS.lines), to: z.number().int().min(1).max(ARTICLE_LIMITS.lines) }))
+    .max(ARTICLE_LIMITS.lines),
 });
 
 /** Строки для ИИ: номер с 1, метки фото — «[ФОТО]» (чтобы ИИ видел границу, но не код). */

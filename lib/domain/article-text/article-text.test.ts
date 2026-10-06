@@ -109,6 +109,29 @@ describe("статья: разметка ИИ проверяется", () => {
   });
 });
 
+describe("статья: слова автора и её нумерация", () => {
+  it("нумерованный список после фото продолжается с номера автора; неразрывные и двойные пробелы внутри строки — как есть", () => {
+    const { body } = parseArticle("1. Первое\n2. Второе\n\n[Фото Q7K2]\n\n3. Третье\n\nЦена:\u00A0100\u00A0₽ и  ещё", null);
+    expect(body.blocks).toMatchObject([
+      { type: "list", ordered: true, items: [{ text: "Первое" }, { text: "Второе" }] },
+      { type: "photo" },
+      { type: "list", ordered: true, start: 3, items: [{ text: "Третье" }] },
+      { type: "paragraph", text: "Цена:\u00A0100\u00A0₽ и  ещё" },
+    ]);
+    expect(body.blocks[0]).not.toHaveProperty("start");
+  });
+
+  it("разметка за пределами текста (огромные номера строк) не принимается и не перебирается", () => {
+    expect(marksValid(readLines("а\nб"), [{ kind: "p", from: 0, to: 1_000_000_000 }])).toBe(false);
+  });
+
+  it("хранимая разметка — та, по которой собраны блоки (с пустым пунктом «-»): при сохранении она снова ложится", () => {
+    const parsed = parseArticle("- первое\n-\n- второе", null);
+    expect(parsed.marks).toHaveLength(3);
+    expect(parseArticle("- первое\n-\n- второе", parsed.marks)).toMatchObject({ byAi: true, body: { blocks: [{ type: "list", items: [{}, {}] }] } });
+  });
+});
+
 describe("статья: фото и метки без нового разбора", () => {
   const { body } = parseArticle(WAFFLES, null);
 

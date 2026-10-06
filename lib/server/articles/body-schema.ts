@@ -17,6 +17,7 @@ const block = z.discriminatedUnion("type", [
     id,
     type: z.literal("list"),
     ordered: z.boolean(),
+    start: z.number().int().min(2).max(999).optional(),
     items: z.array(z.object({ text: text(ARTICLE_LIMITS.text), from: line, to: line })).min(1).max(ARTICLE_LIMITS.blocks),
   }),
   z.object({ id, type: z.literal("photo"), key: z.string().regex(/^[A-HJ-NP-Z2-9]{4}$/), line }),

@@ -16,6 +16,7 @@ export function marksValid(source: Pick<ArticleLines, "lines" | "markers">, mark
   let last = -1;
   for (const mark of marks) {
     if (!Number.isInteger(mark.from) || !Number.isInteger(mark.to) || mark.from > mark.to || mark.from <= last) return false;
+    if (mark.to >= source.lines.length) return false;
     if ((mark.kind === "h2" || mark.kind === "h3") && mark.from !== mark.to) return false;
     for (let line = mark.from; line <= mark.to; line += 1) covered.push(line);
     last = mark.to;
@@ -23,11 +24,8 @@ export function marksValid(source: Pick<ArticleLines, "lines" | "markers">, mark
   return covered.length === content.length && covered.every((line, index) => line === content[index]);
 }
 
-const join = (lines: readonly string[]) =>
-  lines
-    .map((line) => line.trim())
-    .join(" ")
-    .replace(/\s+/gu, " ");
+// Пробелы внутри строки (в том числе неразрывные) — как у автора; убираются только края строк при склейке абзаца.
+const join = (lines: readonly string[]) => lines.map((line) => line.trim()).join(" ");
 
 /** Блоки по проверенной разметке; подряд идущие пункты одного вида — один список, фото между ними его делит. */
 export function assemble(source: Pick<ArticleLines, "lines" | "markers">, marks: readonly Mark[]): { body: ArticleBody; issues: ArticleIssue[] } {
@@ -61,7 +59,10 @@ export function assemble(source: Pick<ArticleLines, "lines" | "markers">, marks:
     const previous = blocks.at(-1);
     const item = { text, from, to };
     if (previous?.type === "list" && previous.ordered === ordered) previous.items.push(item);
-    else blocks.push({ id: id(), type: "list", ordered, items: [item] });
+    else {
+      const number = ordered ? Number(/^\s*(\d{1,3})[.)]/u.exec(raw[0] ?? "")?.[1] ?? 1) : 1;
+      blocks.push({ id: id(), type: "list", ordered, ...(number > 1 ? { start: number } : {}), items: [item] });
+    }
   }
   for (const block of blocks) {
     if (block.type === "heading" && block.text.length > ARTICLE_LIMITS.heading) {

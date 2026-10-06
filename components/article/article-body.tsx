@@ -31,7 +31,7 @@ function Block({ block, view, tools, missingPhoto }: { block: ArticleBlock } & P
   if (block.type === "list") {
     const List = block.ordered ? "ol" : "ul";
     return (
-      <List className={`flex flex-col gap-1.5 pl-6 text-lg leading-relaxed text-primary ${block.ordered ? "list-decimal" : "list-disc"}`}>
+      <List start={block.ordered ? block.start : undefined} className={`flex flex-col gap-1.5 pl-6 text-lg leading-relaxed text-primary ${block.ordered ? "list-decimal" : "list-disc"}`}>
         {block.items.map((item) => (
           <li key={item.from}>{item.text}</li>
         ))}

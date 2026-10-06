@@ -15,6 +15,7 @@ import { StorageError } from "@/lib/server/db/errors";
 import { getAiConfig } from "@/lib/server/env";
 import { log } from "@/lib/server/log";
 import { catalogLabels, getCatalog } from "@/lib/server/recipes/catalog";
+import { countArticleImportsLastHour } from "@/lib/server/articles/imports";
 import { countImportsLastHour, dropImport, IMPORTS_PER_HOUR, loadImport, storeImport } from "@/lib/server/recipes/imports";
 import { refreshPublicSite } from "@/lib/server/recipes/public-cache";
 import { translateLater } from "@/lib/server/recipes/translate-later";
@@ -52,7 +53,9 @@ export async function aiParseRecipe(input: string): Promise<AiParsed> {
   if (inFlight) return { ok: false, message: MESSAGES.busy ?? "" };
   inFlight = true;
   try {
-    if (!allow("ai-parse", IMPORTS_PER_HOUR, 60 * 60 * 1000) || (await countImportsLastHour()) >= IMPORTS_PER_HOUR) {
+    // Лимит общий с разборами статей (ADR-0034): в памяти — ключ `ai-parse`, в БД — сумма разборов за час.
+    const used = (await countImportsLastHour()) + (await countArticleImportsLastHour());
+    if (used >= IMPORTS_PER_HOUR || !allow("ai-parse", IMPORTS_PER_HOUR, 60 * 60 * 1000)) {
       return { ok: false, message: MESSAGES.limit ?? "" };
     }
     const labels = catalogLabels(await getCatalog());

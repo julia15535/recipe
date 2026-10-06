@@ -10,7 +10,8 @@ export type Mark = { kind: MarkKind; from: number; to: number };
 export type ArticleBlock =
   | { id: string; type: "heading"; level: 2 | 3; text: string; from: number; to: number }
   | { id: string; type: "paragraph"; text: string; from: number; to: number }
-  | { id: string; type: "list"; ordered: boolean; items: { text: string; from: number; to: number }[] }
+  /** `start` — номер первого пункта у автора («3.» после фото — список продолжается с 3). */
+  | { id: string; type: "list"; ordered: boolean; start?: number; items: { text: string; from: number; to: number }[] }
   | { id: string; type: "photo"; key: string; line: number };
 
 export const ARTICLE_SCHEMA_VERSION = 1;

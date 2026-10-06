@@ -10,7 +10,8 @@ import { TELEGRAM } from "./support/telegram";
 // Статьи (план articles, ADR-0034): новая статья → «Разобрать» (ИИ — заглушка: «#» заголовок, «-» пункт) → черновик →
 // «Добавить фото сюда» (уменьшение → кадр) → связанный рецепт → опубликовать → сайт (статья, фото, рецепт, блок на
 // рецепте и на главной) → «Изменить»: метку фото перенесли — разметка переносится без ИИ, фото на новом месте →
-// убрать фото → снять, удалить. Тексты владельца — слово в слово.
+// метку стёрли — предупреждение и «Фото без места» → убрать → снять, удалить. Тексты владельца — слово в слово; 320 / 375 /
+// 1280 px без прокрутки вбок, axe — на статье, в кабинете, на рецепте и на главной.
 test.skip(!TELEGRAM.enabled, "нет E2E_TELEGRAM_WEBHOOK_SECRET — кабинет закрыт входом");
 
 const KOTLETY = readFileSync("lib/domain/recipe-text/fixtures/kotlety.txt", "utf8");
@@ -31,7 +32,9 @@ async function aiCalls(page: Page): Promise<number> {
 
 async function expectGood(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
-  const result = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
+  // Служебный «объявитель» React Aria ([data-live-announcer]) после окна кадрирования ещё несколько секунд ссылается на
+  // убранную подпись — не элемент страницы (anti-patterns №55).
+  const result = await new AxeBuilder({ page }).exclude("[data-live-announcer]").withTags(AXE_TAGS).analyze();
   expect(result.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);
 }
 
@@ -80,6 +83,7 @@ test("статья: текст → фото между абзацами → св
   await expect(figure).toHaveCount(1);
   const key = (await figure.getAttribute("data-photo")) ?? "";
   expect(key).toMatch(/^[A-HJ-NP-Z2-9]{4}$/);
+  await expectGood(page);
 
   // Связанный рецепт и публикация.
   await page.getByRole("button", { name: recipeTitle }).click();
@@ -97,14 +101,22 @@ test("статья: текст → фото между абзацами → св
   await expect(page.getByRole("link", { name: new RegExp(recipeTitle) })).toBeVisible();
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /\/media\/article\/.+\/og\.jpg$/);
   await expectGood(page);
+  for (const width of [320, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expectGood(page);
+  }
+  await page.setViewportSize({ width: 375, height: 812 });
   // Фото стоит после первого абзаца — перед заголовком «С творожным сыром и рыбой».
   expect(await page.locator("main article > *").evaluateAll((els) => els.map((el) => el.tagName))).toEqual(["H1", "P", "FIGURE", "H2", "P", "H2", "UL", "SECTION"]);
 
   // Рецепт ведёт на статью; на главной — блок «Статьи».
   await page.getByRole("link", { name: new RegExp(recipeTitle) }).click();
   await expect(page.getByRole("region", { name: "Статьи по рецепту" }).getByRole("link", { name: new RegExp(title) })).toBeVisible();
-  await page.goto("/ru");
+  await page.waitForLoadState("networkidle");
+  await expectGood(page);
+  await page.goto("/ru", { waitUntil: "networkidle" });
   await expect(page.getByRole("region", { name: "Статьи" }).getByRole("link", { name: new RegExp(title) })).toBeVisible();
+  await expectGood(page);
 
   // «Изменить»: метку перенесли в конец — слова те же, разметка переносится без ИИ, фото на новом месте.
   await page.goto(`${cabinet}/edit`);
@@ -120,12 +132,24 @@ test("статья: текст → фото между абзацами → св
   await page.goto(site, { waitUntil: "networkidle" });
   expect(await page.locator("main article > *").evaluateAll((els) => els.map((el) => el.tagName))).toEqual(["H1", "P", "H2", "P", "H2", "UL", "FIGURE", "SECTION"]);
 
-  // Убрать фото — метка уходит из текста; снять, удалить черновик; рецепт — тоже.
-  await page.goto(cabinet);
-  await page.getByRole("button", { name: "Убрать фото" }).click();
-  await page.getByRole("button", { name: "Да, убрать" }).click();
-  await expect(page.getByText("Фото убрано.")).toBeVisible();
+  // Метку стёрли в тексте — предупреждение до сохранения, фото «без места» (на сайте его нет) → убрать его там.
+  await page.goto(`${cabinet}/edit`);
+  await field.fill((await field.inputValue()).replace(`\n\n[Фото ${key}]`, ""));
+  await page.getByRole("button", { name: "Разобрать" }).click();
+  await expect(page.locator('[data-checks="note"]')).toContainText(`Фото «[Фото ${key}]» без места`);
+  await page.getByRole("button", { name: "Сохранить" }).click();
+  await page.waitForURL(cabinet);
+  const loose = page.getByRole("region", { name: "Фото без места" });
+  await expect(loose).toContainText(`[Фото ${key}]`);
   await expect(page.locator("main figure[data-photo]")).toHaveCount(0);
+  await page.goto(site, { waitUntil: "networkidle" });
+  await expect(page.locator("main figure")).toHaveCount(0);
+  await page.goto(cabinet);
+  await loose.getByRole("button", { name: "Убрать фото" }).click();
+  await loose.getByRole("button", { name: "Да, убрать" }).click();
+  await expect(page.getByText("Фото убрано.")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Фото без места" })).toHaveCount(0);
+  // Снять, удалить черновик; рецепт — тоже.
   await page.getByRole("button", { name: "Снять с публикации" }).click();
   await page.goto(site);
   await expect(page.getByRole("heading", { name: "Страница не найдена" })).toBeVisible();

@@ -5,7 +5,9 @@ import { ARTICLE_LIMITS, readLines } from "./lines";
 import { plainMarks } from "./plain";
 import type { ArticleBody, ArticleIssue, Mark } from "./types";
 
-export type ParsedArticle = { ok: boolean; body: ArticleBody; issues: ArticleIssue[]; byAi: boolean };
+/** `marks` — разметка, по которой собраны блоки: её и хранит разбор до «Сохранить» (не `marksOf(body)` — там нет
+ * пропущенных пустых пунктов, и при сохранении она бы не легла). */
+export type ParsedArticle = { ok: boolean; body: ArticleBody; issues: ArticleIssue[]; byAi: boolean; marks: Mark[] };
 
 const AI_FALLBACK = "ИИ разметил текст не по правилам — разобрано без ИИ: заголовки — строки с «#», списки — строки с «-» или «1.».";
 
@@ -15,7 +17,7 @@ export function parseArticle(text: string, aiMarks: readonly Mark[] | null): Par
   const marks = fromAi ? aiMarks : plainMarks(source);
   const { body, issues } = assemble(source, marks);
   const all = [...source.issues, ...(aiMarks !== null && !fromAi ? [{ group: "note" as const, text: AI_FALLBACK }] : []), ...issues];
-  return { ok: !all.some((issue) => issue.group === "decide"), body, issues: all, byAi: fromAi };
+  return { ok: !all.some((issue) => issue.group === "decide"), body, issues: all, byAi: fromAi, marks: [...marks] };
 }
 
 /** Название статьи — его пишет владелец (не ИИ). */

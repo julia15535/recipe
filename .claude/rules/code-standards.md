@@ -3,6 +3,7 @@ description: Стандарты кода — TypeScript + Zod по умолча�
 paths:
   - "**/*.ts"
   - "**/*.tsx"
+last_verified: 2026-10-06
 ---
 
 # Стандарты кода (TypeScript + Zod по умолчанию)
