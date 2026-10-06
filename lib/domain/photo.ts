@@ -13,8 +13,9 @@ export type CropRect = { left: number; top: number; width: number; height: numbe
 /** Рамка из окна кадрирования: доли ширины и высоты фото. */
 export type CropFractions = { x: number; y: number; width: number; height: number };
 export type PhotoFile = { key: (typeof WIDTHS)[number]; width: number };
-/** Фото для показа: uuid (новый при каждой загрузке и смене кадра) и готовые ширины WebP. */
-export type PhotoRef = { id: string; files: PhotoFile[] };
+/** Фото для показа: uuid (новый при каждой загрузке и смене кадра) и готовые ширины WebP; `kind` — чьё фото
+ * (рецепта или статьи, ADR-0034) — от него адрес файла. */
+export type PhotoRef = { id: string; files: PhotoFile[]; kind?: "recipe" | "article" };
 
 const TOLERANCE = 0.03;
 
@@ -71,7 +72,7 @@ export function plannedFiles(cropWidth: number): PhotoFile[] {
   return files;
 }
 
-export const photoUrl = (id: string, file: string) => `/media/recipe/${id}/${file}`;
+export const photoUrl = (id: string, file: string, kind: PhotoRef["kind"] = "recipe") => `/media/${kind}/${id}/${file}`;
 
 /** `srcset` по реальным ширинам и запасной `src` (средний вариант). */
 export function photoSources(photo: PhotoRef): { src: string; srcSet: string; width: number; height: number } {
@@ -79,8 +80,8 @@ export function photoSources(photo: PhotoRef): { src: string; srcSet: string; wi
   const middle = files[Math.min(1, files.length - 1)] ?? { key: 480, width: 480 };
   const largest = files.at(-1) ?? middle;
   return {
-    src: photoUrl(photo.id, `${middle.key}.webp`),
-    srcSet: files.map((file) => `${photoUrl(photo.id, `${file.key}.webp`)} ${file.width}w`).join(", "),
+    src: photoUrl(photo.id, `${middle.key}.webp`, photo.kind),
+    srcSet: files.map((file) => `${photoUrl(photo.id, `${file.key}.webp`, photo.kind)} ${file.width}w`).join(", "),
     width: largest.width,
     height: Math.round((largest.width * 3) / 4),
   };

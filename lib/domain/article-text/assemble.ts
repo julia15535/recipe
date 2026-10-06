@@ -96,3 +96,17 @@ export function excerptOf(body: ArticleBody, max = 200): string | null {
   const cut = text.slice(0, max);
   return `${cut.slice(0, Math.max(cut.lastIndexOf(" "), max / 2)).replace(/[\s,.;:—–-]+$/u, "")}…`;
 }
+
+/**
+ * alt фото — подпись, иначе ближайший заголовок перед фото, иначе название статьи: владельцу не нужно писать
+ * отдельное описание для экранного диктора (план articles).
+ */
+export function photoAlts(body: ArticleBody, title: string, captions: ReadonlyMap<string, string | null>): Map<string, string> {
+  const alts = new Map<string, string>();
+  let heading: string | null = null;
+  for (const block of body.blocks) {
+    if (block.type === "heading") heading = block.text;
+    if (block.type === "photo") alts.set(block.key, captions.get(block.key) || heading || title);
+  }
+  return alts;
+}
