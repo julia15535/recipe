@@ -10,7 +10,7 @@ import type { ParsedIngredient } from "@/lib/domain/recipe-text/parse";
 import { parseAiEnv } from "@/lib/server/env-schema";
 
 import { parseWithAi } from "./parse-recipe";
-import { EXPECTED } from "./recipe-eval.expected";
+import { EXPECTED, NEW_TAGS_MAY_BE } from "./recipe-eval.expected";
 
 const enabled = process.env.RECIPE_AI_EVAL === "1";
 const dir = path.join(process.cwd(), "scripts/ai-eval");
@@ -67,6 +67,7 @@ describe.skipIf(!enabled)("ИИ-разбор на настоящей модел�
     );
     expect(invented).toEqual([]);
 
+    for (const [code, files] of Object.entries(NEW_TAGS_MAY_BE)) if (!files.includes(file)) expect(draft.tags, code).not.toContain(code);
     const expected = EXPECTED[file];
     if (!expected) throw new Error(`нет ожиданий для ${file} — допишите в recipe-eval.expected.ts`);
     if (expected === "not_recipe") {

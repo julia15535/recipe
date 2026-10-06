@@ -7,7 +7,14 @@ import { expect } from "vitest";
 /** `styles` — запись числа у автора по строкам (ADR-0032): fraction / decimal / «-» (целое, без числа); `tags` — теги состава. */
 type Seen = { steps: string[]; tips: string[]; notes: string[]; styles: string[]; tags: string[] };
 
-// Новые теги (ADR-0035): за основу блюда — да; за щепотку, украшение, масло для смазывания, креветки, крошку — нет.
+// Новые теги (ADR-0035) — только в этих примерах (грецкие орехи в 03, 05, 13 — на усмотрение модели); в остальных их
+// быть не должно. Автор назвал тег сам (21) — ставится всегда.
+export const NEW_TAGS_MAY_BE: Record<string, readonly string[]> = {
+  "omega-3": ["03-keks-shagi-tire.txt", "05-bez-kolichestv.txt", "13-morkovnyj-keks-vladelec.txt", "17-losos-omega.txt", "21-avtor-nazval-tegi.txt"],
+  antioxidants: ["18-smuzi-chernika.txt", "21-avtor-nazval-tegi.txt"],
+};
+
+// За основу блюда — да; за щепотку, украшение, масло для смазывания, креветки, крошку — нет.
 const tagged = (yes: string[], no: string[]) => ({ tags }: Seen) => {
   expect(tags).toEqual(expect.arrayContaining(yes));
   for (const code of no) expect(tags).not.toContain(code);
@@ -101,4 +108,5 @@ export const EXPECTED: Record<string, Expected> = {
     steps: 4,
     check: tagged([], ["omega-3", "antioxidants"]),
   },
+  "21-avtor-nazval-tegi.txt": { rows: ["овсяные хлопья|50|г", "молоко|200|мл", "яблок|1|шт.", "корица|*|*"], steps: 2, check: tagged(["omega-3", "antioxidants"], []) },
 };
