@@ -2,10 +2,10 @@
 workstream: catalog
 slug: recipe-tags-button
 title: Кнопка «Подобрать теги» на странице рецепта в кабинете
-status: in_progress
+status: completed
 created: 2026-10-06
 updated: 2026-10-06
-completed:
+completed: 2026-10-06
 ---
 
 ## Цель
@@ -73,35 +73,37 @@ completed:
 - Правка самого списка тегов из админки, разделы (не трогаем).
 
 ## Файлы к изменению
-- [ ] `lib/server/ai/recipe-prompt.ts` — правило тегов в общую константу; `lib/server/ai/suggest-tags.ts` (+ тест)
-- [ ] `lib/domain/recipe-text/` — переписывание строки тегов в тексте (+ тест)
-- [ ] `lib/server/recipes/tags.ts` (+ БД-тест); `lib/server/recipes/public-en.ts`, `translated-view.ts` — живые теги EN;
+- [x] `lib/server/ai/recipe-prompt.ts` — правило тегов в общую константу; `lib/server/ai/suggest-tags.ts` (+ тест)
+- [x] `lib/domain/recipe-text/` — переписывание строки тегов в тексте (+ тест)
+- [x] `lib/server/recipes/tags.ts` (+ БД-тест); `lib/server/recipes/public-en.ts`, `translated-view.ts` — живые теги EN;
   общий «один запрос ИИ за раз» (из `recipes/ai-actions.ts`)
-- [ ] `app/(admin)/admin/(protected)/recipes/tag-actions.ts` — действия кабинета (`requireOwner`, Zod)
-- [ ] `app/(admin)/admin/(protected)/recipes/_components/tags-block.tsx`, `recipes/[id]/page.tsx`
-- [ ] `e2e/support/ai-stub.ts`, `e2e/composition-tags.spec.ts`; живая проверка — `lib/server/ai/suggest-tags.live.test.ts`
-- [ ] память: `core/catalog.md`, `domain/catalog-structure.md`, `domain/recipe-upload.md`, `domain/screens.md`,
+- [x] `app/(admin)/admin/(protected)/recipes/tag-actions.ts` — действия кабинета (`requireOwner`, Zod)
+- [x] `app/(admin)/admin/(protected)/recipes/_components/tags-block.tsx`, `recipes/[id]/page.tsx`
+- [x] `e2e/support/ai-stub.ts`, `e2e/composition-tags.spec.ts`; живая проверка — `lib/server/ai/suggest-tags.live.test.ts`
+- [x] память: `core/catalog.md`, `domain/catalog-structure.md`, `domain/recipe-upload.md`, `domain/screens.md`,
   `core/data-models.md`, `domain/recipe-model.md`, `core/seo-i18n.md`, ADR-0036 (меняет ADR-0029: теги EN живые)
 
 ## Задачи
-- [ ] Критика Codex (контракт записи, снимок EN и идущий перевод, переписывание текста)
-- [ ] Домен + запись + ИИ + действия + блок
-- [ ] lint / typecheck / test / test:db / build / e2e (0 пропусков); живая проверка подбора и разбора 21/21 (ключ — `_secrets/ACCESS.md`)
-- [ ] verify, память, `/memory-check`, деплой (CI → main → прод), проверка на сайте
+- [x] Критика Codex (контракт записи, снимок EN и идущий перевод, переписывание текста)
+- [x] Домен + запись + ИИ + действия + блок
+- [x] lint / typecheck / test / test:db / build / e2e (0 пропусков); живая проверка подбора и разбора 21/21 (ключ — `_secrets/ACCESS.md`)
+- [x] verify, память, `/memory-check`, деплой (CI → main → прод), проверка на сайте
 
 ## Критерии приёмки
-- [ ] В кабинете у рецепта видны все 7 тегов, выбранные отмечены; «Подобрать с ИИ» показывает предложение
-- [ ] «Сохранить теги» → на сайте (RU и EN) новые теги сразу, без «Перевести заново»; «Изменить» показывает их в строке «Теги:»
-- [ ] Остальной текст рецепта, разделы, количества, перевод — без изменений; старые рецепты сами не меняются
-- [ ] Lint / build / тесты проходят; нет ошибок типов; не задеты файлы вне scope
+- [x] В кабинете у рецепта видны все 7 тегов, выбранные отмечены; «Подобрать с ИИ» показывает предложение
+- [x] «Сохранить теги» → на сайте (RU и EN) новые теги сразу, без «Перевести заново»; «Изменить» показывает их в строке «Теги:»
+- [x] Остальной текст рецепта, разделы, количества, перевод — без изменений; старые рецепты сами не меняются
+- [x] Lint / build / тесты проходят; нет ошибок типов; не задеты файлы вне scope
 
 ## Definition of Done — память (без этого `completed` запрещён)
-- [ ] Memory Bank обновлён: затронутые `core/*`, ADR-0036, `project-state.md`
-- [ ] «Уроки» заполнены; отброшенное — в `core/lessons.md`
-- [ ] `/memory-check` выполнен, audit «чисто»
+- [x] Memory Bank обновлён: затронутые `core/*`, ADR-0036, `project-state.md`
+- [x] «Уроки» заполнены; отброшенное — в `core/lessons.md`
+- [x] `/memory-check` выполнен, audit «чисто»
 
 ## Лог выполнения
 - 2026-10-06 — план создан (draft)
+- 2026-10-06 — verify: подписи «Подбираю…» не видны (async-переход) → исправлено; память по сверке; CI — нестабильная
+  проверка фото найдена репортёром `github` → `expect.poll`; main → прод `5fb3334`, /en проверен; completed
 - 2026-10-06 — «деплой»; ветка `feature/recipe-tags-button`. Сделано: `retag.ts` (+6 unit), `suggest-tags.ts` (+3 unit,
   хэш промпта разбора), `tags.ts` (+2 DB), живые теги EN (тест в `translations.db.test.ts`), `one-at-a-time.ts`,
   `tag-actions.ts`, `tags-block.tsx`, e2e «Подобрать → отметить → свой тег → сохранить → RU/EN/«Изменить»». unit 207,
@@ -112,8 +114,20 @@ completed:
   в записи, общий «один запрос ИИ за раз», честный лимит подборов, промпт разбора побайтно прежний, состояния UI
 
 ## Completion summary
+Сделано: блок «Теги состава» на странице рецепта в кабинете — 7 тегов чипами, «Подобрать с ИИ» (только предлагает),
+«Отметить предложенное», «Сохранить теги» (порядок считает сервер; строка «Теги:» в тексте меняется вместе с тегами,
+остальной текст байт в байт, проверка «тот же рецепт»); теги на /en — живые из рецепта (ADR-0036, меняет ADR-0029);
+общий «один запрос ИИ за раз»; «Мало сахара» ИИ ставит только сладкому. Проверки: unit 207, DB 53, e2e 98/98 (CI без
+нестабильных), живые проверки разбора и подбора 21/21; сохранение тегов проверено на 8 настоящих рецептах из
+локальной резервной копии (все проходят, копии текстов удалены). Прод `5fb3334`, /en проверен на сайте.
+Упрощено: при отсутствии строки каталога — отказ вместо вставки (у сохранённых рецептов она есть всегда).
 
 ### Уроки
+- Отдельный промпт про теги ставит их щедрее, чем разбор («Мало сахара» котлетам, борщу) → правило уточнено в общем
+  `TAGS_RULE`, проверки `NOT_SWEET` в обоих прогонах (anti-patterns №58).
+- Состояние «Подбираю…» внутри async-перехода React применяется только в конце — ставить до `startTransition` (verify).
+- CI падал на GitHub при зелёной копии CI у себя: причина — старая проверка фото (мгновенное чтение ползунка); найдено
+  только после репортёра `github` (аннотации видны без входа) → anti-patterns №56 дополнен.
 
 ## Follow-up work
 - [ ] Английская версия статей (`articles-en`) — следующий план (владелец 06.10)
