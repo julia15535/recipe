@@ -157,8 +157,9 @@ test("фото: уменьшить в браузере → кадр → сайт
   await page.goto(cabinet);
   await block.getByRole("button", { name: "Изменить кадр" }).click();
   await expect(dialog).toBeVisible();
-  // Окно открылось с прежней рамкой — тем же увеличением.
-  expect(Number(await dialog.getByRole("slider", { name: "Масштаб" }).inputValue())).toBeCloseTo(2.5, 1);
+  // Окно открылось с прежней рамкой — тем же увеличением (с повтором: на медленной машине ползунок встаёт не сразу,
+  // anti-patterns №56).
+  await expect.poll(async () => Number(await dialog.getByRole("slider", { name: "Масштаб" }).inputValue())).toBeCloseTo(2.5, 1);
   await dialog.getByRole("group", { name: "Кадр фото" }).focus();
   for (let i = 0; i < 60; i += 1) await page.keyboard.press("ArrowRight");
   await dialog.getByRole("button", { name: "Готово" }).click();

@@ -117,3 +117,11 @@ date	doc	reason	claims	mismatch	fixed	note
 2026-10-06	domain/recipe-model.md	drift	15	0	0	
 2026-10-06	core/rescaling.md	drift	8	1	1	
 2026-10-06	.claude/rules/ui-rules.md	code	19	0	0	
+2026-10-06	decisions/adr-0001-0050.md	code	22	1	1	
+2026-10-06	domain/catalog-structure.md	code	8	0	0	
+2026-10-06	domain/screens.md	code	8	1	1	
+2026-10-06	domain/recipe-model.md	code	6	0	0	
+2026-10-06	core/data-models.md	code	4	0	0	
+2026-10-06	core/seo-i18n.md	code	2	1	1	
+2026-10-06	core/catalog.md	code	5	0	0	
+2026-10-06	anti-patterns.md	code	4	1	1	
