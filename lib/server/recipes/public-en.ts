@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 
 import type { TranslationBody } from "@/lib/domain/translation";
 import { translationBodySchema } from "@/lib/server/ai/translate-schema";
@@ -11,8 +11,9 @@ import { photoRefs } from "@/lib/server/media/photo-reads";
 import type { PublicCard, SearchItem } from "./public-lists";
 import { published } from "./public-paths";
 
-// Английский сайт (ADR-0029): только опубликованные рецепты с готовым переводом (локализация `en` + снимок). Всё,
-// что показывает страница, — из снимка на момент перевода: правка русского рецепта английский не меняет.
+// Английский сайт (ADR-0029): только опубликованные рецепты с готовым переводом (локализация `en` + снимок). Текст
+// страницы — из снимка на момент перевода: правка русского рецепта английский не меняет. Теги состава — живые из
+// русского рецепта (ADR-0036): код не переводится, подписи — английские из каталога; «Сохранить теги» видно сразу.
 const en = (column: typeof t.recipeLocalizations.locale | typeof t.sectionLocalizations.locale) => eq(column, "en");
 const translated = and(eq(t.recipeTranslations.recipeId, t.recipes.id), eq(t.recipeTranslations.locale, "en"));
 
@@ -39,10 +40,25 @@ export async function translatedRecipes(db: Executor, filter?: { slug?: string; 
     .where(where)
     .orderBy(desc(t.recipes.publishedAt), desc(t.recipes.id));
   const rows = filter?.limit ? await query.limit(filter.limit) : await query;
+  const tags = await liveTagCodes(db, rows.map((row) => row.recipe.id));
   return rows.flatMap((row) => {
     const body = bodyOf(row.body, row.recipe.id);
-    return body ? [{ recipe: row.recipe, text: row.text, body }] : [];
+    return body ? [{ recipe: row.recipe, text: row.text, body: { ...body, tagCodes: tags.get(row.recipe.id) ?? [] } }] : [];
   });
+}
+
+/** Коды тегов состава рецептов в порядке автора — вместо `tagCodes` снимка (он остаётся в базе, но не читается). */
+async function liveTagCodes(db: Executor, recipeIds: string[]): Promise<Map<string, string[]>> {
+  if (recipeIds.length === 0) return new Map();
+  const rows = await db
+    .select({ recipeId: t.recipeCompositionTags.recipeId, code: t.compositionTags.code })
+    .from(t.recipeCompositionTags)
+    .innerJoin(t.compositionTags, eq(t.compositionTags.id, t.recipeCompositionTags.tagId))
+    .where(inArray(t.recipeCompositionTags.recipeId, recipeIds))
+    .orderBy(asc(t.recipeCompositionTags.position));
+  const byRecipe = new Map<string, string[]>();
+  for (const row of rows) byRecipe.set(row.recipeId, [...(byRecipe.get(row.recipeId) ?? []), row.code]);
+  return byRecipe;
 }
 
 /** Английские названия и адреса разделов, названия тегов — по кодам. */

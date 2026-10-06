@@ -6,7 +6,7 @@ import { recognizeCatalogWord } from "../../lib/domain/catalog";
 // Заглушка Vercel AI Gateway для e2e: на «Разобрать» отвечает готовым разбором котлет (название — первая
 // фраза присланного текста; «Молоко — 0,5» в тексте — молоко «0,5», иначе «1/2»: запись автора, ADR-0032), на
 // «СБОЙ-ИИ» — 500, на «НЕ-РЕЦЕПТ» — not_recipe; строка «Теги: …» в тексте — теги состава из неё (как назвал
-// автор). GET /__ai-calls — сколько было запросов (двойной клик — один).
+// автор); подбор тегов кнопкой — «Белок, Омега-3». GET /__ai-calls — сколько было запросов (двойной клик — один).
 export const AI_STUB_PORT = Number(process.env.E2E_AI_STUB_PORT ?? 3998);
 const kotlety = JSON.parse(readFileSync("lib/domain/recipe-text/fixtures/ai-kotlety.json", "utf8")) as Record<string, unknown>;
 
@@ -31,6 +31,13 @@ export function startAiStub(): Promise<() => Promise<void>> {
       if (request.response_format?.json_schema?.name === "recipe_translation") {
         res.setHeader("content-type", "application/json");
         res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(translate(text)) }, finish_reason: "stop" }], usage: { cost: 0 } }));
+        return;
+      }
+      // Подбор тегов кнопкой (ADR-0036): строк каталога во входе быть не должно — иначе ответ «Железо» выдаст ошибку.
+      if (request.response_format?.json_schema?.name === "recipe_tags") {
+        const tags = /^Теги:/mu.test(text) ? ["iron"] : ["protein", "omega-3"];
+        res.setHeader("content-type", "application/json");
+        res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ tags }) }, finish_reason: "stop" }], usage: { cost: 0 } }));
         return;
       }
       if (text.includes("СБОЙ-ИИ")) {

@@ -6,6 +6,7 @@ import { eq, inArray, sql } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { parseRecipeText } from "@/lib/domain/recipe-text/parse";
+import { retagText } from "@/lib/domain/recipe-text/retag";
 import { type AiTranslation, composeTranslation, type SourceRecipe } from "@/lib/domain/translation";
 import { sourceRecipeSchema } from "@/lib/server/ai/translate-schema";
 import { type Masked, maskNumbers } from "@/lib/domain/translation-numbers";
@@ -13,10 +14,13 @@ import { getDb, getSql } from "@/lib/server/db/client";
 import { recipes, recipeTranslationJobs } from "@/lib/server/db/schema";
 import type { AiConfig } from "@/lib/server/env";
 
+import { catalogLabels, getCatalog } from "./catalog";
 import { readCatalog, readPublicRecipe } from "./public";
 import { readCards, readSearchIndex } from "./public-lists";
+import { getRecipe } from "./queries";
 import { createRecipe, replaceRecipe } from "./save";
 import { setRecipeStatus } from "./status";
+import { setRecipeTags } from "./tags";
 import { claimJob, enqueueTranslation, finishJob, MAX_ATTEMPTS } from "./translation-jobs";
 import { failExhausted, translationState } from "./translation-queue";
 import { runJob } from "./translation-run";
@@ -146,7 +150,7 @@ describe.skipIf(!enabled)("перевод: БД", () => {
     expect((await readPublicRecipe("en", slug ?? ""))?.view.title).toBe(`EN Соус ${marker}`);
   });
 
-  it("карточка: первый тег — из снимка, в порядке автора", async () => {
+  it("теги на английском — живые, в порядке автора (ADR-0036): «Сохранить теги» видно сразу, перевод не устаревает", async () => {
     const source = text(`Смузи ${marker}`).replace("Теги: напитки, соусы, белок", "Теги: напитки, клетчатка, белок");
     const parsed = parseRecipeText(source);
     if (!parsed.ok) throw new Error(JSON.stringify(parsed.issues));
@@ -157,6 +161,13 @@ describe.skipIf(!enabled)("перевод: БД", () => {
     const { slug } = await translationState(saved.id);
     expect((await readCards("en")).find((c) => c.slug === slug)?.tag).toEqual({ id: "fiber", label: "Fiber" });
     expect((await readSearchIndex("en")).find((item) => item.slug === slug)).toMatchObject({ tag: { id: "fiber" }, tagCodes: ["fiber", "protein"] });
+    const stored = await getRecipe(saved.id);
+    const retagged = retagText(stored?.sourceText ?? "", ["omega-3", "fiber"], catalogLabels(await getCatalog()));
+    if (!stored || !retagged.ok) throw new Error("строка тегов не легла");
+    expect(await setRecipeTags(saved.id, stored.revision, ["omega-3", "fiber"], retagged.text)).toEqual({ ok: true, revision: stored.revision + 1 });
+    expect((await readCards("en")).find((c) => c.slug === slug)?.tag).toEqual({ id: "omega-3", label: "Omega-3" });
+    expect((await readPublicRecipe("en", slug ?? ""))?.view.tags.map((tag) => tag.label)).toEqual(["Omega-3", "Fiber"]);
+    expect(await translationState(saved.id)).toMatchObject({ slug, outdated: false });
   });
 
   it("запись числа автора (ADR-0032) переходит в снимок; старый снимок без неё читается — десятичная", async () => {

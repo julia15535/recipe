@@ -14,6 +14,17 @@ export const NEW_TAGS_MAY_BE: Record<string, readonly string[]> = {
   antioxidants: ["18-smuzi-chernika.txt", "21-avtor-nazval-tegi.txt"],
 };
 
+// «Мало сахара» — только сладкому (выпечка, десерты, сладкие завтраки и напитки): несладким из примеров — никогда.
+export const NOT_SWEET: readonly string[] = [
+  "02-kotlety-abzac.txt",
+  "06-neobychnye-edinicy.txt",
+  "07-dlinnye-shagi.txt",
+  "08-injection.txt",
+  "12-zagotovka.txt",
+  "17-losos-omega.txt",
+  "19-krevetki-bez-omega.txt",
+];
+
 // За основу блюда — да; за щепотку, украшение, масло для смазывания, креветки, крошку — нет.
 const tagged = (yes: string[], no: string[]) => ({ tags }: Seen) => {
   expect(tags).toEqual(expect.arrayContaining(yes));

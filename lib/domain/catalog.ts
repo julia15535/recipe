@@ -18,6 +18,7 @@ export type SectionCode = (typeof SECTION_CODES)[number];
 // Порядок — как в фильтре поиска (composition_tags.position, миграция 0011).
 export const TAG_CODES = ["protein", "fiber", "healthy-fats", "omega-3", "low-sugar", "iron", "antioxidants"] as const;
 export type TagCode = (typeof TAG_CODES)[number];
+export const isTagCode = (code: string): code is TagCode => (TAG_CODES as readonly string[]).includes(code);
 
 const SECTION_WORDS: Record<SectionCode, readonly string[]> = {
   breakfast: ["завтрак", "завтраки"],

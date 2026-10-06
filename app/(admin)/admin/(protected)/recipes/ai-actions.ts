@@ -8,6 +8,7 @@ import type { Check } from "@/lib/domain/recipe-text/ai-recipe";
 import { toCanonicalText } from "@/lib/domain/recipe-text/canonical";
 import { isSavable } from "@/lib/domain/recipe-text/from-ai";
 import { byteLength, LIMITS } from "@/lib/domain/recipe-text/limits";
+import { releaseAiTurn, takeAiTurn } from "@/lib/server/ai/one-at-a-time";
 import { parseWithAi } from "@/lib/server/ai/parse-recipe";
 import { requireOwner } from "@/lib/server/auth/owner";
 import { allow } from "@/lib/server/auth/rate-limit";
@@ -42,7 +43,6 @@ const MESSAGES: Record<string, string> = {
   length: "Рецепт получился слишком длинным для одного разбора — сократите текст.",
   storage: "Не получилось сохранить разбор — нажмите ещё раз. Текст на месте.",
 };
-let inFlight = false;
 
 export async function aiParseRecipe(input: string): Promise<AiParsed> {
   await requireOwner();
@@ -50,8 +50,7 @@ export async function aiParseRecipe(input: string): Promise<AiParsed> {
   const text = z.string().catch("").parse(input).replaceAll("\u0000", "");
   const config = getAiConfig();
   if (!config) return { ok: false, message: MESSAGES.disabled ?? "" };
-  if (inFlight) return { ok: false, message: MESSAGES.busy ?? "" };
-  inFlight = true;
+  if (!takeAiTurn()) return { ok: false, message: MESSAGES.busy ?? "" };
   try {
     // Лимит общий с разборами статей (ADR-0034): в памяти — ключ `ai-parse`, в БД — сумма разборов за час.
     const used = (await countImportsLastHour()) + (await countArticleImportsLastHour());
@@ -75,7 +74,7 @@ export async function aiParseRecipe(input: string): Promise<AiParsed> {
     log.error("ии: разбор не сохранён", { pg: error.code });
     return { ok: false, message: MESSAGES.storage ?? "" };
   } finally {
-    inFlight = false;
+    releaseAiTurn();
   }
 }
 

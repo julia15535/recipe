@@ -13,6 +13,9 @@ const TAG_STYLES: Record<string, string> = {
 };
 const NEUTRAL = "bg-secondary text-secondary ring-secondary";
 
+/** Цвета тега по коду — и для чипов кабинета («Теги состава» рецепта); без своего цвета — нейтральный. */
+export const tagClass = (code: string): string => TAG_STYLES[code] ?? NEUTRAL;
+
 export type CompositionTag = { id: string; label: string };
 
 // Доступное имя группы — структура для экранного диктора, не оговорка (подписи «не КБЖУ» нет по решению владельца).
@@ -24,7 +27,7 @@ export function CompositionTags({ tags, label, className }: { tags: readonly Com
         <li
           key={tag.id}
           data-tag={tag.id}
-          className={cx("rounded-full px-3 py-1 text-sm font-medium ring-1 ring-inset", TAG_STYLES[tag.id] ?? NEUTRAL)}
+          className={cx("rounded-full px-3 py-1 text-sm font-medium ring-1 ring-inset", tagClass(tag.id))}
         >
           {tag.label}
         </li>
