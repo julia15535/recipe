@@ -1,7 +1,7 @@
 // Перевод статей против живой БД (pnpm db:up): `pnpm test:db`. ИИ — подставной «переводчик» (EN перед текстами).
 import { randomUUID } from "node:crypto";
 
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import sharp from "sharp";
 import { afterAll, describe, expect, it } from "vitest";
 
@@ -19,8 +19,8 @@ import { addArticlePhoto, setPhotoCaption } from "./photos";
 import { readArticleCards, readPublicArticle } from "./public";
 import { getArticle } from "./queries";
 import { createArticle, replaceArticle, setArticleRecipes, setArticleStatus } from "./save";
-import { claimArticleJob, enqueueArticleTranslation, finishArticleJob } from "./translation-jobs";
-import { articleTranslationState, neverTranslated } from "./translation-queue";
+import { ARTICLE_MAX_ATTEMPTS, claimArticleJob, enqueueArticleTranslation, finishArticleJob, releaseArticleJob } from "./translation-jobs";
+import { articleTranslationState, failExhaustedArticles, neverTranslated, pendingArticleWork } from "./translation-queue";
 import { runArticleJob } from "./translation-run";
 
 const enabled = process.env.RECIPE_DB_TESTS === "1";
@@ -87,7 +87,7 @@ describe.skipIf(!enabled)("перевод статей: БД", () => {
     expect((await readArticleCards("en")).map((card) => card.id)).toContain(id);
 
     const draft = await article(`Черновик ${marker}`, "draft");
-    await translate(draft, true);
+    expect(await translate(draft, true)).toBeNull(); // черновик не переводим
     await setArticleStatus(id, "draft");
     expect(await readPublicArticle("en", state.slug ?? "")).toBeNull();
     expect((await readArticleCards("en")).map((card) => card.id)).not.toContain(id);
@@ -115,10 +115,10 @@ describe.skipIf(!enabled)("перевод статей: БД", () => {
 
   it("поздний результат чужого задания ничего не пишет; статья без заданий — в «перевести раз в жизни»; удаление — каскадом", async () => {
     const id = await article(`Сырники ${marker}`);
-    expect(await neverTranslated()).toContain(id);
+    expect(await neverTranslated(1000)).toContain(id);
     const job = await enqueueArticleTranslation(id, false);
     if (!job) throw new Error("нет задания");
-    expect(await neverTranslated()).not.toContain(id);
+    expect(await neverTranslated(1000)).not.toContain(id);
     const claimed = await claimArticleJob(job);
     if (!claimed) throw new Error("не взяли");
     const result = await fake("EN")(claimed.input as ArticleSource);
@@ -128,4 +128,24 @@ describe.skipIf(!enabled)("перевод статей: БД", () => {
     await getDb().delete(articles).where(eq(articles.id, id));
     expect(await getDb().select().from(articleTranslationJobs).where(eq(articleTranslationJobs.articleId, id))).toEqual([]);
   });
+
+  it("аренда: занятое не взять, истёкшую — взять снова; «отдать» не тратит попытку; после 3 захватов — «не удалось»", async () => {
+    const id = await article(`Оладьи ${marker}`);
+    const job = await enqueueArticleTranslation(id, false);
+    if (!job) throw new Error("нет задания");
+    const expire = () => getDb().update(articleTranslationJobs).set({ leaseUntil: sql`now() - interval '1 second'` }).where(eq(articleTranslationJobs.id, job));
+    const first = await claimArticleJob(job);
+    expect(first).not.toBeNull();
+    expect(await claimArticleJob(job)).toBeNull();
+    await releaseArticleJob(job, first?.token ?? "");
+    for (let attempt = 1; attempt <= ARTICLE_MAX_ATTEMPTS; attempt += 1) {
+      expect(await claimArticleJob(job), `захват ${attempt}`).not.toBeNull();
+      await expire();
+      if (attempt < ARTICLE_MAX_ATTEMPTS) expect((await pendingArticleWork()).run.length).toBeGreaterThan(0); // истёкшую видит подборщик
+    }
+    expect(await claimArticleJob(job)).toBeNull();
+    await failExhaustedArticles();
+    expect(await articleTranslationState(id)).toMatchObject({ slug: null, job: { status: "failed", error: "lease" } });
+  });
 });
+

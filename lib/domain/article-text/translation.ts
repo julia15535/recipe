@@ -119,7 +119,7 @@ export function fromTagged(text: string): string | null {
 
 /** Единицы перевода: название, заголовки и абзацы по id блока, пункты — `b4:0`, подписи фото — `photo:KEY`. */
 export function articleUnits(source: ArticleSource): Unit[] {
-  const units: Unit[] = [{ id: "title", text: source.title }];
+  const units: Unit[] = [{ id: "title", text: plainText(source.title) }];
   for (const block of source.body.blocks) {
     if (block.type === "heading") units.push({ id: block.id, text: plainText(block.text) });
     if (block.type === "paragraph") units.push({ id: block.id, text: toTagged(block.text) });

@@ -14,7 +14,11 @@ export async function POST(request: Request) {
   const expected = Buffer.from(secret ?? "");
   if (!secret || given.length !== expected.length || !timingSafeEqual(given, expected)) return new Response(null, { status: 404 });
   const started = Date.now();
-  await pickupTranslations();
-  await pickupArticleTranslations(started);
+  try {
+    await pickupTranslations();
+  } finally {
+    // Сбой очереди рецептов не останавливает статьи.
+    await pickupArticleTranslations(started);
+  }
   return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
 }

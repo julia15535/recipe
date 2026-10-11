@@ -42,7 +42,7 @@ export function pendingArticleWork(): Promise<{ run: string[]; revalidate: strin
 }
 
 /** Опубликованные статьи без перевода, которым задание не ставили ни разу, — перевод ставит подборщик (раз в жизни). */
-export function neverTranslated(): Promise<string[]> {
+export function neverTranslated(limit = 5): Promise<string[]> {
   return guarded("перевод", async () => {
     const rows = await getDb()
       .select({ id: t.articles.id })
@@ -54,7 +54,8 @@ export function neverTranslated(): Promise<string[]> {
           notExists(getDb().select({ one: sql`1` }).from(t.articleTranslations).where(eq(t.articleTranslations.articleId, t.articles.id))),
         ),
       )
-      .limit(5);
+      .orderBy(desc(t.articles.publishedAt))
+      .limit(limit);
     return rows.map((row) => row.id);
   });
 }

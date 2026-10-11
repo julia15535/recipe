@@ -16,7 +16,7 @@
 | `architecture.md` | architecture | Стек, слои, SEO-рендер, где ИИ, деплой — перед архитектурным решением | — | 2026-10-06 |
 | `auth-publishing.md` | auth-publishing | Вход владельца через Telegram, права посетителей, публикация рецепта | `../domain/owner-auth.md` | 2026-10-03 |
 | `catalog.md` | catalog | Каталог — категории по типу блюда, подкатегории, теги, правка из админки | `../domain/catalog-structure.md` | 2026-10-06 |
-| `data-models.md` | data-models | Сущности — рецепт, ингредиенты, шаги, справочники, категории/теги | `../domain/recipe-model.md` | 2026-10-06 |
+| `data-models.md` | data-models | Сущности — рецепт, ингредиенты, шаги, справочники, категории/теги | `../domain/recipe-model.md` | 2026-10-11 |
 | `deployment.md` | deployment | CI/CD, прод, автодеплой, откат, бэкапы | — | 2026-10-06 |
 | `ingredients.md` | ingredients | Справочник ингредиентов — иерархия, единицы, граммовые эквиваленты, КБЖУ | `../domain/recipe-model.md` | 2026-10-06 |
 | `lessons.md` | lessons | Уроки перед планом — что пробовали и что не сработало | `../anti-patterns.md` | 2026-10-06 |
@@ -27,7 +27,7 @@
 | `ux.md` | ux | Экраны и mobile-first — главная, страница рецепта, работа одной рукой | `../domain/screens.md` | 2026-10-06 |
 | `articles.md` | articles | Статьи — текст владельца с фото, связь с рецептами | `../domain/articles.md` | 2026-10-11 |
 | `flows.md` | flows | Сквозные сценарии посетителя и владельца, статусы рецепта | — | 2026-09-27 |
-| `seo-i18n.md` | seo-i18n | SEO публичных страниц, RU + EN, URL-схема, SEO-футер | — | 2026-10-06 |
+| `seo-i18n.md` | seo-i18n | SEO публичных страниц, RU + EN, URL-схема, SEO-футер | — | 2026-10-11 |
 <!-- GENERATED:core-registry END -->
 
 > Реестр и decision tree в INDEX регенерирует `tools/memory-audit.mjs` (или `/memory-check`

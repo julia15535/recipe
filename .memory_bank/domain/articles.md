@@ -57,6 +57,27 @@ review_after: 2027-01-06
 каскады с обеих сторон), `article_imports` (сутки). Запись — `lib/server/articles/{save,photos}.ts`, чтение —
 `queries.ts` (кабинет), `public.ts` (сайт), `photo-reads.ts`.
 
+## Перевод на английский (ADR-0038)
+- Домен `lib/domain/article-text/translation.ts`: `articleUnits` — название, заголовок/абзац по id, пункт `b4:0`, подпись
+  `photo:KEY` (заголовки и подписи — `plainText`); `toTagged`/`fromTagged` — звёздочки ⇄ ⟪b⟫/⟪i⟫/⟪*⟫ (выделения,
+  что длятся дольше, — снаружи; пробелы по краям выносятся; не разбирается как задумано — текст без оформления);
+  `composeArticle` — те же id по порядку, та же последовательность меток, структура из русского снимка.
+- ИИ `lib/server/ai/translate-article.ts`: промпт 2026-10-11.2, json_schema `article_translation`, числа ⟦n⟧ (`unmaskNumbers`
+  с `ownDigits`: свои цифры можно, Фаренгейт/° /% проверяются), 16 000 токенов, 90 с. Живая проверка —
+  `lib/server/ai/article-translate.live.test.ts` (8 текстов + статья у 20 КБ: 9/9, ~27 с).
+- Хранение и очередь: `lib/server/db/schema/article-translations.ts`, миграция 0012; `lib/server/articles/translation-jobs.ts`
+  (аренда 180 с, token, ≤ 3 захвата), `-queue.ts` (`pendingArticleWork` по одному, `neverTranslated` — опубликованные без
+  заданий, `articleTranslationState` одним запросом), `-run.ts` (`serially` и лимит `recipe-translate` — общие с
+  рецептами; `pickupArticleTranslations` — из `app/api/jobs/translations` при < 60 с от начала), `-store.ts` (локализация
+  en: slug не меняется, название ≤ 120, анонс `excerptOf`; снимок `{schemaVersion, article}`), `-schema.ts` (Zod: вход,
+  снимок с запасом длины ×2), `translate-later.ts` (`after()`).
+- Сайт: `lib/server/articles/public.ts` + `public-content.ts` — `contentOf` (ru — статья, en — снимок), подписи из снимка,
+  `otherSlug` (пара на английском — только при снимке), связанные — `readCards(locale)`.
+- Кабинет: перевод — при публикации (`actions.ts` `saveArticle` новой опубликованной и `changeArticleStatus`), «Перевести»
+  (`translation-actions.ts`), блок — `app/(admin)/admin/(protected)/recipes/_components/translation-block.tsx` (общий, `action`/`enPath`/`subject`).
+- Тесты: `lib/domain/article-text/translation.test.ts` (в т. ч. 50 серий случайного оформления туда-обратно),
+  `lib/server/articles/translations.db.test.ts`, `e2e/articles-en.spec.ts` (заглушка `article_translation` — «EN »).
+
 ## Кабинет (`app/(admin)/admin/(protected)/articles/`)
 `actions.ts`: `parseArticleText` (метки — только на фото этой статьи; слова те же — `remap` без ИИ; иначе ИИ или без
 ИИ; фото без метки — замечание «без места»; разметка → `article_imports`), `saveArticle` (блоки заново из импорта,

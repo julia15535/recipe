@@ -3,7 +3,7 @@ tier: 1
 topic: data-models
 scope: Сущности — рецепт, ингредиенты, шаги, справочники, категории/теги
 tier2: ../domain/recipe-model.md
-updated: 2026-10-06
+updated: 2026-10-11
 importance: high
 source: _intake/_processed/brief/technical_spec_recipe_book.md
 status: draft
@@ -14,10 +14,10 @@ review_after: 2026-12-27
 
 # Модель данных — Tier 1 сводка
 
-Схема рецептов есть (ADR-0023, `lib/server/db/schema/{recipes,recipe-rows,catalog,photos,translations}.ts`, миграции 0002–0011):
+Схема рецептов есть (ADR-0023, `lib/server/db/schema/{recipes,recipe-rows,catalog,photos,translations}.ts`, миграции 0002–0012):
 рецепт + локализации, разделы/теги, ингредиенты (дроби), шаги, советы, фото блюда (ADR-0028: `recipe_photos` 1:1 +
 файлы `bytea`), перевод EN (ADR-0029: `recipe_localizations(en)` + снимок `recipe_translations`, очередь
-`recipe_translation_jobs`, `recipes.content_revision`; теги на /en — живые из рецепта, ADR-0036). Статьи — `core/articles.md`.
+`recipe_translation_jobs`, `recipes.content_revision`; теги на /en — живые из рецепта, ADR-0036). Статьи и их перевод — `core/articles.md`.
 
 ## Сущности
 - **Recipe** — slug, статус (черновик/опубликован), название, описание, одна фото, разделы каталога

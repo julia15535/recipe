@@ -14,11 +14,13 @@ const LEASE_SECONDS = 180;
 export const ARTICLE_MAX_ATTEMPTS = 3;
 const jobs = t.articleTranslationJobs;
 
-/** Поставить перевод. `force` — «Перевести заново»; без него — только если перевода ещё нет. Активное не дублируется. */
+/** Поставить перевод опубликованной статьи. `force` — «Перевести заново»; без него — только если перевода ещё нет.
+ * Активное не дублируется; черновик не переводим (на /en его всё равно нет — лишний платный перевод). */
 export function enqueueArticleTranslation(articleId: string, force: boolean): Promise<string | null> {
   return guarded("перевод", () =>
     getDb().transaction(async (tx) => {
-      await tx.select({ id: t.articles.id }).from(t.articles).where(eq(t.articles.id, articleId)).for("update");
+      const [current] = await tx.select({ status: t.articles.status }).from(t.articles).where(eq(t.articles.id, articleId)).for("update");
+      if (current?.status !== "published") return null;
       const [active] = await tx.select({ id: jobs.id }).from(jobs).where(and(eq(jobs.articleId, articleId), inArray(jobs.status, ["queued", "running"])));
       if (active) return active.id;
       if (!force) {

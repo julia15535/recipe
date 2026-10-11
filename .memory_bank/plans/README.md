@@ -37,7 +37,7 @@ draft → in_progress → completed → перенос в completed_plans/
 
 | slug | Название | status | created | updated |
 |------|----------|--------|---------|---------|
-| articles-en | Статьи на английском — ИИ-перевод после публикации, /en/articles | draft | 2026-10-11 | 2026-10-11 |
+| articles-en | Статьи на английском — ИИ-перевод после публикации, /en/articles | in_progress | 2026-10-11 | 2026-10-11 |
 <!-- GENERATED:plans-registry END -->
 
 > Шаблон нового плана — `_template.md`. Реестр регенерирует аудит — руками не правим.
