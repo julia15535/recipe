@@ -24,6 +24,8 @@ const EXPECTED: Record<string, Expected> = {
   "04-dialog.txt": { noBullets: true, paragraphs: 4 },
   "05-metki-foto.txt": { headings: ["С творожным сыром и рыбой", "С ветчиной"], photos: 2 },
   "06-injection.txt": {},
+  // Звёздочки вокруг слов — оформление, не пункт (ADR-0037): «*Коротко:*» и «*Совет:*» — абзацы, «* финики» — пункт.
+  "08-oformlenie.txt": { headings: ["Чем заменить сахар в выпечке", "Спелые бананы", "Что ещё подходит"], lists: [[false, 3]], paragraphs: 3 },
   "07-dlinnaya.txt": {
     headings: ["Как я готовлю завтраки на неделю", "Что готовлю заранее", "Вафли", "Сырники", "Гранола", "Что важно"],
     lists: [[false, 4], [true, 4]],

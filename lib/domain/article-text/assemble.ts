@@ -1,6 +1,7 @@
 // Разметка строк → блоки статьи. Текст блока — из строк автора (перенос внутри абзаца — пробел); убираются только
 // служебные начала строк: «#» у заголовка, «-», «•», «1.» у пункта списка (пункт из одного значка не выводится). Фото — по меткам. Разметку (от ИИ или
 // без ИИ) проверяем: каждая строка с текстом — ровно в одной записи, по порядку, без пустых строк и меток внутри.
+import { plainText } from "./inline";
 import { ARTICLE_LIMITS, type ArticleLines, contentLines } from "./lines";
 import { ARTICLE_SCHEMA_VERSION, type ArticleBlock, type ArticleBody, type ArticleIssue, type Mark } from "./types";
 
@@ -88,10 +89,11 @@ export function marksOf(body: ArticleBody): Mark[] {
   });
 }
 
-/** Анонс для карточки и превью ссылки — первый абзац (ИИ анонс не пишет), до 200 знаков по границе слова. */
+/** Анонс для карточки и превью ссылки — первый абзац (ИИ анонс не пишет) без знаков оформления, до 200 знаков по границе слова. */
 export function excerptOf(body: ArticleBody, max = 200): string | null {
   const first = body.blocks.find((block) => block.type === "paragraph") ?? body.blocks.find((block) => block.type === "list");
-  const text = first?.type === "paragraph" ? first.text : first?.type === "list" ? first.items.map((item) => item.text).join("; ") : null;
+  const raw = first?.type === "paragraph" ? first.text : first?.type === "list" ? first.items.map((item) => item.text).join("; ") : null;
+  const text = raw === null ? null : plainText(raw);
   if (!text) return null;
   if (text.length <= max) return text;
   const cut = text.slice(0, max);
@@ -106,8 +108,8 @@ export function photoAlts(body: ArticleBody, title: string, captions: ReadonlyMa
   const alts = new Map<string, string>();
   let heading: string | null = null;
   for (const block of body.blocks) {
-    if (block.type === "heading") heading = block.text;
-    if (block.type === "photo") alts.set(block.key, captions.get(block.key) || heading || title);
+    if (block.type === "heading") heading = plainText(block.text);
+    if (block.type === "photo") alts.set(block.key, plainText(captions.get(block.key) ?? "") || heading || title);
   }
   return alts;
 }

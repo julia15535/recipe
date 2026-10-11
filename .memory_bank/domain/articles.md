@@ -3,7 +3,7 @@ tier: 2
 topic: articles-details
 scope: Статьи подробно — разметка строк ИИ и без ИИ, метки фото, хранение, кабинет, сайт, кэш, пределы, тесты
 tier1: ../core/articles.md
-updated: 2026-10-06
+updated: 2026-10-11
 importance: med
 source: manual
 status: working
@@ -25,7 +25,12 @@ review_after: 2027-01-06
   неразрывные пробелы внутри строки — как есть), убирает только начало строки: «#» у заголовка, «-», «•», «*», «●»,
   «▪» и «1.», «1)» у пункта; длинное тире «—» — реплика, не пункт; нумерованный список начинается с номера автора
   (`start`, «3.» после фото). `excerptOf` — анонс из первого абзаца (≤ 200), `photoAlts` — alt фото: подпись →
-  ближайший заголовок → название.
+  ближайший заголовок → название; оба — без знаков оформления (`plainText`).
+- `inline.ts` (ADR-0037): `inlineRuns` — `**жирный**`, `*курсив*`, `***оба***`; подряд идущие `*` — один знак (длина 1–3,
+  `****` — текст), открывает — справа не пробел, закрывает — слева не пробел, между двумя буквами/цифрами не действует
+  («5*3*2»), пары одной длины, без вложенности, `\*` — звёздочка; непарное — как есть; `plainText`. Знаки хранятся в
+  тексте блоков (схема та же). `format-edit.ts` `toggleStyle` — кнопки «Ж»/«К»: обернуть выделение (без пробелов по
+  краям), повтор снимает, без выделения — пара знаков, несколько строк — каждая отдельно.
 - `parse.ts` `parseArticle`: разметка ИИ не легла — разбор без ИИ (`plain.ts`) и замечание; возвращает и разметку, по
   которой собраны блоки (её хранит `article_imports`); `titleIssue`.
 - `edit.ts`: `remap` (слова те же — прежняя разметка на новых номерах строк, абзац делится меткой), `insertMarker`,
@@ -33,11 +38,11 @@ review_after: 2027-01-06
 
 ## ИИ (`lib/server/ai/article-markup.ts`)
 Пронумерованные строки (метки — «[ФОТО]»), ответ — `{ marks: [{ kind, from, to }] }` (json_schema strict, номера с
-1 до предела строк — иначе «ответ непонятный»), промпт 2026-10-06.2 (реплика «— …» и законченная фраза — отдельный
-абзац). Лимит разборов общий с рецептами в обе стороны: `allow("ai-parse")` + сумма `recipe_imports` и
+1 до предела строк — иначе «ответ непонятный»), промпт 2026-10-11.1 (реплика «— …» и законченная фраза — отдельный
+абзац; пункт — значок с пробелом, `*слово*` в начале строки — оформление, не пункт). Лимит разборов общий с рецептами в обе стороны: `allow("ai-parse")` + сумма `recipe_imports` и
 `article_imports` за час (в сумму входят и разборы статей без ИИ — лимит строже); `app/(admin)/admin/(protected)/articles/ai-markup.ts`,
 `app/(admin)/admin/(protected)/recipes/ai-actions.ts`. До ИИ — пустой, > 20 КБ, > 300 строк, ошибки меток: ИИ не зовём. Живая проверка —
-`lib/server/ai/article-eval.live.test.ts`, тексты `scripts/ai-eval-articles/` (7/7, есть длинный).
+`lib/server/ai/article-eval.live.test.ts`, тексты `scripts/ai-eval-articles/` (8/8, есть длинный и с оформлением).
 
 ## Хранение (миграция 0010, `lib/server/db/schema/articles.ts`)
 `articles` (статус, `revision` — любое изменение, `content_revision` — текст/блоки/подписи; `body` ≤ 256 КБ CHECK),
@@ -52,21 +57,24 @@ review_after: 2027-01-06
 проверка той же Zod-схемой, что при чтении — `lib/server/articles/storable.ts`, `revision`), статусы, удаление черновика,
 `saveRelatedRecipes`. `content_revision` растёт, только если текст, название, блоки или подпись правда изменились. `photo-actions.ts`: `addPhotoHere` (метку ставит сервер по текущему тексту и `revision`),
 `recropArticle`, `removeArticlePhotoAction`, `captionArticlePhoto`; обработка фото — общий с рецептами лимит
-(`lib/server/media/guard.ts`, ключ `photo`). Экраны: редактор, статья с «Добавить фото сюда» и кнопками фото,
+(`lib/server/media/guard.ts`, ключ `photo`). Экраны: редактор (над полем текста — «Ж» / «К», `app/(admin)/admin/(protected)/articles/_components/format-toolbar.tsx`: `execCommand("insertText")` — работает
+«Отменить», иначе новое значение поля; Ctrl/⌘+B, I по `event.code`), статья с «Добавить фото сюда» и кнопками фото,
 «Фото без места», связанные рецепты чипами.
 
 ## Сайт
 `app/(public)/[locale]/articles/{page,[slug]/page}.tsx`, `components/article/{article-body.tsx,article-card.tsx,view.ts}`;
 кэш — `lib/server/recipes/public-cache.ts` (`cachedArticle*`, тег `articles` в `PUBLIC_TAGS` — любая запись в кабинете
 сбрасывает всё); фото — `app/media/article/[photoId]/[file]/route.ts` (опубликованное — всем, черновик и исходник —
-владельцу); превью ссылки — первое фото. Только текст как React-узлы, без HTML. Шапка: `components/site-header.tsx`
+владельцу); превью ссылки — первое фото. Только текст как React-узлы, без HTML; жирный/курсив — в абзацах и пунктах
+(`components/article/article-body.tsx` `Inline`), в заголовках (Prata — одно начертание) и подписях знаки убираются. Шапка: `components/site-header.tsx`
 (`articles`), лист каталога — `extra`.
 
 ## Тесты
-Unit `lib/domain/article-text/article-text.test.ts`; DB `lib/server/articles/articles.db.test.ts` (в т. ч. `content_revision`,
+Unit `lib/domain/article-text/{article-text,inline,format-edit}.test.ts`; DB `lib/server/articles/articles.db.test.ts` (в т. ч. `content_revision`,
 черновик не в «Статьи по рецепту», фото черновика не опубликовано); e2e `e2e/articles.spec.ts` (заглушка ИИ
 `e2e/support/ai-stub.ts` размечает «#»/«-»; статья 320 / 375 / 1280, axe в кабинете, на рецепте, на главной; перенос
-метки без ИИ; стёртая метка → «Фото без места» → убрать). Бэкап: `deploy/local/recipe-restore-drill.sh` проверяет и
+метки без ИИ; стёртая метка → «Фото без места» → убрать; «Ж»/«К»/Ctrl+B → `<strong>`/`<em>` с начертанием, анонс
+и description без звёздочек). Бэкап: `deploy/local/recipe-restore-drill.sh` проверяет и
 `article_photo_files`.
 
 ## Объём

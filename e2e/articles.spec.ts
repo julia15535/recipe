@@ -193,3 +193,63 @@ test("компьютер: «Статьи» в шапке перед «Поиск
   await banner.getByRole("link", { name: "Статьи" }).click();
   await expect(page).toHaveURL(/\/ru\/articles$/);
 });
+
+// Жирный и курсив кнопками (ADR-0037): выделила слова → «Ж» / «К» (и Ctrl+B) — в поле звёздочки, на сайте <strong> / <em>
+// с настоящим начертанием; повтор снимает; анонс на карточке — без звёздочек.
+test("статья: выделить слова → «Ж», «К», Ctrl+B → на сайте жирный и курсив, в анонсе без звёздочек", async ({ page }) => {
+  test.setTimeout(90_000);
+  const title = `Оформление ${unique()}`;
+  await page.goto("/admin");
+  await page.getByRole("link", { name: "Новая статья" }).click();
+  await page.getByRole("textbox", { name: "Название" }).fill(title);
+  const field = page.getByRole("textbox", { name: "Текст статьи" });
+  await field.fill("Добавьте соль в самом конце.\n\nСлучайно лишнее слово.");
+  const select = (word: string) =>
+    field.evaluate((el: HTMLTextAreaElement, w) => {
+      const at = el.value.indexOf(w);
+      el.focus();
+      el.setSelectionRange(at, at + w.length);
+    }, word);
+  const toolbar = page.getByRole("toolbar", { name: "Оформление текста" });
+  await select("соль");
+  await toolbar.getByRole("button", { name: "Жирный" }).click();
+  await select("в самом конце");
+  await toolbar.getByRole("button", { name: "Курсив" }).click();
+  await select("лишнее");
+  await page.keyboard.press("Control+b");
+  await expect(field).toHaveValue("Добавьте **соль** *в самом конце*.\n\nСлучайно **лишнее** слово.");
+  // Повтор снимает — выделение осталось на слове.
+  await toolbar.getByRole("button", { name: "Жирный" }).click();
+  await expect(field).toHaveValue("Добавьте **соль** *в самом конце*.\n\nСлучайно лишнее слово.");
+  await expectGood(page);
+
+  await page.getByRole("button", { name: "Разобрать" }).click();
+  const preview = page.getByRole("region", { name: "Так статья будет выглядеть на сайте" });
+  await expect(preview.locator("strong")).toHaveText("соль");
+  await expect(preview.locator("em")).toHaveText("в самом конце");
+  await page.getByRole("button", { name: "Сохранить черновик" }).click();
+  await page.waitForURL(/\/admin\/articles\/[0-9a-f-]{36}$/);
+  const cabinet = page.url();
+  await page.getByRole("button", { name: "Опубликовать" }).click();
+  await page.getByRole("link", { name: "Открыть на сайте" }).click();
+  await page.waitForURL(/\/ru\/articles\/[a-z0-9-]+$/);
+  const strong = page.locator("main article strong");
+  await expect(strong).toHaveText("соль");
+  expect(Number(await strong.evaluate((el) => getComputedStyle(el).fontWeight))).toBeGreaterThanOrEqual(600);
+  expect(await page.locator("main article em").evaluate((el) => getComputedStyle(el).fontStyle)).toBe("italic");
+  await expect(page.locator("main article")).not.toContainText("*");
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", "Добавьте соль в самом конце.");
+  await page.goto("/ru/articles", { waitUntil: "networkidle" });
+  await expect(page.getByRole("link", { name: new RegExp(title) })).toContainText("Добавьте соль в самом конце.");
+  for (const width of [320, 375]) {
+    await page.setViewportSize({ width, height: 812 });
+    await expectGood(page);
+  }
+
+  await page.goto(cabinet);
+  await page.getByRole("button", { name: "Снять с публикации" }).click();
+  await expect(page.getByRole("button", { name: "Опубликовать" })).toBeVisible();
+  await page.getByRole("button", { name: "Удалить" }).click();
+  await page.getByRole("button", { name: "Да, удалить" }).click();
+  await page.waitForURL(/\/admin$/);
+});

@@ -2,6 +2,7 @@ import { Fragment, type ReactNode } from "react";
 
 import { RecipeGrid } from "@/components/recipe/recipe-card";
 import { RecipePhoto } from "@/components/recipe/recipe-photo";
+import { inlineRuns, plainText } from "@/lib/domain/article-text/inline";
 import type { ArticleBlock } from "@/lib/domain/article-text/types";
 
 import type { ArticleView } from "./view";
@@ -19,21 +20,34 @@ type Props = {
 
 const PHOTO_SIZES = "(min-width: 768px) 720px, 100vw";
 
+/** Жирный и курсив из звёздочек (ADR-0037) — React-узлы, никакого HTML из текста. В заголовках и подписях их нет:
+ * у шрифта заголовков одно начертание — там знаки просто убираются (`plainText`). */
+function Inline({ text }: { text: string }) {
+  return inlineRuns(text).map((run, index) => {
+    const node = run.italic ? <em>{run.text}</em> : run.text;
+    return <Fragment key={index}>{run.bold ? <strong className="font-bold">{node}</strong> : node}</Fragment>;
+  });
+}
+
 function Block({ block, view, tools, missingPhoto }: { block: ArticleBlock } & Pick<Props, "view" | "tools" | "missingPhoto">) {
   if (block.type === "heading") {
     return block.level === 2 ? (
-      <h2 className="mt-4 font-display text-display-xs text-primary">{block.text}</h2>
+      <h2 className="mt-4 font-display text-display-xs text-primary">{plainText(block.text)}</h2>
     ) : (
-      <h3 className="mt-2 font-display text-xl text-primary">{block.text}</h3>
+      <h3 className="mt-2 font-display text-xl text-primary">{plainText(block.text)}</h3>
     );
   }
-  if (block.type === "paragraph") return <p className="text-lg leading-relaxed text-primary">{block.text}</p>;
+  if (block.type === "paragraph") return <p className="text-lg leading-relaxed text-primary">
+        <Inline text={block.text} />
+      </p>;
   if (block.type === "list") {
     const List = block.ordered ? "ol" : "ul";
     return (
       <List start={block.ordered ? block.start : undefined} className={`flex flex-col gap-1.5 pl-6 text-lg leading-relaxed text-primary ${block.ordered ? "list-decimal" : "list-disc"}`}>
         {block.items.map((item) => (
-          <li key={item.from}>{item.text}</li>
+          <li key={item.from}>
+            <Inline text={item.text} />
+          </li>
         ))}
       </List>
     );
@@ -43,7 +57,7 @@ function Block({ block, view, tools, missingPhoto }: { block: ArticleBlock } & P
   return (
     <figure className="flex flex-col gap-2" data-photo={block.key}>
       <RecipePhoto photo={photo.ref} alt={photo.alt} sizes={PHOTO_SIZES} className="rounded-2xl" />
-      {photo.caption && <figcaption className="text-md text-tertiary">{photo.caption}</figcaption>}
+      {photo.caption && <figcaption className="text-md text-tertiary">{plainText(photo.caption)}</figcaption>}
       {tools?.[block.key]}
     </figure>
   );

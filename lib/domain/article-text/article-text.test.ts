@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { assemble, excerptOf, marksValid } from "./assemble";
+import { assemble, excerptOf, marksValid, photoAlts } from "./assemble";
 import { insertMarker, lastLineOf, remap, removeMarker } from "./edit";
 import { contentLines, newPhotoKey, normalizeText, readLines } from "./lines";
 import { parseArticle, titleIssue } from "./parse";
@@ -182,5 +182,16 @@ describe("статья: анонс и название", () => {
     expect(titleIssue("  ")).toMatchObject({ group: "decide" });
     expect(titleIssue("В".repeat(121))).toMatchObject({ group: "decide" });
     expect(titleIssue("Вафли: варианты подачи")).toBeNull();
+  });
+});
+
+describe("статья: жирный и курсив — только в тексте, не в анонсе и alt (ADR-0037)", () => {
+  it("анонс и alt — без звёздочек; в тексте блока они остаются (их показывает страница)", () => {
+    const text = normalizeText("*Коротко:* **сахар** можно убрать.\n\n# Бананы **спелые**\n[Фото Q7K2]");
+    const { body } = parseArticle(text, null);
+    expect(body.blocks[0]).toMatchObject({ type: "paragraph", text: "*Коротко:* **сахар** можно убрать." });
+    expect(excerptOf(body)).toBe("Коротко: сахар можно убрать.");
+    expect(photoAlts(body, "Название", new Map()).get("Q7K2")).toBe("Бананы спелые");
+    expect(photoAlts(body, "Название", new Map([["Q7K2", "Хлеб *на закваске*"]])).get("Q7K2")).toBe("Хлеб на закваске");
   });
 });
