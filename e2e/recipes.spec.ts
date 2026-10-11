@@ -33,6 +33,10 @@ async function aiCalls(page: Page): Promise<number> {
 }
 
 async function expectNoAxeViolations(page: Page) {
+  // Контраст считаем после анимаций: на медленной машине axe успевал застать полупрозрачный кадр появления
+  // (CI 11.10: «color-contrast: 1», anti-patterns №56).
+  await page.waitForLoadState("networkidle");
+  await expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === "running").length)).toBe(0);
   const result = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
   expect(result.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);
 }

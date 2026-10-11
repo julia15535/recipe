@@ -349,7 +349,8 @@ READ, не `Promise.all`; интерфейс не застывает в «нев
 опередить действие. **Convention:** после действия ждать его видимого итога (кнопка сменилась на «Опубликовать», текст
 «… сохранено»), только потом переходить; снимки страницы (`evaluateAll`, `inputValue()`) — через `expect.poll`
 (`e2e/articles.spec.ts`, `e2e/photos.spec.ts`, как `e2e/public.spec.ts`). Какая проверка упала на GitHub — видно без входа:
-репортёр `github` (`playwright.config.ts`) → аннотации `check-runs/<id>/annotations` (06.10: ползунок масштаба, 1 вместо 2,5). Копия CI локально: `docker build` → `docker run` с лимитами из `.github/workflows/ci.yml`.
+репортёр `github` (`playwright.config.ts`) → аннотации `check-runs/<id>/annotations` (06.10: ползунок масштаба, 1 вместо 2,5;
+11.10: axe «color-contrast» на кадре появления → перед axe ждать `networkidle` и конца анимаций, `e2e/recipes.spec.ts`). Копия CI локально: `docker build` → `docker run` с лимитами из `.github/workflows/ci.yml`.
 
 ## 57. Новый тег в промпт ИИ — ограничения в его описании, не в общей части правила
 **Симптом (06.10):** для «Омега-3» / «Антиоксидантов» общая часть правила 6 стала «только если продукт — основа блюда»
