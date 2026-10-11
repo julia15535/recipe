@@ -5,14 +5,17 @@ import { z } from "zod";
 import { AppButton } from "@/components/app-button";
 import { articlePath } from "@/lib/server/articles/public";
 import { getArticle } from "@/lib/server/articles/queries";
+import { articleTranslationState } from "@/lib/server/articles/translation-queue";
 import { toArticleView } from "@/lib/server/articles/view";
 import { requireOwner } from "@/lib/server/auth/owner";
 import { listRecipes } from "@/lib/server/recipes/queries";
 
 import { StatusBadge } from "../../recipes/_components/status-badge";
+import { TranslationBlock } from "../../recipes/_components/translation-block";
 import { ArticleActions } from "../_components/article-actions";
 import { ArticleWorkspace } from "../_components/article-workspace";
 import { RelatedRecipes } from "../_components/related-recipes";
+import { translateArticle } from "../translation-actions";
 
 export const metadata: Metadata = { title: "Статья · Кабинет владельца" };
 
@@ -20,7 +23,7 @@ export const metadata: Metadata = { title: "Статья · Кабинет вл�
 export default async function ArticlePage({ params }: PageProps<"/admin/articles/[id]">) {
   await requireOwner();
   const id = z.uuid().safeParse((await params).id);
-  const [article, recipes] = id.success ? await Promise.all([getArticle(id.data), listRecipes()]) : [null, []];
+  const [article, recipes, translation] = id.success ? await Promise.all([getArticle(id.data), listRecipes(), articleTranslationState(id.data)]) : [null, [], null];
   if (!article) notFound();
   const placed = new Set(article.body.blocks.flatMap((block) => (block.type === "photo" ? [block.key] : [])));
   const photos = [...article.photos.values()].map((photo) => ({ ...photo, placed: placed.has(photo.key) }));
@@ -35,6 +38,9 @@ export default async function ArticlePage({ params }: PageProps<"/admin/articles
           <StatusBadge status={article.status} />
         </div>
         <ArticleActions id={article.id} status={article.status} siteHref={articlePath("ru", article.slug)} />
+        {translation && (
+          <TranslationBlock id={article.id} published={article.status === "published"} state={translation} action={translateArticle} enPath="/en/articles/" subject="статью" />
+        )}
         <RelatedRecipes
           articleId={article.id}
           revision={article.revision}

@@ -6,7 +6,7 @@ import { Suspense } from "react";
 
 import { ArticleBody } from "@/components/article/article-body";
 import { photoUrl } from "@/lib/domain/photo";
-import { articlePath } from "@/lib/server/articles/public";
+import { articlePath, type PublicArticle } from "@/lib/server/articles/public";
 import type { Locale } from "@/lib/server/recipes/public";
 import { cachedArticle, cachedCatalog } from "@/lib/server/recipes/public-cache";
 
@@ -16,8 +16,12 @@ import { HeaderFallback, PublicHeader } from "../../_components/public-header";
 
 type Props = PageProps<"/[locale]/articles/[slug]">;
 
-// Статья `/{locale}/articles/{slug}` (ADR-0034): только опубликованная; черновик, снятая, неизвестная — 404. Превью
-// ссылки — первое фото статьи и анонс (первый абзац).
+// Статья `/{locale}/articles/{slug}` (ADR-0034, ADR-0038): только опубликованная (на /en — переведённая); черновик,
+// снятая, неизвестная — 404. Превью ссылки — первое фото статьи и анонс. Пара на другом языке — в alternate и кнопке RU/EN.
+const pathsOf = (locale: Locale, article: PublicArticle) => ({
+  [locale]: articlePath(locale, article.slug),
+  ...(article.otherSlug ? { [otherLocale(locale)]: articlePath(otherLocale(locale), article.otherSlug) } : {}),
+});
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await pageLocale();
   const { slug } = await params;
@@ -26,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!article) return { robots: { index: false, follow: false } };
   return pageMetadata({
     locale,
-    paths: { [locale]: articlePath(locale, article.slug) },
+    paths: pathsOf(locale, article),
     title: article.view.title,
     description: article.excerpt,
     image: article.cover ? photoUrl(article.cover.id, "og.jpg", "article") : null,
@@ -49,7 +53,7 @@ async function ArticleScreen({ params, locale }: Pick<Props, "params"> & { local
   if (!article) notFound();
   return (
     <>
-      <PublicHeader locale={locale} sections={catalog.sections} alternate={`/${otherLocale(locale)}`} />
+      <PublicHeader locale={locale} sections={catalog.sections} alternate={pathsOf(locale, article)[otherLocale(locale)] ?? `/${otherLocale(locale)}`} />
       <main className="pt-6 pb-16 lg:pt-10">
         <ArticleBody view={article.view} recipesLabel={t("recipes")} />
       </main>

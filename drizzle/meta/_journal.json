@@ -85,6 +85,13 @@
       "when": 1791283405390,
       "tag": "0011_composition_tags_omega_antioxidants",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791732530294,
+      "tag": "0012_article_translations",
+      "breakpoints": true
     }
   ]
 }

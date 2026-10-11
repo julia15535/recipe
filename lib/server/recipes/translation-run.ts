@@ -17,10 +17,15 @@ import { failExhausted, markRevalidated, pendingWork } from "./translation-queue
 type Deps = { translate?: typeof translateWithAi; config?: AiConfig | null };
 let chain: Promise<void> = Promise.resolve();
 
+/** Один перевод за раз на процесс — общий для рецептов и статей (ADR-0038). */
+export function serially(task: () => Promise<void>): Promise<void> {
+  chain = chain.then(task).catch((error: unknown) => log.error("перевод не выполнен", { error: error instanceof Error ? error.name : "unknown" }));
+  return chain;
+}
+
 /** `deps` — для тестов: свой «переводчик» и настройки ИИ. */
 export function runJob(jobId: string, deps: Deps = {}): Promise<void> {
-  chain = chain.then(() => run(jobId, deps)).catch((error: unknown) => log.error("перевод не выполнен", { error: error instanceof Error ? error.name : "unknown" }));
-  return chain;
+  return serially(() => run(jobId, deps));
 }
 
 async function run(jobId: string, deps: Deps): Promise<void> {
@@ -52,16 +57,20 @@ async function attempt(jobId: string, claimed: Claimed, { translate = translateW
   if (await finishJob(jobId, token, recipeId, saved)) await revalidatePublic([jobId]);
 }
 
-/** Сайт сразу показывает перевод: списки, разделы, поиск и сам рецепт. */
-export async function revalidatePublic(jobIds: string[]): Promise<void> {
+/** Сброс кэша сайта после перевода; false — вне контекста запроса Next (тесты): досбросит подборщик. */
+export function revalidateSite(): boolean {
   try {
     for (const tag of PUBLIC_TAGS) revalidateTag(tag, { expire: 0 });
+    return true;
   } catch (error) {
-    // Вне контекста запроса Next (тесты) — не отмечаем: подборщик досбросит кэш.
     log.warn("перевод: кэш сайта не сброшен", { error: error instanceof Error ? error.name : "unknown" });
-    return;
+    return false;
   }
-  await markRevalidated(jobIds);
+}
+
+/** Сайт сразу показывает перевод: списки, разделы, поиск и сам рецепт. */
+export async function revalidatePublic(jobIds: string[]): Promise<void> {
+  if (revalidateSite()) await markRevalidated(jobIds);
 }
 
 /** Подборщик: прерванные и забытые задания, недосброшенный кэш. */

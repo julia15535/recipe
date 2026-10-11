@@ -19,14 +19,15 @@ const count = (text: string, char: string) => text.split(char).length - 1;
 
 /**
  * Метки → числа; на английском десятичная запятая становится точкой. null — метки потеряны, лишние или повторены,
- * в ответе свои числа, Фаренгейт, потерян знак градуса или процента. `masked` — исходный текст с метками.
+ * в ответе свои числа, Фаренгейт, потерян знак градуса или процента. `masked` — исходный текст с метками. `ownDigits` —
+ * свои цифры можно (статьи, ADR-0038: «три варианта» → «3 ways»); метки, Фаренгейт, ° и % проверяются всё равно.
  */
-export function unmaskNumbers(text: string, numbers: readonly string[], lang: "ru" | "en", masked?: string): string | null {
+export function unmaskNumbers(text: string, numbers: readonly string[], lang: "ru" | "en", masked?: string, ownDigits = false): string | null {
   const seen = [...text.matchAll(TOKEN)].map((match) => Number(match[1]));
   const expected = numbers.map((_, index) => index + 1);
   if (seen.length !== expected.length || [...seen].sort((a, b) => a - b).some((value, index) => value !== expected[index])) return null;
   const rest = text.replace(TOKEN, "");
-  if (/\d|[¼½¾⅓⅔⅛]/.test(rest) || /°\s*F\b|℉|fahrenheit/i.test(rest)) return null;
+  if ((!ownDigits && /\d|[¼½¾⅓⅔⅛]/.test(rest)) || /°\s*F\b|℉|fahrenheit/i.test(rest)) return null;
   if (masked !== undefined && (count(text, "°") !== count(masked, "°") || count(text, "%") !== count(masked, "%"))) return null;
   return text.replace(TOKEN, (_, index: string) => {
     const value = numbers[Number(index) - 1] ?? "";

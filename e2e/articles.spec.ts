@@ -169,7 +169,7 @@ test("статья: текст → фото между абзацами → св
   await page.waitForURL(/\/admin$/);
 });
 
-test("статьи на сайте: список, ссылка в меню каталога; неизвестная и /en — «Страница не найдена»", async ({ page }) => {
+test("статьи на сайте: список, ссылка в меню каталога; неизвестная — «Страница не найдена»; /en — раздел Articles", async ({ page }) => {
   await page.goto("/ru/articles", { waitUntil: "networkidle" });
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Статьи");
   await expectGood(page);
@@ -177,10 +177,13 @@ test("статьи на сайте: список, ссылка в меню ка�
   await page.getByRole("button", { name: "Каталог" }).click();
   await page.getByRole("dialog", { name: "Каталог" }).getByRole("link", { name: "Статьи" }).click();
   await expect(page).toHaveURL(/\/ru\/articles$/);
-  for (const path of ["/en/articles", "/ru/articles/net-takoy-statyi"]) {
+  for (const path of ["/ru/articles/net-takoy-statyi", "/en/articles/no-such-article"]) {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Страница не найдена|Page not found/);
   }
+  // Английский раздел есть с плана articles-en (ADR-0038).
+  await page.goto("/en/articles");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Articles");
 });
 
 test("компьютер: «Статьи» в шапке перед «Поиск» @desktop", async ({ page }) => {

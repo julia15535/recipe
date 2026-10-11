@@ -28,6 +28,14 @@ export function startAiStub(): Promise<() => Promise<void>> {
         res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(markup(text)) }, finish_reason: "stop" }], usage: { cost: 0 } }));
         return;
       }
+      // Перевод статьи (ADR-0038): «EN » перед каждым текстом, метки чисел и оформления — на месте.
+      if (request.response_format?.json_schema?.name === "article_translation") {
+        const input = JSON.parse(text) as { items: { id: string; text: string }[] };
+        const items = input.items.map((item) => ({ id: item.id, text: `EN ${item.text}` }));
+        res.setHeader("content-type", "application/json");
+        res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ items }) }, finish_reason: "stop" }], usage: { cost: 0 } }));
+        return;
+      }
       if (request.response_format?.json_schema?.name === "recipe_translation") {
         res.setHeader("content-type", "application/json");
         res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(translate(text)) }, finish_reason: "stop" }], usage: { cost: 0 } }));

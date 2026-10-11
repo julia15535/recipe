@@ -7,18 +7,26 @@ import { useEffect, useState } from "react";
 import { AppButton } from "@/components/app-button";
 import type { TranslationState } from "@/lib/server/recipes/translation-queue";
 
-import { translateRecipe } from "../translation-actions";
-
-// Английская версия рецепта (ADR-0029): переводит ИИ сам после публикации; правка русского перевод не трогает —
-// «устарела», пока владелец не нажмёт «Перевести заново» (решения владельца 03.10). Пока идёт перевод — страница
-// обновляется сама, по одному обновлению за раз (следующее — после ответа).
-type Props = { id: string; published: boolean; state: TranslationState };
+// Английская версия рецепта (ADR-0029) и статьи (ADR-0038): переводит ИИ сам после публикации; правка русского перевод
+// не трогает — «устарела», пока владелец не нажмёт «Перевести заново» (решения владельца 03.10). Пока идёт перевод —
+// страница обновляется сама, по одному обновлению за раз (следующее — после ответа). Действие и адрес — от страницы.
+type Props = {
+  id: string;
+  published: boolean;
+  state: TranslationState;
+  /** «Перевести» / «Перевести заново» — серверное действие рецепта или статьи. */
+  action: (form: FormData) => Promise<void>;
+  /** Начало английского адреса: «/en/recipe/» или «/en/articles/». */
+  enPath: string;
+  /** Что меняли: «рецепт» / «статью». */
+  subject: string;
+};
 
 // «Задание выполнено, а перевода не видно» — переходное (подстраховка: состояние читается одним снимком, плана
 // translation-status-race): несколько обновлений, потом — просьба обновить страницу, а не бесконечный опрос.
 const SETTLE_TRIES = 5;
 
-export function TranslationBlock({ id, published, state }: Props) {
+export function TranslationBlock({ id, published, state, action, enPath, subject }: Props) {
   const router = useRouter();
   const active = state.job?.status === "queued" || state.job?.status === "running";
   const settling = !active && state.job?.status === "done" && !state.slug;
@@ -44,7 +52,7 @@ export function TranslationBlock({ id, published, state }: Props) {
         : "не удалось обновить статус — обновите страницу"
       : state.slug
       ? state.outdated
-        ? "устарела — вы меняли рецепт после перевода; на сайте прежний перевод"
+        ? `устарела — вы меняли ${subject} после перевода; на сайте прежний перевод`
         : "готова"
       : failed
         ? "не получилась — попробуйте ещё раз"
@@ -67,7 +75,7 @@ export function TranslationBlock({ id, published, state }: Props) {
       </p>
       <div className="flex flex-wrap gap-3">
         {!waiting && (published || state.slug) && (
-          <form action={translateRecipe}>
+          <form action={action}>
             <input type="hidden" name="id" value={id} />
             <AppButton type="submit" color={state.slug && !state.outdated ? "tertiary" : "secondary"} iconLeading={Languages}>
               {state.slug ? "Перевести заново" : "Перевести"}
@@ -75,7 +83,7 @@ export function TranslationBlock({ id, published, state }: Props) {
           </form>
         )}
         {state.slug && published && (
-          <AppButton color="tertiary" iconLeading={ExternalLink} href={`/en/recipe/${state.slug}`}>
+          <AppButton color="tertiary" iconLeading={ExternalLink} href={`${enPath}${state.slug}`}>
             Открыть по-английски
           </AppButton>
         )}

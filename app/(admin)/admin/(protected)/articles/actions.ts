@@ -10,6 +10,7 @@ import { remap } from "@/lib/domain/article-text/edit";
 import { ARTICLE_LIMITS, byteLength, markerLine, normalizeText, readLines } from "@/lib/domain/article-text/lines";
 import { parseArticle, titleIssue } from "@/lib/domain/article-text/parse";
 import type { ArticleIssue } from "@/lib/domain/article-text/types";
+import { translateArticleLater } from "@/lib/server/articles/translate-later";
 import { dropArticleImport, loadArticleImport, storeArticleImport } from "@/lib/server/articles/imports";
 import { getArticle, photoKeys } from "@/lib/server/articles/queries";
 import { createArticle, deleteArticleDraft, replaceArticle, setArticleRecipes, setArticleStatus } from "@/lib/server/articles/save";
@@ -108,6 +109,7 @@ export async function saveArticle(input: z.input<typeof saveInput>): Promise<Art
       return { ok: false, message: saved.reason === "conflict" ? "Статья уже изменена в другой вкладке — обновите страницу." : "Статья не найдена." };
     }
     refreshPublicSite();
+    if (!target && publish) await translateArticleLater(saved.id, false); // перевод — сам после публикации (ADR-0038)
     await dropArticleImport(importId); // разбор одноразовый: второе нажатие не создаст дубль
     return { ok: true, id: saved.id };
   } catch (error) {
@@ -124,6 +126,7 @@ export async function changeArticleStatus(form: FormData): Promise<void> {
   const { id, status } = statusForm.parse({ id: form.get("id"), status: form.get("status") });
   await setArticleStatus(id, status);
   refreshPublicSite();
+  if (status === "published") await translateArticleLater(id, false);
   refresh();
 }
 

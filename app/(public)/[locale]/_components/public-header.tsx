@@ -23,7 +23,7 @@ export async function PublicHeader({ locale, sections, current, alternate }: Pro
     <SiteHeader
       siteName={meta("siteName")}
       signature={{ text: site("signature"), locale }}
-      articles={locale === "ru" ? { href: "/ru/articles", label: site("articles") } : undefined}
+      articles={{ href: `/${locale}/articles`, label: site("articles") }}
       homeHref={`/${locale}`}
       searchHref={`/${locale}/search`}
       searchLabel={site("search")}

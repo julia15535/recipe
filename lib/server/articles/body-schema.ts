@@ -9,24 +9,28 @@ import { ARTICLE_SCHEMA_VERSION, type ArticleBody, type Mark } from "@/lib/domai
 const line = z.number().int().nonnegative().max(ARTICLE_LIMITS.lines);
 const text = (max: number) => z.string().min(1).max(max);
 const id = z.string().regex(/^b\d{1,4}$/);
+export const photoKey = z.string().regex(/^[A-HJ-NP-Z2-9]{4}$/);
 
-const block = z.discriminatedUnion("type", [
-  z.object({ id, type: z.literal("heading"), level: z.union([z.literal(2), z.literal(3)]), text: text(ARTICLE_LIMITS.heading), from: line, to: line }),
-  z.object({ id, type: z.literal("paragraph"), text: text(ARTICLE_LIMITS.text), from: line, to: line }),
-  z.object({
-    id,
-    type: z.literal("list"),
-    ordered: z.boolean(),
-    start: z.number().int().min(2).max(999).optional(),
-    items: z.array(z.object({ text: text(ARTICLE_LIMITS.text), from: line, to: line })).min(1).max(ARTICLE_LIMITS.blocks),
-  }),
-  z.object({ id, type: z.literal("photo"), key: z.string().regex(/^[A-HJ-NP-Z2-9]{4}$/), line }),
-]);
+/** `scale` — запас длины для перевода (английский бывает длиннее русского, ADR-0038); у русского — 1. */
+function bodySchemaOf(scale: number): z.ZodType<ArticleBody> {
+  const [heading, plain] = [Math.round(ARTICLE_LIMITS.heading * scale), Math.round(ARTICLE_LIMITS.text * scale)];
+  const block = z.discriminatedUnion("type", [
+    z.object({ id, type: z.literal("heading"), level: z.union([z.literal(2), z.literal(3)]), text: text(heading), from: line, to: line }),
+    z.object({ id, type: z.literal("paragraph"), text: text(plain), from: line, to: line }),
+    z.object({
+      id,
+      type: z.literal("list"),
+      ordered: z.boolean(),
+      start: z.number().int().min(2).max(999).optional(),
+      items: z.array(z.object({ text: text(plain), from: line, to: line })).min(1).max(ARTICLE_LIMITS.blocks),
+    }),
+    z.object({ id, type: z.literal("photo"), key: photoKey, line }),
+  ]);
+  return z.object({ schemaVersion: z.literal(ARTICLE_SCHEMA_VERSION), blocks: z.array(block).max(ARTICLE_LIMITS.blocks) });
+}
 
-export const articleBodySchema: z.ZodType<ArticleBody> = z.object({
-  schemaVersion: z.literal(ARTICLE_SCHEMA_VERSION),
-  blocks: z.array(block).max(ARTICLE_LIMITS.blocks),
-});
+export const articleBodySchema = bodySchemaOf(1);
+export const translatedBodySchema = bodySchemaOf(2);
 
 export const marksSchema: z.ZodType<Mark[]> = z
   .array(z.object({ kind: z.enum(["h2", "h3", "p", "bullet", "number"]), from: line, to: line }))

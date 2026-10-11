@@ -17,6 +17,7 @@ import { PhotoBlock } from "../_components/photo-block";
 import { RecipeActions } from "../_components/recipe-actions";
 import { TranslationBlock } from "../_components/translation-block";
 import { StatusBadge } from "../_components/status-badge";
+import { translateRecipe } from "../translation-actions";
 import { TagsBlock } from "../_components/tags-block";
 
 export const metadata: Metadata = { title: "Рецепт · Кабинет владельца" };
@@ -43,7 +44,9 @@ export default async function RecipePage({ params }: PageProps<"/admin/recipes/[
         <RecipeActions id={recipe.id} status={recipe.status} siteHref={recipePath("ru", recipe.slug)} />
         <PhotoBlock recipeId={recipe.id} title={recipe.view.title} photo={photo} />
         <TagsBlock recipeId={recipe.id} revision={recipe.revision} tags={tags} current={recipe.view.tags.map((tag) => tag.id).filter(isTagCode)} />
-        {translation && <TranslationBlock id={recipe.id} published={recipe.status === "published"} state={translation} />}
+        {translation && (
+          <TranslationBlock id={recipe.id} published={recipe.status === "published"} state={translation} action={translateRecipe} enPath="/en/recipe/" subject="рецепт" />
+        )}
       </div>
       <RecipeBody recipe={recipe.view}>
         <RecipeIntro recipe={recipe.view} />
