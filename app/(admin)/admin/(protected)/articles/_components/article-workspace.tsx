@@ -11,6 +11,7 @@ import { ShrinkError, shrinkImage } from "@/components/media/shrink-image";
 import { RecipePhoto } from "@/components/recipe/recipe-photo";
 import { ARTICLE_LIMITS, markerLine } from "@/lib/domain/article-text/lines";
 import { type CropFractions, type CropRect, type PhotoRef, photoUrl, type Size, toFractions } from "@/lib/domain/photo";
+import { plainText } from "@/lib/domain/article-text/inline";
 
 import { addPhotoHere, captionArticlePhoto, recropArticle, removeArticlePhotoAction } from "../photo-actions";
 import { PhotoTools } from "./photo-tools";
@@ -134,7 +135,7 @@ export function ArticleWorkspace({ articleId, revision, view, photos }: Props) {
           <p className="text-md text-tertiary">Метки этих фото нет в тексте. Чтобы вернуть фото в статью, вставьте его строку-метку в текст через «Изменить».</p>
           {loose.map((photo) => (
             <div key={photo.key} className="flex flex-col gap-2">
-              <RecipePhoto photo={photo.ref} alt={photo.caption ?? view.title} sizes="320px" className="max-w-xs rounded-xl" />
+              <RecipePhoto photo={photo.ref} alt={plainText(photo.caption ?? "") || view.title} sizes="320px" className="max-w-xs rounded-xl" />
               <p className="text-md text-secondary">
                 Метка: <span className="font-semibold text-primary">{markerLine(photo.key)}</span>
               </p>

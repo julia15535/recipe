@@ -194,4 +194,14 @@ describe("статья: жирный и курсив — только в тек�
     expect(photoAlts(body, "Название", new Map()).get("Q7K2")).toBe("Бананы спелые");
     expect(photoAlts(body, "Название", new Map([["Q7K2", "Хлеб *на закваске*"]])).get("Q7K2")).toBe("Хлеб на закваске");
   });
+
+  it("«Ж»/«К» в «Изменить» — не смена слов: разметка переносится без ИИ", () => {
+    const text = normalizeText("# Бананы\nДва спелых банана.\n\n- мёд\n- финики");
+    const before = parseArticle(text, null);
+    const moved = remap(text, before.body, text.replace("спелых", "**спелых**").replace("мёд", "*мёд*"));
+    expect(moved.ok).toBe(true);
+    if (moved.ok) expect(moved.body.blocks.map((block) => block.type)).toEqual(["heading", "paragraph", "list"]);
+    expect(remap(text, before.body, text.replace("спелых", "зелёных")).ok).toBe(false);
+  });
 });
+

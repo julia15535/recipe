@@ -31,7 +31,10 @@ export function applyStyle(field: HTMLTextAreaElement, style: Style, onText: (va
 
 /** Ctrl/⌘+B и Ctrl/⌘+I в поле — по клавише, не по букве (работает и в русской раскладке). */
 export function styleShortcut(event: KeyboardEvent<HTMLTextAreaElement>, onText: (value: string) => void) {
-  if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+  // На Mac — ⌘ (Ctrl+B там «курсор назад»), с Shift — чужие сочетания (Ctrl+Shift+I — инструменты браузера); набор иероглифов
+  // и т. п. (isComposing) не трогаем.
+  const mac = /Mac|iPhone|iPad/u.test(navigator.platform || navigator.userAgent);
+  if (!(mac ? event.metaKey : event.ctrlKey) || event.shiftKey || event.altKey || event.nativeEvent.isComposing) return;
   const style = event.code === "KeyB" ? "bold" : event.code === "KeyI" ? "italic" : null;
   if (!style) return;
   event.preventDefault();
@@ -46,12 +49,12 @@ export function FormatToolbar({ field, controls, onText }: Props) {
     if (field.current) applyStyle(field.current, style, onText);
   };
   return (
-    <div role="toolbar" aria-label="Оформление текста" aria-controls={controls} className="flex gap-2">
+    <div role="group" aria-label="Оформление текста" aria-controls={controls} className="flex gap-2">
       {/* pointerdown не уводит фокус из поля — выделение слов не теряется */}
-      <button type="button" aria-label="Жирный" title="Жирный (Ctrl+B)" className={`${BUTTON} font-bold`} onPointerDown={(event) => event.preventDefault()} onClick={() => press("bold")}>
+      <button type="button" aria-label="Жирный" title="Жирный (Ctrl+B, на Mac ⌘B)" className={`${BUTTON} font-bold`} onPointerDown={(event) => event.preventDefault()} onClick={() => press("bold")}>
         Ж
       </button>
-      <button type="button" aria-label="Курсив" title="Курсив (Ctrl+I)" className={`${BUTTON} italic`} onPointerDown={(event) => event.preventDefault()} onClick={() => press("italic")}>
+      <button type="button" aria-label="Курсив" title="Курсив (Ctrl+I, на Mac ⌘I)" className={`${BUTTON} italic`} onPointerDown={(event) => event.preventDefault()} onClick={() => press("italic")}>
         К
       </button>
     </div>

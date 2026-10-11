@@ -1,7 +1,9 @@
 // Правка статьи без нового разбора ИИ: «Добавить фото сюда», «Убрать фото» и перенос меток в «Изменить». Если слова
 // не менялись (те же строки с текстом по порядку), прежняя разметка переносится на новые номера строк; абзац, внутрь
-// которого перенесли метку, делится на два. Слова поменялись — нужен новый разбор (критика Codex 04.10).
+// которого перенесли метку, делится на два. Жирный/курсив («Ж»/«К») — не смена слов (ADR-0037). Слова поменялись — нужен
+// новый разбор (критика Codex 04.10).
 import { assemble, marksOf, marksValid } from "./assemble";
+import { plainText } from "./inline";
 import { type ArticleLines, contentLines, isBlank, markerLine, readLines } from "./lines";
 import type { ArticleBody, ArticleIssue, Mark } from "./types";
 
@@ -14,7 +16,7 @@ export function remap(oldText: string, oldBody: ArticleBody, newText: string): R
   const [oldContent, newContent] = [contentLines(before), contentLines(after)];
   const same =
     oldContent.length === newContent.length &&
-    oldContent.every((line, index) => before.lines[line]?.trim() === after.lines[newContent[index] ?? -1]?.trim());
+    oldContent.every((line, index) => plainText(before.lines[line] ?? "").trim() === plainText(after.lines[newContent[index] ?? -1] ?? "").trim());
   if (!same) return { ok: false };
   const ordinal = new Map(oldContent.map((line, index) => [line, index]));
   const marks = marksOf(oldBody).flatMap((mark) => split(after, mark, ordinal, newContent));
